@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ attempt.test.title }} — Student Testing</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --app-bg: #eef2f9;
+            --app-surface: #ffffff;
+            --app-text: #172033;
+            --app-muted: #687386;
+            --app-border: #e4e9f0;
+            --app-primary: #2563eb;
+            --app-primary-dark: #1d4ed8;
+            --app-primary-soft: #dbe5fb;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { min-height: 100%; }
+
+        body {
+            margin: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            background: var(--app-bg);
+            color: var(--app-text);
+
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            background: #dbe5fb;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            top: -180px;
+            left: -180px;
+            width: 520px;
+            height: 520px;
+        }
+
+        body::after {
+            bottom: -140px;
+            right: -140px;
+            width: 420px;
+            height: 420px;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---------------------------------------------------------
+           NAVBAR
+        --------------------------------------------------------- */
+        .app-navbar {
+            background: #1b2233;
+            min-height: 68px;
+        }
+
+        .app-navbar__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            min-height: 68px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .app-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            color: #fff;
+            text-decoration: none;
+
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .app-brand__mark {
+            display: grid;
+            place-items: center;
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            background: #2563eb;
+            color: #fff;
+
+            font-size: 1.15rem;
+            font-weight: 900;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 4px 14px 4px 4px;
+
+            border-radius: 999px;
+
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .user-chip__avatar {
+            display: grid;
+            place-items: center;
+
+            width: 36px;
+            height: 36px;
+
+            border-radius: 50%;
+
+            background: #2563eb;
+            color: #fff;
+
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .user-chip__name {
+            color: #fff;
+
+            font-size: 0.9rem;
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-chip__caret {
+            color: rgba(255, 255, 255, 0.6);
+
+            width: 14px;
+            height: 14px;
+        }
+
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+
+            min-height: 40px;
+            padding: 6px 16px;
+
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+
+            background: transparent;
+            color: #fff;
+
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.55);
+            color: #fff;
+        }
+
+        .logout-btn svg { width: 18px; height: 18px; }
+
+        /* ---------------------------------------------------------
+           PAGE
+        --------------------------------------------------------- */
+        .page-wrap {
+            flex: 1 1 auto;
+
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ---------------------------------------------------------
+           TEST HEADER
+        --------------------------------------------------------- */
+        .test-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+
+            margin-bottom: 1.75rem;
+        }
+
+        .test-head__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            margin-bottom: 0.6rem;
+
+            padding: 0.3rem 0.75rem;
+
+            border-radius: 999px;
+
+            background: #fff;
+            color: #2563eb;
+
+            font-size: 0.78rem;
+            font-weight: 650;
+
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+        }
+
+        .test-head__badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .test-head h1 {
+            margin: 0 0 0.35rem;
+
+            font-size: clamp(1.4rem, 3vw, 1.75rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .test-head__meta {
+            color: var(--app-muted);
+
+            font-size: 0.9rem;
+        }
+
+        /* Таймер */
+        .timer {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+
+            padding: 0.7rem 1.1rem;
+
+            border-radius: 12px;
+
+            background: #fff;
+            border: 1px solid var(--app-border);
+
+            box-shadow: 0 6px 16px rgba(23, 32, 51, 0.06);
+
+            font-size: 0.95rem;
+            font-weight: 650;
+
+            color: var(--app-text);
+
+            white-space: nowrap;
+
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .timer svg {
+            width: 18px;
+            height: 18px;
+            color: var(--app-primary);
+        }
+
+        .timer b {
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .timer.is-warning {
+            background: #fef3c7;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+        .timer.is-warning svg { color: #d97706; }
+
+        .timer.is-danger {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #991b1b;
+
+            animation: timerPulse 1.2s ease-in-out infinite;
+        }
+        .timer.is-danger svg { color: #dc2626; }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.02); }
+        }
+
+        /* ---------------------------------------------------------
+           QUESTION CARD
+        --------------------------------------------------------- */
+        .question-card {
+            padding: 1.5rem 1.5rem 1.25rem;
+
+            margin-bottom: 1rem;
+
+            background: #fff;
+            border-radius: 16px;
+
+            box-shadow: 0 8px 24px rgba(37, 71, 143, 0.06);
+
+            transition: box-shadow 0.15s ease;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 10px 28px rgba(37, 71, 143, 0.10);
+        }
+
+        .question-card__head {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+
+            margin-bottom: 1.1rem;
+        }
+
+        .question-number {
+            display: grid;
+            place-items: center;
+
+            width: 36px;
+            height: 36px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            background: var(--app-primary-soft);
+            color: var(--app-primary);
+
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .question-card__title {
+            margin: 0;
+
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.45;
+            color: var(--app-text);
+        }
+
+        .question-card__points {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+
+            margin-top: 0.35rem;
+
+            color: var(--app-muted);
+
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .question-card__points svg {
+            width: 14px;
+            height: 14px;
+            color: #f59e0b;
+        }
+
+        /* Ответы */
+        .answer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+
+            margin: 0;
+            padding: 0;
+
+            list-style: none;
+        }
+
+        .answer {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+
+            padding: 0.85rem 1rem;
+
+            border: 1px solid var(--app-border);
+            border-radius: 11px;
+
+            background: #fbfcfe;
+
+            cursor: pointer;
+
+            transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .answer:hover {
+            background: #f1f5ff;
+            border-color: #c7d7fb;
+        }
+
+        .answer input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Свой чекбокс */
+        .answer__mark {
+            display: grid;
+            place-items: center;
+
+            width: 22px;
+            height: 22px;
+
+            flex-shrink: 0;
+
+            margin-top: 1px;
+
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+
+            background: #fff;
+
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .answer__mark svg {
+            width: 14px;
+            height: 14px;
+
+            color: #fff;
+
+            opacity: 0;
+            transform: scale(0.6);
+
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .answer__text {
+            flex: 1;
+
+            color: var(--app-text);
+
+            font-size: 0.95rem;
+            line-height: 1.45;
+
+            user-select: none;
+        }
+
+        /* Состояние "выбрано" */
+        .answer input[type="checkbox"]:checked + .answer__mark {
+            background: var(--app-primary);
+            border-color: var(--app-primary);
+        }
+
+        .answer input[type="checkbox"]:checked + .answer__mark svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .answer:has(input[type="checkbox"]:checked) {
+            background: #eef3fd;
+            border-color: #bfd3fb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.10);
+        }
+
+        .answer input[type="checkbox"]:focus-visible + .answer__mark {
+            outline: 3px solid rgba(37, 99, 235, 0.35);
+            outline-offset: 2px;
+        }
+
+        /* ---------------------------------------------------------
+           FOOTER ACTIONS
+        --------------------------------------------------------- */
+        .test-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+
+            margin-top: 1.75rem;
+            padding: 1.25rem 1.5rem;
+
+            background: #fff;
+            border-radius: 16px;
+
+            box-shadow: 0 8px 24px rgba(37, 71, 143, 0.06);
+        }
+
+        .test-actions__hint {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+
+            color: var(--app-muted);
+
+            font-size: 0.9rem;
+        }
+
+        .test-actions__hint svg {
+            width: 18px;
+            height: 18px;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .btn-finish {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+
+            min-height: 48px;
+            padding: 0.7rem 1.5rem;
+
+            border: 0;
+            border-radius: 10px;
+
+            background: var(--app-primary);
+            color: #fff;
+
+            font-size: 0.98rem;
+            font-weight: 700;
+            font-family: inherit;
+
+            cursor: pointer;
+
+            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn-finish:hover {
+            background: var(--app-primary-dark);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28);
+        }
+
+        .btn-finish:active {
+            transform: translateY(1px);
+        }
+
+        .btn-finish svg { width: 18px; height: 18px; }
+
+        /* ---------------------------------------------------------
+           FOOTER
+        --------------------------------------------------------- */
+        .app-footer {
+            border-top: 1px solid var(--app-border);
+            background: rgba(255, 255, 255, 0.75);
+
+            color: var(--app-muted);
+
+            font-size: 0.85rem;
+        }
+
+        .app-footer__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.1rem 1.5rem;
+        }
+
+        /* ---------------------------------------------------------
+           RESPONSIVE
+        --------------------------------------------------------- */
+        @media (max-width: 767.98px) {
+
+            .test-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .timer { justify-content: center; }
+
+            .test-actions {
+                flex-direction: column;
+                align-items: stretch;
+
+                text-align: center;
+            }
+
+            .test-actions__hint {
+                justify-content: center;
+            }
+
+            .btn-finish { justify-content: center; }
+        }
+
+        @media (max-width: 575.98px) {
+
+            .app-navbar__inner { padding: 0 1rem; }
+            .app-brand { font-size: 1rem; }
+            .app-brand__mark { width: 36px; height: 36px; border-radius: 10px; font-size: 1rem; }
+
+            .user-chip__name { max-width: 100px; }
+
+            .page-wrap { padding: 1.25rem 1rem 2.5rem; }
+
+            .question-card { padding: 1.15rem; }
+
+            .app-footer__inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.35rem;
+            }
+
+            body::before,
+            body::after { display: none; }
+        }
+
+        :focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.35);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     NAVBAR
+     ========================================================= -->
+<nav class="app-navbar">
+    <div class="app-navbar__inner">
+
+        <a class="app-brand" href="{{ url_for('main.index') }}">
+            <span class="app-brand__mark">S</span>
+            <span>STS</span>
+        </a>
+
+        <div class="navbar-user">
+
+            <div class="user-chip">
+                <span class="user-chip__avatar">
+                    {{ (current_user.first_name[0] ~ current_user.last_name[0])|upper }}
+                </span>
+                <span class="user-chip__name">
+                    {{ current_user.first_name }} {{ current_user.last_name }}
+                </span>
+                <svg class="user-chip__caret" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.4"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </div>
+
+            <a class="logout-btn" href="{{ url_for('auth.logout') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <path d="M16 17l5-5-5-5"/>
+                    <path d="M21 12H9"/>
+                </svg>
+                Выйти
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<main class="page-wrap">
+
+    <!-- =========================================================
+         HEAD
+         ========================================================= -->
+    <div class="test-head">
+
+        <div>
+
+            <span class="test-head__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="4" width="16" height="16" rx="3"/>
+                    <path d="M9 12l2 2 4-4"/>
+                </svg>
+                Прохождение теста
+            </span>
+
+            <h1>{{ attempt.test.title }}</h1>
+
+            <div class="test-head__meta">
+                {{ questions|length }}
+                {% if questions|length == 1 %}вопрос{% elif questions|length < 5 %}вопроса{% else %}вопросов{% endif %}
+                · макс. {{ attempt.max_score }} баллов
+            </div>
+
+        </div>
+
+        <div class="timer" id="timer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v5l3 2"/>
+            </svg>
+            <span>Время:</span>
+            <b id="timer-value">--:--</b>
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         FORM
+         ========================================================= -->
+    <form method="post" id="test-form" autocomplete="off">
+
+        {% for question in questions %}
+
+            <div class="question-card">
+
+                <div class="question-card__head">
+
+                    <span class="question-number">
+                        {{ loop.index }}
+                    </span>
+
+                    <div style="flex:1;">
+
+                        <h2 class="question-card__title">
+                            {{ question.text }}
+                        </h2>
+
+                        <span class="question-card__points">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/>
+                            </svg>
+                            {{ question.points }}
+                            {% if question.points == 1 %}балл{% elif question.points < 5 %}балла{% else %}баллов{% endif %}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <ul class="answer-list">
+
+                    {% for answer in question.answers|sort(attribute="answer_order") %}
+
+                        <li>
+                            <label class="answer" for="answer_{{ answer.id }}">
+
+                                <input
+                                    type="checkbox"
+                                    name="question_{{ question.id }}"
+                                    value="{{ answer.id }}"
+                                    id="answer_{{ answer.id }}"
+                                >
+
+                                <span class="answer__mark">
+                                    <svg viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor"
+                                         stroke-width="3"
+                                         stroke-linecap="round"
+                                         stroke-linejoin="round">
+                                        <path d="M5 12l5 5L20 7"/>
+                                    </svg>
+                                </span>
+
+                                <span class="answer__text">
+                                    {{ answer.text }}
+                                </span>
+
+                            </label>
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        {% endfor %}
+
+
+        <!-- =========================================================
+             ACTIONS
+             ========================================================= -->
+        <div class="test-actions">
+
+            <div class="test-actions__hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                </svg>
+                После отправки изменить ответы будет нельзя.
+            </div>
+
+            <button class="btn-finish" type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12l5 5L20 7"/>
+                </svg>
+                Завершить тест
+            </button>
+
+        </div>
+
+    </form>
+
+</main>
+
+
+<footer class="app-footer">
+    <div class="app-footer__inner">
+        <span>Student Testing System</span>
+        <span>Система тестирования знаний</span>
+    </div>
+</footer>
+
+
+<!-- =========================================================
+     TIMER SCRIPT
+     ========================================================= -->
+<script>
+    (function () {
+        let seconds = {{ remaining_seconds }};
+
+        const form = document.getElementById('test-form');
+        const timerEl = document.getElementById('timer');
+        const timerValue = document.getElementById('timer-value');
+
+        let submitted = false;
+
+        function submitTest() {
+            if (submitted) return;
+            submitted = true;
+            form.submit();
+        }
+
+        function updateTimer() {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+
+            timerValue.textContent =
+                String(minutes).padStart(2, '0') + ':' +
+                String(secs).padStart(2, '0');
+
+            if (seconds <= 60) {
+                timerEl.classList.add('is-danger');
+                timerEl.classList.remove('is-warning');
+            } else if (seconds <= 300) {
+                timerEl.classList.add('is-warning');
+            }
+
+            if (seconds <= 0) {
+                submitTest();
+                return;
+            }
+
+            seconds--;
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+
+        form.addEventListener('submit', function () {
+            submitted = true;
+        });
+    })();
+</script>
+
+</body>
+</html>

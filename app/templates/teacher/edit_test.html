@@ -1,0 +1,1409 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование теста{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --t-bg: #eef2f9;
+        --t-card: #ffffff;
+        --t-text: #172033;
+        --t-muted: #687386;
+        --t-border: #e4e9f0;
+        --t-primary: #2563eb;
+        --t-primary-dark: #1d4ed8;
+        --t-primary-soft: #dbeafe;
+        --t-green-soft: #dcfce7;
+        --t-orange-soft: #fef3c7;
+        --t-purple-soft: #ede9fe;
+        --t-red-soft: #fee2e2;
+        --t-red: #dc2626;
+        --t-radius: 18px;
+        --t-shadow: 0 10px 30px rgba(37, 71, 143, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        background:
+            radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.07), transparent 28rem),
+            radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.05), transparent 25rem),
+            var(--t-bg);
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+        content: "";
+        position: fixed;
+        border-radius: 50%;
+        background: #dbe5fb;
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: 0;
+    }
+    body::before { top: -180px; left: -180px; width: 520px; height: 520px; }
+    body::after  { bottom: -140px; right: -140px; width: 420px; height: 420px; }
+
+    /* ---------- LAYOUT ---------- */
+    .t-layout {
+        position: relative;
+        z-index: 1;
+
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 1.5rem;
+
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 1.75rem 1.5rem 3rem;
+
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+            BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--t-text);
+    }
+
+    /* ---------- SIDEBAR ---------- */
+    .t-sidebar {
+        position: sticky;
+        top: 1.75rem;
+        align-self: start;
+
+        padding: 1.25rem 1rem;
+
+        background: #fff;
+        border-radius: var(--t-radius);
+        box-shadow: var(--t-shadow);
+    }
+
+    .t-sidebar__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+
+        padding: 0 0.5rem 1rem;
+        margin-bottom: 0.85rem;
+
+        border-bottom: 1px solid var(--t-border);
+
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: var(--t-text);
+    }
+
+    .t-sidebar__brand-mark {
+        display: grid;
+        place-items: center;
+
+        width: 36px;
+        height: 36px;
+
+        border-radius: 10px;
+
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #fff;
+
+        font-size: 0.95rem;
+        font-weight: 900;
+    }
+
+    .t-sidebar__nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .t-sidebar__nav a {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+
+        padding: 0.65rem 0.75rem;
+
+        border-radius: 10px;
+
+        color: var(--t-muted);
+        text-decoration: none;
+
+        font-size: 0.92rem;
+        font-weight: 600;
+
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .t-sidebar__nav a:hover { background: #f1f5ff; color: var(--t-primary); }
+    .t-sidebar__nav a.is-active { background: #e8efff; color: var(--t-primary); }
+    .t-sidebar__nav svg { flex-shrink: 0; width: 18px; height: 18px; }
+
+    /* ---------- MAIN ---------- */
+    .t-main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        min-width: 0;
+    }
+
+    /* ---------- HEAD ---------- */
+    .t-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .t-head__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        padding: 0.35rem 0.85rem;
+        margin-bottom: 0.75rem;
+
+        border-radius: 999px;
+
+        background: #fff;
+        color: var(--t-primary);
+
+        font-size: 0.8rem;
+        font-weight: 650;
+
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+    }
+    .t-head__badge svg { width: 14px; height: 14px; }
+
+    .t-head h1 {
+        margin: 0 0 0.4rem;
+        font-size: clamp(1.6rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .t-head p {
+        margin: 0;
+        max-width: 560px;
+        color: var(--t-muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+    }
+
+    .t-head p b { color: var(--t-text); font-weight: 700; }
+
+    .t-head__actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .t-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+
+        min-height: 42px;
+        padding: 8px 16px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 10px;
+
+        background: #fff;
+        color: var(--t-text);
+
+        font-size: 13px;
+        font-weight: 650;
+        font-family: inherit;
+
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+
+        transition: background 0.15s ease, border-color 0.15s ease,
+            color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .t-btn svg { width: 14px; height: 14px; }
+    .t-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .t-btn--primary {
+        background: var(--t-primary);
+        border-color: var(--t-primary);
+        color: #fff;
+    }
+    .t-btn--primary:hover {
+        background: var(--t-primary-dark);
+        border-color: var(--t-primary-dark);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+    }
+
+    .t-btn--danger { color: var(--t-red); }
+    .t-btn--danger:hover { background: #fef2f2; border-color: #fecaca; }
+
+    .t-btn--success {
+        background: #16a34a;
+        border-color: #16a34a;
+        color: #fff;
+    }
+    .t-btn--success:hover {
+        background: #15803d;
+        border-color: #15803d;
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
+    }
+
+    /* ---------- HERO STATS GRID ---------- */
+    .t-hero-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .t-hero {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        padding: 14px 16px;
+
+        background: #fff;
+        border: 1px solid var(--t-border);
+        border-radius: 14px;
+        box-shadow: var(--t-shadow);
+    }
+
+    .t-hero__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+    }
+    .t-hero__icon svg { width: 20px; height: 20px; }
+
+    .t-hero__icon--blue   { background: var(--t-primary-soft); color: var(--t-primary); }
+    .t-hero__icon--green  { background: var(--t-green-soft);   color: #16a34a; }
+    .t-hero__icon--orange { background: var(--t-orange-soft);  color: #d97706; }
+    .t-hero__icon--purple { background: var(--t-purple-soft);  color: var(--t-purple); }
+
+    .t-hero__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .t-hero__label { color: var(--t-muted); font-size: 12px; font-weight: 650; }
+    .t-hero__value { color: var(--t-text); font-size: 18px; font-weight: 800; line-height: 1.15; }
+
+    /* ---------- CARD ---------- */
+    .t-card {
+        background: #fff;
+        border: 1px solid var(--t-border);
+        border-radius: var(--t-radius);
+        box-shadow: var(--t-shadow);
+        overflow: hidden;
+    }
+
+    .t-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--t-border);
+    }
+
+    .t-card__head-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .t-card__icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #eff3fb;
+        color: var(--t-primary);
+    }
+    .t-card__icon svg { width: 20px; height: 20px; }
+
+    .t-card__title { margin: 0; font-size: 1rem; font-weight: 800; color: var(--t-text); }
+    .t-card__sub   { margin: 2px 0 0; color: var(--t-muted); font-size: 12.5px; }
+
+    .t-card__body { padding: 22px; }
+
+    /* ---------- SCALE (шкала оценок) ---------- */
+    .t-scale {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .t-scale__item {
+        padding: 12px 14px;
+        border-radius: 12px;
+        text-align: left;
+    }
+
+    .t-scale__grade {
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .t-scale__min { font-size: 12px; font-weight: 650; }
+
+    .t-scale__item--5 { background: var(--t-green-soft); }
+    .t-scale__item--5 .t-scale__grade { color: #15803d; }
+    .t-scale__item--5 .t-scale__min   { color: #16a34a; }
+
+    .t-scale__item--4 { background: var(--t-primary-soft); }
+    .t-scale__item--4 .t-scale__grade { color: #1d4ed8; }
+    .t-scale__item--4 .t-scale__min   { color: #2563eb; }
+
+    .t-scale__item--3 { background: var(--t-orange-soft); }
+    .t-scale__item--3 .t-scale__grade { color: #b45309; }
+    .t-scale__item--3 .t-scale__min   { color: #d97706; }
+
+    .t-scale__item--2 { background: var(--t-red-soft); }
+    .t-scale__item--2 .t-scale__grade { color: #b91c1c; }
+    .t-scale__item--2 .t-scale__min   { color: #dc2626; }
+
+    /* ---------- FORM ---------- */
+    .t-field { display: block; margin-bottom: 16px; }
+
+    .t-field__label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--t-text);
+        font-size: 13px;
+        font-weight: 650;
+    }
+
+    .t-input,
+    .t-textarea {
+        width: 100%;
+        min-height: 44px;
+
+        padding: 10px 12px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 10px;
+
+        background: #fff;
+        color: var(--t-text);
+
+        font-size: 14px;
+        font-family: inherit;
+
+        outline: none;
+
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .t-textarea { min-height: 90px; resize: vertical; }
+
+    .t-input:focus,
+    .t-textarea:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* ---------- ANSWERS (варианты) ---------- */
+    .t-answers { display: flex; flex-direction: column; gap: 10px; }
+
+    .t-answer {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+
+        padding: 12px 14px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 12px;
+        background: #fbfcff;
+
+        transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .t-answer.is-correct {
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+    }
+
+    .t-answer__num {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #eff3fb;
+        color: var(--t-primary);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .t-answer.is-correct .t-answer__num {
+        background: var(--t-green-soft);
+        color: #15803d;
+    }
+
+    .t-answer__input {
+        width: 100%;
+        min-height: 40px;
+        padding: 8px 12px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 9px;
+
+        background: #fff;
+        color: var(--t-text);
+        font-size: 14px;
+        font-family: inherit;
+
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .t-answer__input:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .t-answer__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .t-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        padding: 6px 12px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 999px;
+
+        background: #fff;
+        color: var(--t-muted);
+
+        font-size: 12.5px;
+        font-weight: 650;
+
+        cursor: pointer;
+        white-space: nowrap;
+
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .t-switch:hover { border-color: #cbd5e1; }
+
+    .t-switch input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .t-switch__box {
+        display: grid;
+        place-items: center;
+
+        width: 18px;
+        height: 18px;
+
+        border: 2px solid #cbd5e1;
+        border-radius: 5px;
+        background: #fff;
+
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .t-switch__box svg {
+        width: 12px;
+        height: 12px;
+        color: #fff;
+        opacity: 0;
+        transform: scale(0.6);
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .t-switch input:checked + .t-switch__box {
+        background: var(--t-primary);
+        border-color: var(--t-primary);
+    }
+    .t-switch input:checked + .t-switch__box svg {
+        opacity: 1;
+        transform: scale(1);
+    }
+    .t-switch input:checked ~ .t-switch__text { color: var(--t-primary); }
+
+    .t-btn-icon {
+        display: inline-grid;
+        place-items: center;
+
+        width: 34px;
+        height: 34px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 8px;
+
+        background: #fff;
+        color: var(--t-muted);
+
+        cursor: pointer;
+
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .t-btn-icon svg { width: 15px; height: 15px; }
+    .t-btn-icon:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: var(--t-red);
+    }
+
+    /* ---------- QUESTIONS LIST ---------- */
+    .t-questions { display: flex; flex-direction: column; gap: 12px; padding: 22px; }
+
+    .t-question {
+        border: 1px solid var(--t-border);
+        border-radius: 14px;
+        background: #fbfcff;
+        overflow: hidden;
+
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .t-question:hover {
+        border-color: #c7d7fb;
+        box-shadow: 0 10px 24px rgba(37, 71, 143, 0.06);
+    }
+
+    .t-question__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        padding: 16px 18px;
+    }
+
+    .t-question__left {
+        display: flex;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .t-question__num {
+        display: grid;
+        place-items: center;
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--t-primary-soft);
+        color: var(--t-primary);
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .t-question__body { min-width: 0; }
+
+    .t-question__text {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 750;
+        color: var(--t-text);
+        line-height: 1.4;
+    }
+
+    .t-question__meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--t-muted);
+        font-size: 12px;
+        font-weight: 650;
+    }
+    .t-question__meta svg { width: 13px; height: 13px; color: #f59e0b; }
+
+    .t-question__actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .t-btn-xs {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+
+        min-height: 32px;
+        padding: 5px 12px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 8px;
+
+        background: #fff;
+        color: var(--t-text);
+
+        font-size: 12px;
+        font-weight: 650;
+        font-family: inherit;
+
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .t-btn-xs svg { width: 13px; height: 13px; }
+    .t-btn-xs:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .t-btn-xs--primary { color: var(--t-primary); }
+    .t-btn-xs--primary:hover { background: #eff3ff; border-color: #bfdbfe; }
+
+    .t-btn-xs--danger { color: var(--t-red); }
+    .t-btn-xs--danger:hover { background: #fef2f2; border-color: #fecaca; }
+
+    /* ответы в списке */
+    .t-question__answers {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        padding: 0 18px 16px;
+    }
+
+    .t-answer-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        padding: 8px 12px;
+
+        border-radius: 8px;
+
+        background: #fff;
+        border: 1px solid var(--t-border);
+
+        color: var(--t-text);
+        font-size: 13px;
+    }
+
+    .t-answer-line.is-correct {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #166534;
+    }
+
+    .t-answer-line__mark {
+        display: inline-grid;
+        place-items: center;
+
+        width: 16px;
+        height: 16px;
+
+        flex-shrink: 0;
+
+        border-radius: 50%;
+
+        background: #e2e8f0;
+        color: #64748b;
+
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .t-answer-line.is-correct .t-answer-line__mark {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    .t-answer-line__label {
+        color: #16a34a;
+        font-size: 11.5px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    /* пустое состояние */
+    .t-empty {
+        padding: 40px 22px;
+        text-align: center;
+        color: var(--t-muted);
+        font-size: 14px;
+    }
+
+    /* ---------- FOOTER ACTIONS ---------- */
+    .t-foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        padding: 18px 22px;
+
+        border-top: 1px solid var(--t-border);
+        background: #fbfcff;
+    }
+
+    .t-foot__hint {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        color: var(--t-muted);
+        font-size: 12.5px;
+    }
+    .t-foot__hint svg { width: 14px; height: 14px; color: #94a3b8; }
+
+    .t-foot__actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 1150px) {
+        .t-layout { grid-template-columns: 1fr; }
+        .t-sidebar { position: static; }
+        .t-hero-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .t-scale { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 767.98px) {
+        .t-layout { padding: 1rem 1rem 2rem; }
+        .t-head { flex-direction: column; align-items: stretch; }
+
+        .t-answer {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .t-answer__actions { justify-content: flex-end; }
+
+        .t-question__head { flex-direction: column; align-items: stretch; }
+        .t-question__actions { justify-content: flex-start; }
+
+        .t-card__body { padding: 18px; }
+        .t-questions { padding: 18px; }
+        .t-foot { flex-direction: column; align-items: stretch; }
+        .t-foot__hint { justify-content: center; }
+        .t-foot .t-btn { flex: 1; justify-content: center; }
+    }
+
+    @media (max-width: 575.98px) {
+        body::before,
+        body::after { display: none; }
+        .t-card__head { padding: 14px 16px; }
+        .t-hero-grid { grid-template-columns: 1fr; }
+        .t-scale { grid-template-columns: 1fr; }
+    }
+
+    :focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.35);
+        outline-offset: 2px;
+    }
+</style>
+
+
+<div class="t-layout">
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================= -->
+    <aside class="t-sidebar">
+
+        <div class="t-sidebar__brand">
+            <span class="t-sidebar__brand-mark">S</span>
+            <span>STS</span>
+        </div>
+
+        <nav>
+            <ul class="t-sidebar__nav">
+                <li>
+                    <a href="{{ url_for('main.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 11l9-8 9 8"/>
+                            <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
+                        </svg>
+                        Главная
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('teacher.dashboard') }}" class="is-active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="3"/>
+                            <path d="M8 9h8"/>
+                            <path d="M8 13h8"/>
+                            <path d="M8 17h5"/>
+                        </svg>
+                        Мои тесты
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('teacher.dashboard') }}#subjects">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                            <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Дисциплины
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('teacher.results') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 20V10"/>
+                            <path d="M10 20V4"/>
+                            <path d="M16 20v-8"/>
+                            <path d="M22 20H2"/>
+                        </svg>
+                        Результаты
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.logout') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <path d="M16 17l5-5-5-5"/>
+                            <path d="M21 12H9"/>
+                        </svg>
+                        Выход
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================= -->
+    <div class="t-main">
+
+        <!-- HEAD -->
+        <div class="t-head">
+
+            <div>
+                <span class="t-head__badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7z"/>
+                    </svg>
+                    Кабинет преподавателя
+                </span>
+
+                <h1>{{ test.title }}</h1>
+
+                {% if test.description %}
+                    <p>{{ test.description }}</p>
+                {% else %}
+                    <p>Настройки теста, добавление вопросов и управление ими.</p>
+                {% endif %}
+
+                <div class="t-head__actions">
+                    <a class="t-btn" href="{{ url_for('teacher.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5"/>
+                            <path d="M12 19l-7-7 7-7"/>
+                        </svg>
+                        К тестам
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- HERO STATS -->
+        <div class="t-hero-grid">
+
+            <div class="t-hero">
+                <div class="t-hero__icon t-hero__icon--blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5l3 2"/>
+                    </svg>
+                </div>
+                <div class="t-hero__body">
+                    <span class="t-hero__label">Время</span>
+                    <span class="t-hero__value">{{ test.time_limit }} мин.</span>
+                </div>
+            </div>
+
+            <div class="t-hero">
+                <div class="t-hero__icon t-hero__icon--green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/>
+                    </svg>
+                </div>
+                <div class="t-hero__body">
+                    <span class="t-hero__label">Проходной балл</span>
+                    <span class="t-hero__value">{{ test.passing_score }}%</span>
+                </div>
+            </div>
+
+            <div class="t-hero">
+                <div class="t-hero__icon t-hero__icon--orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 1 1-3-6.7"/>
+                        <path d="M21 4v5h-5"/>
+                    </svg>
+                </div>
+                <div class="t-hero__body">
+                    <span class="t-hero__label">Попытки</span>
+                    <span class="t-hero__value">
+                        {% if test.max_attempts %}{{ test.max_attempts }}{% else %}∞{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="t-hero">
+                <div class="t-hero__icon t-hero__icon--purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <div class="t-hero__body">
+                    <span class="t-hero__label">Вопросов</span>
+                    <span class="t-hero__value">{{ test.questions|length }}</span>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- =========================================================
+             SCALE
+        ========================================================= -->
+        <section class="t-card">
+
+            <div class="t-card__head">
+                <div class="t-card__head-left">
+                    <span class="t-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="t-card__title">Шкала оценок</h2>
+                        <p class="t-card__sub">Проценты, при которых студент получает оценку</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="t-card__body">
+
+                <div class="t-scale">
+
+                    {% for g in test.grades|sort(attribute="min_percent", reverse=true) %}
+
+                        <div class="t-scale__item t-scale__item--{{ g.grade }}">
+                            <div class="t-scale__grade">{{ g.grade }}</div>
+                            <div class="t-scale__min">от {{ g.min_percent }}%</div>
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================================
+             ADD QUESTION FORM
+        ========================================================= -->
+        <form method="post" class="t-card">
+
+            <div class="t-card__head">
+                <div class="t-card__head-left">
+                    <span class="t-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14"/>
+                            <path d="M5 12h14"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="t-card__title">Добавить вопрос</h2>
+                        <p class="t-card__sub">Введите текст, баллы и варианты ответа</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="t-card__body">
+
+                <label class="t-field">
+                    <span class="t-field__label">Текст вопроса</span>
+                    <textarea
+                        class="t-textarea"
+                        name="question_text"
+                        placeholder="Введите текст вопроса"
+                        required
+                    ></textarea>
+                </label>
+
+                <label class="t-field" style="max-width: 220px;">
+                    <span class="t-field__label">Баллы за вопрос</span>
+                    <input
+                        class="t-input"
+                        type="number"
+                        name="points"
+                        value="1"
+                        min="1"
+                        required
+                    >
+                </label>
+
+                <!-- Разделитель -->
+                <div class="t-field" style="margin-bottom: 8px;">
+                    <span class="t-field__label">Варианты ответа</span>
+                    <span style="color:var(--t-muted); font-size:12px;">
+                        Отметьте галочкой все правильные варианты
+                    </span>
+                </div>
+
+                <div id="answers-container" class="t-answers">
+
+                    <div class="t-answer">
+                        <span class="t-answer__num">1</span>
+                        <input
+                            class="t-answer__input"
+                            type="text"
+                            name="option_text"
+                            placeholder="Вариант 1"
+                            required
+                        >
+                        <div class="t-answer__actions">
+                            <label class="t-switch">
+                                <input class="correct-checkbox" type="checkbox" name="correct" value="0">
+                                <span class="t-switch__box">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M5 12l5 5L20 7"/>
+                                    </svg>
+                                </span>
+                                <span class="t-switch__text">Правильный</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="t-answer">
+                        <span class="t-answer__num">2</span>
+                        <input
+                            class="t-answer__input"
+                            type="text"
+                            name="option_text"
+                            placeholder="Вариант 2"
+                            required
+                        >
+                        <div class="t-answer__actions">
+                            <label class="t-switch">
+                                <input class="correct-checkbox" type="checkbox" name="correct" value="1">
+                                <span class="t-switch__box">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M5 12l5 5L20 7"/>
+                                    </svg>
+                                </span>
+                                <span class="t-switch__text">Правильный</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="t-btn"
+                    id="add-answer"
+                    style="margin-top:12px;"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14"/>
+                        <path d="M5 12h14"/>
+                    </svg>
+                    Добавить вариант
+                </button>
+
+            </div>
+
+            <div class="t-foot">
+                <div class="t-foot__hint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 16v-4"/>
+                        <path d="M12 8h.01"/>
+                    </svg>
+                    Минимум 2 варианта, хотя бы один правильный
+                </div>
+
+                <div class="t-foot__actions">
+                    <button class="t-btn t-btn--primary" type="submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12l5 5L20 7"/>
+                        </svg>
+                        Добавить вопрос
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+
+        <!-- =========================================================
+             QUESTIONS LIST
+        ========================================================= -->
+        <section class="t-card">
+
+            <div class="t-card__head">
+                <div class="t-card__head-left">
+                    <span class="t-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3"/>
+                            <path d="M12 17h.01"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="t-card__title">Вопросы</h2>
+                        <p class="t-card__sub">
+                            Всего: {{ test.questions|length }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if test.questions and test.status != 'published' %}
+                    <form method="post"
+                          action="{{ url_for('teacher.publish_test', test_id=test.id) }}"
+                          style="display:inline;">
+                        <button class="t-btn t-btn--success" type="submit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12l5 5L20 7"/>
+                            </svg>
+                            Опубликовать тест
+                        </button>
+                    </form>
+                {% elif test.status == 'published' %}
+                    <span class="t-btn" style="cursor:default;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12l5 5L20 7"/>
+                        </svg>
+                        Тест опубликован
+                    </span>
+                {% endif %}
+            </div>
+
+            {% if test.questions %}
+
+                <div class="t-questions">
+
+                    {% for q in test.questions|sort(attribute='question_order') %}
+
+                        <div class="t-question">
+
+                            <div class="t-question__head">
+
+                                <div class="t-question__left">
+                                    <span class="t-question__num">{{ loop.index }}</span>
+                                    <div class="t-question__body">
+                                        <h3 class="t-question__text">{{ q.text }}</h3>
+                                        <span class="t-question__meta">
+                                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/>
+                                            </svg>
+                                            {{ q.points }}
+                                            {% if q.points == 1 %}балл{% elif q.points < 5 %}балла{% else %}баллов{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="t-question__actions">
+
+                                    <a class="t-btn-xs t-btn-xs--primary"
+                                       href="{{ url_for('teacher.edit_question', test_id=test.id, question_id=q.id) }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 20h9"/>
+                                            <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/>
+                                        </svg>
+                                        Редактировать
+                                    </a>
+
+                                    <form method="post"
+                                          action="{{ url_for('teacher.delete_question', test_id=test.id, question_id=q.id) }}"
+                                          onsubmit="return confirm('Удалить этот вопрос?');"
+                                          style="display:inline;">
+                                        <button type="submit" class="t-btn-xs t-btn-xs--danger">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18"/>
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+                                            </svg>
+                                            Удалить
+                                        </button>
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                            <div class="t-question__answers">
+
+                                {% for a in q.answers|sort(attribute='answer_order') %}
+
+                                    <div class="t-answer-line {% if a.is_correct %}is-correct{% endif %}">
+                                        <span class="t-answer-line__mark">
+                                            {% if a.is_correct %}✓{% else %}○{% endif %}
+                                        </span>
+                                        <span>{{ a.text }}</span>
+                                        {% if a.is_correct %}
+                                            <span class="t-answer-line__label">правильный</span>
+                                        {% endif %}
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="t-empty">
+                    Вопросов пока нет. Добавьте первый вопрос в форме выше.
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<script>
+(function () {
+    'use strict';
+
+    var container = document.getElementById('answers-container');
+    var addButton = document.getElementById('add-answer');
+
+    if (!container || !addButton) return;
+
+    var answerNumber = container.querySelectorAll('.t-answer').length;
+
+    function updateIndexes() {
+        var rows = container.querySelectorAll('.t-answer');
+
+        rows.forEach(function (row, index) {
+            var num = row.querySelector('.t-answer__num');
+            if (num) num.textContent = index + 1;
+
+            var checkbox = row.querySelector('.correct-checkbox');
+            if (checkbox) checkbox.value = index;
+
+            row.classList.toggle('is-correct', checkbox && checkbox.checked);
+        });
+
+        answerNumber = rows.length;
+    }
+
+    function createAnswer() {
+        var row = document.createElement('div');
+        row.className = 't-answer';
+
+        row.innerHTML = '' +
+            '<span class="t-answer__num"></span>' +
+            '<input class="t-answer__input" type="text" name="option_text" placeholder="Вариант" required>' +
+            '<div class="t-answer__actions">' +
+                '<label class="t-switch">' +
+                    '<input class="correct-checkbox" type="checkbox" name="correct">' +
+                    '<span class="t-switch__box">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+                            '<path d="M5 12l5 5L20 7"/>' +
+                        '</svg>' +
+                    '</span>' +
+                    '<span class="t-switch__text">Правильный</span>' +
+                '</label>' +
+                '<button type="button" class="t-btn-icon remove-answer" title="Удалить вариант">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path d="M3 6h18"/>' +
+                        '<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
+                        '<path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>' +
+                    '</svg>' +
+                '</button>' +
+            '</div>';
+
+        container.appendChild(row);
+        updateIndexes();
+    }
+
+    addButton.addEventListener('click', createAnswer);
+
+    container.addEventListener('click', function (event) {
+        var removeBtn = event.target.closest('.remove-answer');
+        if (!removeBtn) return;
+
+        var rows = container.querySelectorAll('.t-answer');
+        if (rows.length <= 2) {
+            alert('Должно остаться минимум два варианта ответа.');
+            return;
+        }
+
+        removeBtn.closest('.t-answer').remove();
+        updateIndexes();
+    });
+
+    container.addEventListener('change', function (event) {
+        if (!event.target.classList.contains('correct-checkbox')) return;
+        var row = event.target.closest('.t-answer');
+        if (row) row.classList.toggle('is-correct', event.target.checked);
+    });
+
+    updateIndexes();
+})();
+</script>
+
+{% endblock %}

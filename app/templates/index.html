@@ -1,0 +1,1496 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Главная — Student Testing</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --app-bg: #eef2f9;
+            --app-surface: #ffffff;
+            --app-text: #172033;
+            --app-muted: #687386;
+            --app-border: #e4e9f0;
+            --app-primary: #2563eb;
+            --app-primary-dark: #1d4ed8;
+            --app-primary-soft: #dbe5fb;
+
+            --app-teal: #14b8a6;
+            --app-teal-soft: #d1fae5;
+
+            --app-indigo: #6366f1;
+            --app-indigo-soft: #e0e7ff;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { min-height: 100%; }
+
+        body {
+            margin: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            background: var(--app-bg);
+            color: var(--app-text);
+
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            background: #dbe5fb;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            top: -180px;
+            left: -180px;
+            width: 520px;
+            height: 520px;
+        }
+
+        body::after {
+            bottom: -140px;
+            right: -140px;
+            width: 420px;
+            height: 420px;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---------------------------------------------------------
+           NAVBAR
+        --------------------------------------------------------- */
+        .app-navbar {
+            background: #1b2233;
+            min-height: 68px;
+        }
+
+        .app-navbar__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            min-height: 68px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .app-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            color: #fff;
+            text-decoration: none;
+
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .app-brand__mark {
+            display: grid;
+            place-items: center;
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            background: #2563eb;
+            color: #fff;
+
+            font-size: 1.15rem;
+            font-weight: 900;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-username {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .nav-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 38px;
+            padding: 6px 18px;
+
+            border-radius: 9px;
+            border: 1px solid transparent;
+
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .nav-action--ghost {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+        .nav-action--ghost:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .nav-action--primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+        .nav-action--primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            color: #fff;
+        }
+
+        /* ---------------------------------------------------------
+           LAYOUT
+        --------------------------------------------------------- */
+        .page-wrap {
+            flex: 1 1 auto;
+
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* ---------------------------------------------------------
+           HERO
+        --------------------------------------------------------- */
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+            align-items: center;
+            gap: 3rem;
+
+            margin-bottom: 4rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            padding: 0.4rem 0.9rem;
+
+            border-radius: 999px;
+
+            background: #fff;
+            color: #2563eb;
+
+            font-size: 0.85rem;
+            font-weight: 600;
+
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.10);
+        }
+
+        .hero-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .hero h1 {
+            margin: 1.25rem 0 1rem;
+
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            color: var(--app-text);
+        }
+
+        .hero p {
+            margin: 0 0 1.75rem;
+
+            max-width: 520px;
+
+            color: var(--app-muted);
+
+            font-size: 1.02rem;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+
+            min-height: 46px;
+            padding: 0.65rem 1.4rem;
+
+            border: 1px solid transparent;
+            border-radius: 10px;
+
+            font-size: 0.95rem;
+            font-weight: 650;
+            font-family: inherit;
+
+            cursor: pointer;
+            text-decoration: none;
+
+            transition: background 0.15s ease, box-shadow 0.15s ease,
+                border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn svg { width: 18px; height: 18px; }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-ghost {
+            background: #fff;
+            border-color: var(--app-border);
+            color: var(--app-text);
+        }
+        .btn-ghost:hover {
+            border-color: #cbd5e1;
+            color: var(--app-text);
+            box-shadow: 0 8px 18px rgba(23, 32, 51, 0.08);
+        }
+
+        .btn:active { transform: translateY(1px); }
+
+        /* ---------------------------------------------------------
+           HERO ILLUSTRATION
+        --------------------------------------------------------- */
+        .hero-illustration {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            margin-left: auto;
+        }
+
+        .hero-illustration svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* =========================================================
+           АНИМАЦИИ
+           ========================================================= */
+
+        @keyframes heroFloat {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-6px); }
+        }
+
+        @keyframes lineCycle {
+            0%   { opacity: 0; transform: translateY(-12px); }
+            12%  { opacity: 1; transform: translateY(0); }
+            78%  { opacity: 1; transform: translateY(0); }
+            90%  { opacity: 0; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(0); }
+        }
+
+        @keyframes questionCycle {
+            0%   { opacity: 0; transform: translateY(-25px); }
+            15%  { opacity: 1; transform: translateY(0); }
+            78%  { opacity: 1; transform: translateY(0); }
+            90%  { opacity: 0; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(0); }
+        }
+
+        @keyframes answerCycle {
+            0%   { opacity: 0; transform: translateX(-15px); }
+            15%  { opacity: 1; transform: translateX(0); }
+            78%  { opacity: 1; transform: translateX(0); }
+            90%  { opacity: 0; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(0); }
+        }
+
+        @keyframes checkboxCycle {
+            0%   { opacity: 0; }
+            10%  { opacity: 1; }
+            78%  { opacity: 1; }
+            90%  { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes checkDrawCycle {
+            0%   { stroke-dashoffset: 30; }
+            15%  { stroke-dashoffset: 30; }
+            30%  { stroke-dashoffset: 0; }
+            78%  { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 30; }
+        }
+
+        @keyframes resultCircleCycle {
+            0%   { opacity: 0; transform: scale(0.3); }
+            15%  { opacity: 1; transform: scale(1.08); }
+            25%  { opacity: 1; transform: scale(1); }
+            78%  { opacity: 1; transform: scale(1); }
+            90%  { opacity: 0; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+
+        @keyframes bigCheckDrawCycle {
+            0%   { stroke-dashoffset: 60; }
+            20%  { stroke-dashoffset: 60; }
+            45%  { stroke-dashoffset: 0; }
+            78%  { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 60; }
+        }
+
+        @keyframes progressCycle {
+            0%   { width: 0; }
+            35%  { width: var(--target-width, 78px); }
+            78%  { width: var(--target-width, 78px); }
+            90%  { width: 0; }
+            100% { width: 0; }
+        }
+
+        @keyframes leafWave {
+            0%, 100% { transform: rotate(-25deg); }
+            50%      { transform: rotate(-18deg); }
+        }
+        @keyframes leafWave2 {
+            0%, 100% { transform: rotate(25deg); }
+            50%      { transform: rotate(18deg); }
+        }
+
+        @keyframes cursorBlink {
+            0%, 50%   { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .screen {
+            opacity: 0;
+            animation: screenCycle 12s infinite;
+        }
+        .screen-1 { animation-delay: 0s; }
+        .screen-2 { animation-delay: 4s; }
+        .screen-3 { animation-delay: 8s; }
+
+        @keyframes screenCycle {
+            0%      { opacity: 0; }
+            2%      { opacity: 1; }
+            31%     { opacity: 1; }
+            33%     { opacity: 0; }
+            100%    { opacity: 0; }
+        }
+
+        .hero-laptop {
+            animation: heroFloat 4s ease-in-out infinite;
+        }
+
+        .hero-leaf-left {
+            transform-origin: -14px 10px;
+            animation: leafWave 3s ease-in-out infinite;
+        }
+        .hero-leaf-right {
+            transform-origin: 14px 20px;
+            animation: leafWave2 3s ease-in-out 0.4s infinite;
+        }
+
+        .hero-cursor {
+            animation: cursorBlink 1s step-end infinite;
+        }
+
+        .hero-line-1 { animation: lineCycle 4s 0.05s infinite ease-out; }
+        .hero-line-2 { animation: lineCycle 4s 0.30s infinite ease-out; }
+        .hero-line-3 { animation: lineCycle 4s 0.55s infinite ease-out; }
+        .hero-line-4 { animation: lineCycle 4s 0.80s infinite ease-out; }
+
+        .hero-check-1,
+        .hero-check-3 {
+            opacity: 0;
+            animation: checkboxCycle 4s infinite ease-out;
+        }
+        .hero-check-1 { animation-delay: 0.55s; }
+        .hero-check-3 { animation-delay: 1.05s; }
+
+        .hero-check-1 path,
+        .hero-check-3 path {
+            stroke-dasharray: 20;
+            stroke-dashoffset: 20;
+            animation: checkDrawCycle 4s infinite ease-out;
+        }
+        .hero-check-1 path { animation-delay: 0.55s; }
+        .hero-check-3 path { animation-delay: 1.05s; }
+
+        .progress-fill-1 {
+            --target-width: 78px;
+            animation: progressCycle 4s 0.2s infinite ease-out;
+        }
+
+        .q-question { animation: questionCycle 4s 0.05s infinite ease-out; }
+
+        .q-answer-1 { animation: answerCycle 4s 0.55s infinite ease-out; }
+        .q-answer-2 { animation: answerCycle 4s 0.80s infinite ease-out; }
+        .q-answer-3 { animation: answerCycle 4s 1.05s infinite ease-out; }
+        .q-answer-4 { animation: answerCycle 4s 1.30s infinite ease-out; }
+
+        .q-checkbox-2,
+        .q-checkbox-3 {
+            opacity: 0;
+            animation: checkboxCycle 4s infinite ease-out;
+        }
+        .q-checkbox-2 { animation-delay: 1.05s; }
+        .q-checkbox-3 { animation-delay: 1.30s; }
+
+        .q-check,
+        .q-check-2 {
+            stroke-dasharray: 20;
+            stroke-dashoffset: 20;
+            animation: checkDrawCycle 4s infinite ease-out;
+        }
+        .q-check   { animation-delay: 1.05s; }
+        .q-check-2 { animation-delay: 1.30s; }
+
+        .progress-fill-1b {
+            --target-width: 78px;
+            animation: progressCycle 4s 0.2s infinite ease-out;
+        }
+
+        .hero-check-circle {
+            transform-origin: 270px 180px;
+            transform-box: fill-box;
+            animation: resultCircleCycle 4s 0.2s infinite ease-out;
+        }
+
+        .hero-check-mark {
+            stroke-dasharray: 60;
+            stroke-dashoffset: 60;
+            animation: bigCheckDrawCycle 4s 0.3s infinite ease-out;
+        }
+
+        .progress-fill-2 {
+            --target-width: 108px;
+            animation: progressCycle 4s 0.2s infinite ease-out;
+        }
+
+        /* =========================================================
+           FEATURE CARDS — усиленные hover-эффекты
+           ========================================================= */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.25rem;
+
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+
+            padding: 1.75rem;
+
+            background: #fff;
+            border-radius: 18px;
+
+            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
+
+            overflow: hidden;
+
+            transition:
+                box-shadow 0.3s ease,
+                transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Цветная подсветка при наведении — зависит от типа карточки */
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background: linear-gradient(
+                160deg,
+                var(--card-tint, transparent) 0%,
+                transparent 60%
+            );
+
+            opacity: 0;
+
+            transition: opacity 0.35s ease;
+
+            pointer-events: none;
+        }
+
+        .feature-card:nth-child(1) { --card-tint: rgba(37, 99, 235, 0.07); }
+        .feature-card:nth-child(2) { --card-tint: rgba(20, 184, 166, 0.07); }
+        .feature-card:nth-child(3) { --card-tint: rgba(99, 102, 241, 0.07); }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .feature-card:nth-child(1):hover {
+            box-shadow: 0 24px 48px rgba(37, 99, 235, 0.20);
+        }
+        .feature-card:nth-child(2):hover {
+            box-shadow: 0 24px 48px rgba(20, 184, 166, 0.20);
+        }
+        .feature-card:nth-child(3):hover {
+            box-shadow: 0 24px 48px rgba(99, 102, 241, 0.20);
+        }
+
+        /* Все элементы поверх подсветки */
+        .feature-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Иконка: крутится и подсвечивается */
+        .feature-icon {
+            display: grid;
+            place-items: center;
+
+            width: 54px;
+            height: 54px;
+
+            margin-bottom: 1.25rem;
+
+            border-radius: 14px;
+
+            color: #fff;
+
+            transition:
+                transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.35s ease;
+        }
+
+        .feature-icon svg {
+            width: 26px;
+            height: 26px;
+            transition: transform 0.4s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: rotate(-10deg) scale(1.12);
+        }
+
+        .feature-card:hover .feature-icon svg {
+            transform: scale(1.1);
+        }
+
+        .feature-icon--blue {
+            background: #2563eb;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+        }
+        .feature-card:hover .feature-icon--blue {
+            box-shadow: 0 12px 26px rgba(37, 99, 235, 0.5);
+        }
+
+        .feature-icon--teal {
+            background: #14b8a6;
+            box-shadow: 0 8px 18px rgba(20, 184, 166, 0.28);
+        }
+        .feature-card:hover .feature-icon--teal {
+            box-shadow: 0 12px 26px rgba(20, 184, 166, 0.5);
+        }
+
+        .feature-icon--indigo {
+            background: #6366f1;
+            box-shadow: 0 8px 18px rgba(99, 102, 241, 0.28);
+        }
+        .feature-card:hover .feature-icon--indigo {
+            box-shadow: 0 12px 26px rgba(99, 102, 241, 0.5);
+        }
+
+        .feature-card h3 {
+            margin: 0 0 0.55rem;
+
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+
+            transition: color 0.25s ease;
+        }
+
+        .feature-card:nth-child(1):hover h3 { color: #1d4ed8; }
+        .feature-card:nth-child(2):hover h3 { color: #0d9488; }
+        .feature-card:nth-child(3):hover h3 { color: #4f46e5; }
+
+        .feature-card > p {
+            margin: 0 0 1.1rem;
+
+            color: var(--app-muted);
+
+            font-size: 0.94rem;
+            line-height: 1.55;
+        }
+
+        .feature-list {
+            list-style: none;
+
+            margin: 0 0 1.4rem;
+            padding: 0;
+
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+
+            color: var(--app-text);
+
+            font-size: 0.92rem;
+
+            transition:
+                transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.25s ease;
+        }
+
+        /* Плавный сдвиг строк по очереди при hover */
+        .feature-card:hover .feature-list li {
+            transform: translateX(6px);
+        }
+        .feature-card:hover .feature-list li:nth-child(1) { transition-delay: 0.00s; }
+        .feature-card:hover .feature-list li:nth-child(2) { transition-delay: 0.05s; }
+        .feature-card:hover .feature-list li:nth-child(3) { transition-delay: 0.10s; }
+        .feature-card:hover .feature-list li:nth-child(4) { transition-delay: 0.15s; }
+
+        .feature-list li svg {
+            flex-shrink: 0;
+
+            width: 16px;
+            height: 16px;
+
+            color: #22c55e;
+
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .feature-card:hover .feature-list li svg {
+            transform: scale(1.15);
+        }
+
+        /* Стрелка: круг растёт, заливается цветом, едет вправо */
+        .feature-arrow {
+            display: grid;
+            place-items: center;
+
+            width: 38px;
+            height: 38px;
+
+            margin-top: auto;
+
+            border-radius: 50%;
+
+            background: #eff3fb;
+            color: #2563eb;
+
+            text-decoration: none;
+
+            transition:
+                background 0.3s ease,
+                color 0.3s ease,
+                transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+        }
+
+        .feature-arrow svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.35s ease;
+        }
+
+        .feature-card:nth-child(1):hover .feature-arrow {
+            background: #2563eb;
+            color: #fff;
+            transform: translateX(6px) scale(1.08);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.4);
+        }
+        .feature-card:nth-child(2):hover .feature-arrow {
+            background: #14b8a6;
+            color: #fff;
+            transform: translateX(6px) scale(1.08);
+            box-shadow: 0 8px 18px rgba(20, 184, 166, 0.4);
+        }
+        .feature-card:nth-child(3):hover .feature-arrow {
+            background: #6366f1;
+            color: #fff;
+            transform: translateX(6px) scale(1.08);
+            box-shadow: 0 8px 18px rgba(99, 102, 241, 0.4);
+        }
+
+        .feature-card:hover .feature-arrow svg {
+            transform: translateX(2px);
+        }
+
+        /* ---------------------------------------------------------
+           HOW IT WORKS
+        --------------------------------------------------------- */
+        .how-card {
+            padding: 2rem;
+
+            background: #fff;
+            border-radius: 18px;
+
+            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
+        }
+
+        .how-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            margin-bottom: 1.75rem;
+        }
+
+        .how-icon {
+            display: grid;
+            place-items: center;
+
+            width: 48px;
+            height: 48px;
+
+            flex-shrink: 0;
+
+            border-radius: 14px;
+
+            background: #eff3fb;
+            color: #2563eb;
+        }
+
+        .how-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .how-header h2 {
+            margin: 0;
+
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .how-header p {
+            margin: 0.15rem 0 0;
+
+            color: var(--app-muted);
+
+            font-size: 0.92rem;
+        }
+
+        .how-steps {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 0.9rem;
+        }
+
+        .step__num {
+            display: grid;
+            place-items: center;
+
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            background: #2563eb;
+            color: #fff;
+
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .step__body h4 {
+            margin: 0 0 0.25rem;
+
+            font-size: 1rem;
+            font-weight: 750;
+        }
+
+        .step__body p {
+            margin: 0;
+
+            color: var(--app-muted);
+
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .step__arrow {
+            color: #cbd5e1;
+        }
+
+        .step__arrow svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* ---------------------------------------------------------
+           FOOTER
+        --------------------------------------------------------- */
+        .app-footer {
+            border-top: 1px solid var(--app-border);
+            background: rgba(255, 255, 255, 0.75);
+
+            color: var(--app-muted);
+
+            font-size: 0.85rem;
+        }
+
+        .app-footer__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.1rem 1.5rem;
+        }
+
+        /* ---------------------------------------------------------
+           RESPONSIVE
+        --------------------------------------------------------- */
+        @media (max-width: 991.98px) {
+
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-illustration {
+                max-width: 440px;
+                margin: 0 auto;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .how-steps {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+
+            .step__arrow {
+                display: none;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+
+            .app-navbar__inner { padding: 0 1rem; }
+
+            .app-brand { font-size: 1rem; }
+
+            .app-brand__mark {
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                font-size: 1rem;
+            }
+
+            .nav-action {
+                padding: 5px 12px;
+                font-size: 0.82rem;
+            }
+
+            .navbar-username {
+                max-width: 100px;
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .page-wrap {
+                padding: 1.75rem 1rem 2.5rem;
+            }
+
+            .hero h1 {
+                font-size: 1.9rem;
+            }
+
+            .hero p {
+                font-size: 0.95rem;
+            }
+
+            .hero-actions .btn {
+                width: 100%;
+            }
+
+            .feature-card {
+                padding: 1.35rem;
+            }
+
+            .how-card {
+                padding: 1.35rem;
+            }
+
+            .app-footer__inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.35rem;
+            }
+
+            body::before,
+            body::after { display: none; }
+        }
+
+        /* ---------------------------------------------------------
+           ACCESSIBILITY
+        --------------------------------------------------------- */
+        button, a, input {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.35);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition: none !important;
+                animation: none !important;
+            }
+
+            .screen { opacity: 1 !important; }
+            .screen-2,
+            .screen-3 { opacity: 0 !important; }
+
+            .hero-check-1,
+            .hero-check-3,
+            .q-checkbox-2,
+            .q-checkbox-3 { opacity: 1 !important; }
+
+            .hero-check-1 path,
+            .hero-check-3 path,
+            .q-check,
+            .q-check-2,
+            .hero-check-mark {
+                stroke-dashoffset: 0 !important;
+            }
+
+            .progress-fill-1,
+            .progress-fill-1b { width: 78px !important; }
+            .progress-fill-2  { width: 108px !important; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="app-navbar">
+    <div class="app-navbar__inner">
+
+        <a class="app-brand" href="{{ url_for('main.index') }}">
+            <span class="app-brand__mark">S</span>
+            <span>STS</span>
+        </a>
+
+        <div class="navbar-user">
+
+            {% if current_user.is_authenticated %}
+
+                <span class="navbar-username">
+                    {{ current_user.first_name }} {{ current_user.last_name }}
+                </span>
+
+                <a class="nav-action nav-action--ghost"
+                   href="{{ url_for('auth.logout') }}">
+                    Выйти
+                </a>
+
+            {% else %}
+
+                <a class="nav-action nav-action--ghost"
+                   href="{{ url_for('auth.login') }}">
+                    Войти
+                </a>
+
+                <a class="nav-action nav-action--primary"
+                   href="{{ url_for('auth.register') }}">
+                    Регистрация
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</nav>
+
+
+<main class="page-wrap">
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="hero-text">
+
+            <span class="hero-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10L12 5 2 10l10 5 10-5z"/>
+                    <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+                </svg>
+                Student Testing System
+            </span>
+
+            <h1>Система тестирования знаний студентов</h1>
+
+            <p>
+                Удобная платформа для создания, проведения и проверки
+                учебных тестов. Преподаватели создают тесты и вопросы,
+                а студенты проходят их и получают результаты.
+            </p>
+
+            <div class="hero-actions">
+
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == "teacher" %}
+                        <a class="btn btn-primary"
+                           href="{{ url_for('teacher.dashboard') }}">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            Кабинет преподавателя
+                        </a>
+                    {% else %}
+                        <a class="btn btn-primary"
+                           href="{{ url_for('student.dashboard') }}">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            Перейти к тестам
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a class="btn btn-primary"
+                       href="{{ url_for('auth.login') }}">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        Начать работу
+                    </a>
+
+                    <a class="btn btn-ghost"
+                       href="{{ url_for('auth.register') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14"/>
+                            <path d="M5 12h14"/>
+                        </svg>
+                        Создать аккаунт
+                    </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ИЛЛЮСТРАЦИЯ -->
+        <div class="hero-illustration" aria-hidden="true">
+            <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+
+                <circle cx="120" cy="110" r="80" fill="#dbe5fb" opacity="0.55"/>
+                <circle cx="470" cy="90"  r="55" fill="#e0e7ff" opacity="0.55"/>
+                <circle cx="440" cy="320" r="70" fill="#d1fae5" opacity="0.45"/>
+
+                <g class="hero-laptop">
+
+                    <rect x="90" y="90" width="380" height="230" rx="16" fill="#1e40af"/>
+                    <rect x="105" y="105" width="350" height="200" rx="10" fill="#ffffff"/>
+
+                    <defs>
+                        <clipPath id="screen-clip">
+                            <rect x="105" y="105" width="350" height="200" rx="10"/>
+                        </clipPath>
+
+                        <clipPath id="progress-clip-1">
+                            <rect x="130" y="270" width="120" height="6" rx="3"/>
+                        </clipPath>
+
+                        <clipPath id="progress-clip-2">
+                            <rect x="130" y="276" width="120" height="6" rx="3"/>
+                        </clipPath>
+
+                        <clipPath id="progress-clip-3">
+                            <rect x="130" y="276" width="120" height="6" rx="3"/>
+                        </clipPath>
+                    </defs>
+
+                    <g clip-path="url(#screen-clip)">
+
+                        <g class="screen screen-1">
+                            <rect x="130" y="125" width="130" height="12" rx="6" fill="#c7d2fe"/>
+
+                            <g class="hero-line-1">
+                                <rect x="130" y="155" width="18" height="18" rx="4" fill="#2563eb"/>
+                                <g class="hero-check-1">
+                                    <path d="M134 164l4 4 7-7" stroke="#fff" stroke-width="2"
+                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </g>
+                                <rect x="158" y="158" width="140" height="10" rx="5" fill="#e2e8f0"/>
+                            </g>
+
+                            <g class="hero-line-2">
+                                <rect x="130" y="185" width="18" height="18" rx="4"
+                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                                <rect x="158" y="188" width="170" height="10" rx="5" fill="#e2e8f0"/>
+                            </g>
+
+                            <g class="hero-line-3">
+                                <rect x="130" y="215" width="18" height="18" rx="4" fill="#2563eb"/>
+                                <g class="hero-check-3">
+                                    <path d="M134 224l4 4 7-7" stroke="#fff" stroke-width="2"
+                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </g>
+                                <rect x="158" y="218" width="130" height="10" rx="5" fill="#e2e8f0"/>
+                            </g>
+
+                            <g class="hero-line-4">
+                                <rect x="130" y="245" width="18" height="18" rx="4"
+                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                                <rect x="158" y="248" width="110" height="10" rx="5" fill="#e2e8f0"/>
+                                <rect class="hero-cursor" x="272" y="245" width="2" height="18" fill="#2563eb"/>
+                            </g>
+
+                            <rect x="130" y="270" width="120" height="6" rx="3" fill="#e2e8f0"/>
+                            <g clip-path="url(#progress-clip-1)">
+                                <rect class="progress-fill-1" x="130" y="270" width="0" height="6" rx="3" fill="#22c55e"/>
+                            </g>
+                        </g>
+
+
+                        <g class="screen screen-2">
+                            <g class="q-question">
+                                <rect x="130" y="128" width="26" height="26" rx="8" fill="#dbeafe"/>
+                                <text x="143" y="146"
+                                      font-family="Inter, sans-serif"
+                                      font-size="13" font-weight="800"
+                                      fill="#2563eb" text-anchor="middle">1</text>
+
+                                <rect x="166" y="132" width="180" height="8" rx="4" fill="#cbd5e1"/>
+                                <rect x="166" y="146" width="120" height="8" rx="4" fill="#cbd5e1"/>
+                            </g>
+
+                            <g class="q-answer-1">
+                                <rect x="130" y="176" width="14" height="14" rx="4"
+                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                                <rect x="154" y="178" width="140" height="10" rx="5" fill="#e2e8f0"/>
+                            </g>
+
+                            <g class="q-answer-2">
+                                <g class="q-checkbox-2">
+                                    <rect x="130" y="201" width="14" height="14" rx="4"
+                                          fill="#2563eb" stroke="#2563eb" stroke-width="2"/>
+                                    <path class="q-check" d="M133 208l3 3 5-5"
+                                          stroke="#fff" stroke-width="2"
+                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </g>
+                                <rect x="154" y="203" width="160" height="10" rx="5" fill="#c7d2fe"/>
+                            </g>
+
+                            <g class="q-answer-3">
+                                <g class="q-checkbox-3">
+                                    <rect x="130" y="229" width="14" height="14" rx="4"
+                                          fill="#2563eb" stroke="#2563eb" stroke-width="2"/>
+                                    <path class="q-check-2" d="M133 236l3 3 5-5"
+                                          stroke="#fff" stroke-width="2"
+                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </g>
+                                <rect x="154" y="231" width="120" height="10" rx="5" fill="#c7d2fe"/>
+                            </g>
+
+                            <g class="q-answer-4">
+                                <rect x="130" y="257" width="14" height="14" rx="4"
+                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                                <rect x="154" y="259" width="150" height="10" rx="5" fill="#e2e8f0"/>
+                            </g>
+
+                            <rect x="130" y="276" width="120" height="6" rx="3" fill="#e2e8f0"/>
+                            <g clip-path="url(#progress-clip-2)">
+                                <rect class="progress-fill-1b" x="130" y="276" width="0" height="6" rx="3" fill="#2563eb"/>
+                            </g>
+                        </g>
+
+
+                        <g class="screen screen-3">
+                            <g class="hero-check-circle">
+                                <circle cx="270" cy="180" r="35" fill="#22c55e"/>
+                            </g>
+                            <path class="hero-check-mark" d="M255 180l11 11 21-21"
+                                  stroke="#fff" stroke-width="4" fill="none"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+
+                            <rect x="205" y="235" width="130" height="12" rx="6" fill="#dcfce7"/>
+                            <rect x="225" y="252" width="90"  height="8"  rx="4" fill="#e2e8f0"/>
+                        </g>
+
+                    </g>
+
+                </g>
+
+                <rect x="80" y="320" width="400" height="14" rx="7" fill="#0f172a"/>
+
+                <g transform="translate(430 60)">
+                    <rect x="-40" y="-40" width="80" height="80" rx="16" fill="#2563eb"/>
+                    <path d="M-25 -8L0 -20 25 -8 0 4z" fill="#fff"/>
+                    <path d="M-15 -2v10c0 4 6 7 15 7s15-3 15-7V-2" stroke="#fff"
+                          stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M25 -8v10" stroke="#fff" stroke-width="3"
+                          stroke-linecap="round"/>
+                </g>
+
+                <g transform="translate(480 240)">
+                    <path d="M0 60v-40" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+
+                    <ellipse class="hero-leaf-left"
+                             cx="-14" cy="10" rx="14" ry="22"
+                             fill="#14b8a6" opacity="0.85"
+                             transform="rotate(-25 -14 10)"/>
+
+                    <ellipse class="hero-leaf-right"
+                             cx="14" cy="20" rx="14" ry="22"
+                             fill="#14b8a6" opacity="0.7"
+                             transform="rotate(25 14 20)"/>
+
+                    <path d="M-20 60h40l-6 26h-28z" fill="#c7d2fe"/>
+                </g>
+            </svg>
+        </div>
+
+    </section>
+
+
+    <!-- FEATURES -->
+    <section class="feature-grid">
+
+        <article class="feature-card">
+            <div class="feature-icon feature-icon--blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="3.5"/>
+                    <path d="M4.5 19.5a7.5 7.5 0 0 1 15 0"/>
+                </svg>
+            </div>
+            <h3>Для преподавателей</h3>
+            <p>
+                Создавайте собственные тесты, добавляйте вопросы,
+                настраивайте количество попыток и систему оценивания.
+            </p>
+            <ul class="feature-list">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Создание тестов</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Несколько правильных ответов</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Настройка времени</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Публикация тестов</li>
+            </ul>
+            <a class="feature-arrow" href="{{ url_for('auth.login') }}" aria-label="Войти">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+                </svg>
+            </a>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon feature-icon--teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10L12 5 2 10l10 5 10-5z"/>
+                    <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+                </svg>
+            </div>
+            <h3>Для студентов</h3>
+            <p>
+                Проходите доступные тесты, следите за оставшимися
+                попытками и получайте результат сразу после завершения.
+            </p>
+            <ul class="feature-list">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Тесты по дисциплинам</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Ограничение времени</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Повторные попытки</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Автоматическая оценка</li>
+            </ul>
+            <a class="feature-arrow" href="{{ url_for('auth.login') }}" aria-label="Войти">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+                </svg>
+            </a>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon feature-icon--indigo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 20V10"/>
+                    <path d="M10 20V4"/>
+                    <path d="M16 20v-8"/>
+                    <path d="M22 20H2"/>
+                </svg>
+            </div>
+            <h3>Результаты</h3>
+            <p>
+                Система автоматически проверяет ответы и сохраняет
+                результаты прохождения тестов.
+            </p>
+            <ul class="feature-list">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Процент выполнения</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Итоговая оценка</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> Лучший результат</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg> История попыток</li>
+            </ul>
+            <a class="feature-arrow" href="{{ url_for('auth.login') }}" aria-label="Войти">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+                </svg>
+            </a>
+        </article>
+
+    </section>
+
+
+    <!-- HOW IT WORKS -->
+    <section class="how-card">
+
+        <div class="how-header">
+            <div class="how-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6"/>
+                    <path d="M10 22h4"/>
+                    <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/>
+                </svg>
+            </div>
+            <div>
+                <h2>Как это работает?</h2>
+                <p>Преподаватель создаёт тест и добавляет вопросы с вариантами ответов.</p>
+            </div>
+        </div>
+
+        <div class="how-steps">
+
+            <div class="step">
+                <span class="step__num">1</span>
+                <div class="step__body">
+                    <h4>Создание</h4>
+                    <p>Преподаватель создаёт тест и добавляет вопросы с вариантами ответов.</p>
+                </div>
+            </div>
+
+            <span class="step__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+                </svg>
+            </span>
+
+            <div class="step">
+                <span class="step__num">2</span>
+                <div class="step__body">
+                    <h4>Прохождение</h4>
+                    <p>Студент выбирает дисциплину и проходит опубликованный тест в установленное время.</p>
+                </div>
+            </div>
+
+            <span class="step__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>
+                </svg>
+            </span>
+
+            <div class="step">
+                <span class="step__num">3</span>
+                <div class="step__body">
+                    <h4>Результат</h4>
+                    <p>После завершения система проверяет ответы, рассчитывает процент и выставляет оценку.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="app-footer">
+    <div class="app-footer__inner">
+        <span>Student Testing System</span>
+        <span>Система тестирования знаний</span>
+    </div>
+</footer>
+
+</body>
+</html>

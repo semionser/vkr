@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Кабинет студента — Student Testing</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --app-bg: #eef2f9;
+            --app-surface: #ffffff;
+            --app-text: #172033;
+            --app-muted: #687386;
+            --app-border: #e4e9f0;
+            --app-primary: #2563eb;
+            --app-primary-dark: #1d4ed8;
+            --app-primary-soft: #dbe5fb;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { min-height: 100%; }
+
+        body {
+            margin: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            background: var(--app-bg);
+            color: var(--app-text);
+
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            background: #dbe5fb;
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            top: -180px;
+            left: -180px;
+            width: 520px;
+            height: 520px;
+        }
+
+        body::after {
+            bottom: -140px;
+            right: -140px;
+            width: 420px;
+            height: 420px;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---------------------------------------------------------
+           NAVBAR
+        --------------------------------------------------------- */
+        .app-navbar {
+            background: #1b2233;
+            min-height: 68px;
+        }
+
+        .app-navbar__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            min-height: 68px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .app-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            color: #fff;
+            text-decoration: none;
+
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .app-brand__mark {
+            display: grid;
+            place-items: center;
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            background: #2563eb;
+            color: #fff;
+
+            font-size: 1.15rem;
+            font-weight: 900;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 4px 14px 4px 4px;
+
+            border-radius: 999px;
+
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .user-chip__avatar {
+            display: grid;
+            place-items: center;
+
+            width: 36px;
+            height: 36px;
+
+            border-radius: 50%;
+
+            background: #2563eb;
+            color: #fff;
+
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .user-chip__name {
+            color: #fff;
+
+            font-size: 0.9rem;
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-chip__caret {
+            color: rgba(255, 255, 255, 0.6);
+
+            width: 14px;
+            height: 14px;
+        }
+
+        .logout-btn {
+            display: grid;
+            place-items: center;
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+
+            background: transparent;
+            color: #fff;
+
+            text-decoration: none;
+
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+        }
+
+        .logout-btn svg { width: 18px; height: 18px; }
+
+        /* ---------------------------------------------------------
+           PAGE
+        --------------------------------------------------------- */
+        .page-wrap {
+            flex: 1 1 auto;
+
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .page-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+
+            margin-bottom: 2rem;
+        }
+
+        .page-head__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            margin-bottom: 0.75rem;
+
+            color: #2563eb;
+
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .page-head__badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .page-head h1 {
+            margin: 0 0 0.5rem;
+
+            font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .page-head p {
+            margin: 0;
+
+            max-width: 480px;
+
+            color: var(--app-muted);
+
+            font-size: 0.98rem;
+            line-height: 1.55;
+        }
+
+        .btn-history {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+
+            min-height: 44px;
+            padding: 0.6rem 1.2rem;
+
+            border: 1px solid var(--app-primary);
+            border-radius: 10px;
+
+            background: #fff;
+            color: var(--app-primary);
+
+            font-size: 0.92rem;
+            font-weight: 650;
+            text-decoration: none;
+
+            white-space: nowrap;
+
+            transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn-history:hover {
+            background: var(--app-primary);
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-history svg { width: 18px; height: 18px; }
+
+        /* ---------------------------------------------------------
+           SUBJECT CARD
+        --------------------------------------------------------- */
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.25rem;
+
+            margin-bottom: 2.5rem;
+        }
+
+        .subject-card {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.25rem;
+
+            width: 100%;
+
+            padding: 1.5rem;
+
+            border: 0;
+            border-radius: 18px;
+
+            background: #fff;
+            color: inherit;
+
+            text-align: left;
+
+            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
+
+            cursor: pointer;
+
+            font-family: inherit;
+
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 38px rgba(37, 71, 143, 0.12);
+        }
+
+        .subject-card:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.35);
+            outline-offset: 2px;
+        }
+
+        .subject-card__icon {
+            display: grid;
+            place-items: center;
+
+            width: 56px;
+            height: 56px;
+
+            border-radius: 16px;
+
+            background: linear-gradient(135deg, #6366f1, #2563eb);
+            color: #fff;
+
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28);
+        }
+
+        .subject-card__icon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .subject-card__body h3 {
+            margin: 0 0 0.35rem;
+
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: var(--app-text);
+        }
+
+        .subject-card__body p {
+            margin: 0 0 1rem;
+
+            color: var(--app-muted);
+
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .subject-card__btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            min-height: 38px;
+            padding: 0.5rem 1rem;
+
+            border-radius: 9px;
+
+            background: var(--app-primary);
+            color: #fff;
+
+            font-size: 0.88rem;
+            font-weight: 650;
+
+            pointer-events: none;
+
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .subject-card:hover .subject-card__btn {
+            background: var(--app-primary-dark);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+        }
+
+        .subject-card__btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .subject-card__hint {
+            display: block;
+
+            margin-top: 0.6rem;
+
+            color: var(--app-muted);
+
+            font-size: 0.82rem;
+        }
+
+        /* ---------------------------------------------------------
+           RESULTS PANEL
+        --------------------------------------------------------- */
+        .results-panel {
+            padding: 1.75rem;
+
+            background: #fff;
+            border-radius: 18px;
+
+            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
+        }
+
+        .results-panel__head {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            margin-bottom: 1.5rem;
+        }
+
+        .results-panel__icon {
+            display: grid;
+            place-items: center;
+
+            width: 48px;
+            height: 48px;
+
+            flex-shrink: 0;
+
+            border-radius: 14px;
+
+            background: #eff3fb;
+            color: #2563eb;
+        }
+
+        .results-panel__icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .results-panel__head h2 {
+            margin: 0;
+
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .results-panel__head p {
+            margin: 0.15rem 0 0;
+
+            color: var(--app-muted);
+
+            font-size: 0.88rem;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table thead th {
+            padding: 0.85rem 1rem;
+
+            background: #f8fafc;
+            color: #596579;
+
+            font-size: 0.78rem;
+            font-weight: 750;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+
+            text-align: left;
+
+            white-space: nowrap;
+        }
+
+        .results-table thead th:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+        .results-table thead th:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .results-table tbody tr {
+            border-bottom: 1px solid var(--app-border);
+            transition: background 0.15s ease;
+        }
+
+        .results-table tbody tr:last-child { border-bottom: 0; }
+        .results-table tbody tr:hover { background: #f8fafc; }
+
+        .results-table tbody td {
+            padding: 1rem;
+
+            font-size: 0.92rem;
+            vertical-align: middle;
+        }
+
+        .test-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .test-cell__icon {
+            display: grid;
+            place-items: center;
+
+            width: 36px;
+            height: 36px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            background: #eff3fb;
+            color: #2563eb;
+        }
+
+        .test-cell__icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .test-cell__name {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+
+            font-weight: 650;
+        }
+
+        .badge-best {
+            display: inline-flex;
+            align-items: center;
+
+            padding: 0.2rem 0.6rem;
+
+            border-radius: 999px;
+
+            background: #dcfce7;
+            color: #15803d;
+
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .grade-pill {
+            display: inline-grid;
+            place-items: center;
+
+            min-width: 42px;
+            height: 30px;
+            padding: 0 0.7rem;
+
+            border-radius: 999px;
+
+            font-size: 0.88rem;
+            font-weight: 750;
+        }
+
+        .grade-pill--2 { background: #fee2e2; color: #b91c1c; }
+        .grade-pill--3 { background: #fef3c7; color: #92400e; }
+        .grade-pill--4 { background: #dbeafe; color: #1e40af; }
+        .grade-pill--5 { background: #dcfce7; color: #15803d; }
+
+        .result-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+
+            padding: 0.45rem 0.9rem;
+
+            border: 1px solid var(--app-primary);
+            border-radius: 8px;
+
+            background: #fff;
+            color: var(--app-primary);
+
+            font-size: 0.85rem;
+            font-weight: 650;
+            text-decoration: none;
+
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .result-btn:hover {
+            background: var(--app-primary);
+            color: #fff;
+        }
+
+        .result-btn svg { width: 14px; height: 14px; }
+
+        .empty-state {
+            padding: 2.5rem 1.5rem;
+
+            text-align: center;
+
+            color: var(--app-muted);
+
+            font-size: 0.95rem;
+        }
+
+        /* =========================================================
+           CUSTOM MODAL
+           ========================================================= */
+        .custom-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1050;
+
+            display: none;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 1.5rem;
+        }
+
+        .custom-modal.is-open {
+            display: flex;
+        }
+
+        .custom-modal__backdrop {
+            position: absolute;
+            inset: 0;
+
+            background: rgba(15, 23, 42, 0.55);
+
+            animation: customModalFade 0.2s ease;
+        }
+
+        .custom-modal__dialog {
+            position: relative;
+            z-index: 1;
+
+            width: 100%;
+            max-width: 1100px;
+            max-height: calc(100vh - 3rem);
+
+            display: flex;
+            flex-direction: column;
+
+            animation: customModalSlide 0.2s ease;
+        }
+
+        .custom-modal__content {
+            display: flex;
+            flex-direction: column;
+
+            max-height: calc(100vh - 3rem);
+
+            background: #fff;
+            border-radius: 18px;
+
+            overflow: hidden;
+
+            box-shadow: 0 25px 70px rgba(15, 23, 42, 0.30);
+        }
+
+        .custom-modal__header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+
+            padding: 1.25rem 1.5rem;
+
+            border-bottom: 1px solid var(--app-border);
+        }
+
+        .custom-modal__title {
+            margin: 0;
+
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .custom-modal__close {
+            display: grid;
+            place-items: center;
+
+            width: 32px;
+            height: 32px;
+
+            border: 0;
+            border-radius: 8px;
+
+            background: transparent;
+            color: #64748b;
+
+            font-size: 1rem;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .custom-modal__close:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .custom-modal__body {
+            flex: 1 1 auto;
+
+            padding: 1.5rem;
+
+            overflow-y: auto;
+        }
+
+        .custom-modal__footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+
+            padding: 1rem 1.5rem;
+
+            border-top: 1px solid var(--app-border);
+        }
+
+        body.modal-lock {
+            overflow: hidden;
+        }
+
+        @keyframes customModalFade {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes customModalSlide {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------------------------------------------------------
+           FOOTER
+        --------------------------------------------------------- */
+        .app-footer {
+            border-top: 1px solid var(--app-border);
+            background: rgba(255, 255, 255, 0.75);
+
+            color: var(--app-muted);
+
+            font-size: 0.85rem;
+        }
+
+        .app-footer__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.1rem 1.5rem;
+        }
+
+        /* ---------------------------------------------------------
+           RESPONSIVE
+        --------------------------------------------------------- */
+        @media (max-width: 767.98px) {
+
+            .page-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-history { justify-content: center; }
+
+            .subject-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .subject-card__icon { margin: 0 auto; }
+
+            .results-panel { padding: 1.25rem; }
+
+            .results-table thead th:nth-child(2),
+            .results-table tbody td:nth-child(2) { display: none; }
+
+            .custom-modal { padding: 0.75rem; }
+        }
+
+        @media (max-width: 575.98px) {
+
+            .app-navbar__inner { padding: 0 1rem; }
+            .app-brand { font-size: 1rem; }
+            .app-brand__mark { width: 36px; height: 36px; border-radius: 10px; font-size: 1rem; }
+
+            .user-chip__name { max-width: 100px; }
+
+            .page-wrap { padding: 1.5rem 1rem 2.5rem; }
+
+            .results-table thead th:nth-child(3),
+            .results-table tbody td:nth-child(3) { display: none; }
+
+            .app-footer__inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.35rem;
+            }
+
+            body::before,
+            body::after { display: none; }
+
+            .custom-modal { padding: 0.5rem; }
+            .custom-modal__body { padding: 1rem; }
+            .custom-modal__header,
+            .custom-modal__footer { padding: 1rem; }
+        }
+
+        :focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.35);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     NAVBAR
+     ========================================================= -->
+<nav class="app-navbar">
+    <div class="app-navbar__inner">
+
+        <a class="app-brand" href="{{ url_for('main.index') }}">
+            <span class="app-brand__mark">S</span>
+            <span>STS</span>
+        </a>
+
+        <div class="navbar-user">
+
+            <div class="user-chip">
+                <span class="user-chip__avatar">
+                    {{ (current_user.first_name[0] ~ current_user.last_name[0])|upper }}
+                </span>
+                <span class="user-chip__name">
+                    {{ current_user.first_name }} {{ current_user.last_name }}
+                </span>
+                <svg class="user-chip__caret" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.4"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </div>
+
+            <a class="logout-btn" href="{{ url_for('auth.logout') }}"
+               aria-label="Выйти">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <path d="M16 17l5-5-5-5"/>
+                    <path d="M21 12H9"/>
+                </svg>
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<main class="page-wrap">
+
+    <!-- =========================================================
+         HEAD
+         ========================================================= -->
+    <div class="page-head">
+
+        <div>
+
+            <span class="page-head__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="3.5"/>
+                    <path d="M4.5 19.5a7.5 7.5 0 0 1 15 0"/>
+                </svg>
+                Личный кабинет
+            </span>
+
+            <h1>Кабинет студента</h1>
+
+            <p>
+                Здесь вы можете проходить тесты, просматривать результаты
+                и отслеживать свой прогресс в обучении.
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('student.history') }}" class="btn-history">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20V10"/>
+                <path d="M10 20V4"/>
+                <path d="M16 20v-8"/>
+                <path d="M22 20H2"/>
+            </svg>
+            История результатов
+        </a>
+
+    </div>
+
+
+    <!-- =========================================================
+         SUBJECTS
+         ========================================================= -->
+    {% if disciplines %}
+
+        <div class="subject-grid">
+
+            {% for item in disciplines %}
+
+                {% set subject = item.subject %}
+                {% set tests = item.tests %}
+
+                <button
+                    type="button"
+                    class="subject-card"
+                    data-open-modal="subjectModal{{ subject.id }}"
+                    aria-label="Открыть тесты по дисциплине {{ subject.name }}"
+                >
+
+                    <div class="subject-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="3"/>
+                            <path d="M8 9h8"/>
+                            <path d="M8 13h8"/>
+                            <path d="M8 17h5"/>
+                        </svg>
+                    </div>
+
+                    <div class="subject-card__body">
+
+                        <h3>{{ subject.name }}</h3>
+
+                        <p>
+                            {% if subject.description %}
+                                {{ subject.description }}
+                            {% else %}
+                                Простые тесты для студентов для проверки знаний
+                            {% endif %}
+                        </p>
+
+                        <span class="subject-card__btn">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            {{ tests|length }}
+                            {% if tests|length == 1 %}
+                                тест
+                            {% elif tests|length < 5 %}
+                                теста
+                            {% else %}
+                                тестов
+                            {% endif %}
+                        </span>
+
+                        <span class="subject-card__hint">
+                            Нажмите, чтобы посмотреть тесты
+                        </span>
+
+                    </div>
+
+                </button>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =========================================================
+             CUSTOM MODALS
+             ========================================================= -->
+        {% for item in disciplines %}
+
+            {% set subject = item.subject %}
+            {% set tests = item.tests %}
+
+            <div class="custom-modal" id="subjectModal{{ subject.id }}" aria-hidden="true">
+
+                <div class="custom-modal__backdrop" data-close-modal></div>
+
+                <div class="custom-modal__dialog" role="dialog" aria-modal="true">
+
+                    <div class="custom-modal__content">
+
+                        <div class="custom-modal__header">
+
+                            <div>
+                                <h4 class="custom-modal__title">
+                                    {{ subject.name }}
+                                </h4>
+                                <small class="text-muted">Доступные тесты</small>
+                            </div>
+
+                            <button type="button"
+                                    class="custom-modal__close"
+                                    data-close-modal
+                                    aria-label="Закрыть">✕</button>
+
+                        </div>
+
+
+                        <div class="custom-modal__body">
+
+                            <div class="row">
+
+                                {% for test_item in tests %}
+
+                                    {% set test = test_item.test %}
+
+                                    <div class="col-md-6 col-lg-4 mb-3">
+
+                                        <div class="card h-100 shadow-sm">
+
+                                            <div class="card-body">
+
+                                                <h5 class="card-title">{{ test.title }}</h5>
+
+                                                {% if test.description %}
+                                                    <p class="text-muted">{{ test.description }}</p>
+                                                {% else %}
+                                                    <p class="text-muted">Описание отсутствует</p>
+                                                {% endif %}
+
+                                                <hr>
+
+                                                <p class="mb-1">
+                                                    <b>Время:</b> {{ test.time_limit }} мин.
+                                                </p>
+
+                                                <p class="mb-1">
+                                                    <b>Вопросов:</b> {{ test.questions|length }}
+                                                </p>
+
+                                                {% if test.max_attempts is none %}
+                                                    <p class="mb-1">
+                                                        <b>Попытки:</b> Неограниченно
+                                                    </p>
+                                                {% else %}
+                                                    <p class="mb-1">
+                                                        <b>Попытки:</b>
+                                                        {{ test_item.attempts_count }} / {{ test.max_attempts }}
+                                                    </p>
+
+                                                    {% if test_item.attempts_left > 0 %}
+                                                        <p class="text-muted">
+                                                            Осталось: {{ test_item.attempts_left }}
+                                                        </p>
+                                                    {% endif %}
+                                                {% endif %}
+
+                                                {% if test_item.best_attempt %}
+                                                    <div class="alert alert-success py-2 mt-3">
+                                                        <small>
+                                                            <b>Лучший результат:</b>
+                                                            {{ test_item.best_attempt.percentage }}%
+                                                            · оценка {{ test_item.best_attempt.grade }}
+                                                        </small>
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-3">
+
+                                                    {% if test_item.in_progress_attempt %}
+                                                        <a href="{{ url_for('student.take_test', attempt_id=test_item.in_progress_attempt.id) }}"
+                                                           class="btn btn-warning w-100">
+                                                            Продолжить тест
+                                                        </a>
+
+                                                    {% elif test.max_attempts is none or test_item.attempts_left > 0 %}
+                                                        <a href="{{ url_for('student.start_test', test_id=test.id) }}"
+                                                           class="btn btn-primary w-100">
+                                                            Начать тест
+                                                        </a>
+
+                                                    {% else %}
+                                                        <button class="btn btn-secondary w-100" disabled>
+                                                            Попытки закончились
+                                                        </button>
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="custom-modal__footer">
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    data-close-modal>
+                                Закрыть
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="results-panel">
+            <div class="empty-state">
+                Сейчас нет дисциплин с доступными тестами.
+            </div>
+        </div>
+
+    {% endif %}
+
+
+    <!-- =========================================================
+         RECENT RESULTS
+         ========================================================= -->
+    {% if attempts %}
+
+        <section class="results-panel">
+
+            <div class="results-panel__head">
+
+                <div class="results-panel__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5l3 2"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <h2>Последние результаты</h2>
+                    <p>Ваши последние попытки прохождения тестов</p>
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="results-table">
+
+                    <thead>
+                        <tr>
+                            <th>Тест</th>
+                            <th>Дата</th>
+                            <th>Результат</th>
+                            <th>Оценка</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for attempt in attempts %}
+
+                            <tr>
+
+                                <td>
+                                    <div class="test-cell">
+                                        <span class="test-cell__icon">
+                                            <svg viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="9"/>
+                                                <path d="M12 3a9 9 0 0 0-9 9h9z"/>
+                                                <path d="M12 12l6.5 3.5"/>
+                                            </svg>
+                                        </span>
+                                        <div class="test-cell__name">
+                                            <span>{{ attempt.test.title }}</span>
+                                            {% if attempt.is_best %}
+                                                <span class="badge-best">Лучший</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ attempt.completed_at.strftime('%d.%m.%Y %H:%M') }}
+                                </td>
+
+                                <td>
+                                    <b>{{ attempt.percentage }}%</b>
+                                    <span style="color:var(--app-muted);">
+                                        ({{ attempt.score }}/{{ attempt.max_score }})
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="grade-pill grade-pill--{{ attempt.grade }}">
+                                        {{ attempt.grade }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a href="{{ url_for('student.result', attempt_id=attempt.id) }}"
+                                       class="result-btn">
+                                        <svg viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor"
+                                             stroke-width="1.8"
+                                             stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                        Результат
+                                        <svg viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor"
+                                             stroke-width="2.2"
+                                             stroke-linecap="round"
+                                             stroke-linejoin="round">
+                                            <path d="M9 6l6 6-6 6"/>
+                                        </svg>
+                                    </a>
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+</main>
+
+
+
+
+
+<!-- =========================================================
+     CUSTOM MODAL SCRIPT
+     ========================================================= -->
+<script>
+    (function () {
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-lock');
+        }
+
+        function closeModal(modal) {
+            if (!modal) return;
+
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+
+            if (!document.querySelector('.custom-modal.is-open')) {
+                document.body.classList.remove('modal-lock');
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            const opener = e.target.closest('[data-open-modal]');
+            if (opener) {
+                e.preventDefault();
+                openModal(opener.getAttribute('data-open-modal'));
+                return;
+            }
+
+            const closer = e.target.closest('[data-close-modal]');
+            if (closer) {
+                e.preventDefault();
+                closeModal(closer.closest('.custom-modal'));
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.custom-modal.is-open')
+                    .forEach(closeModal);
+            }
+        });
+    })();
+</script>
+
+</body>
+</html>

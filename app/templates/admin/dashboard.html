@@ -1,0 +1,2079 @@
+{% extends "base.html" %}
+
+{% block title %}Панель администратора{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --adm-bg: #eef2f9;
+        --adm-card: #ffffff;
+        --adm-text: #172033;
+        --adm-muted: #687386;
+        --adm-border: #e4e9f0;
+
+        --adm-primary: #2563eb;
+        --adm-primary-dark: #1d4ed8;
+        --adm-primary-soft: #dbeafe;
+
+        --adm-green: #22c55e;
+        --adm-green-soft: #dcfce7;
+
+        --adm-orange: #f59e0b;
+        --adm-orange-soft: #fef3c7;
+
+        --adm-purple: #7c3aed;
+        --adm-purple-soft: #ede9fe;
+
+        --adm-red: #dc2626;
+        --adm-red-soft: #fee2e2;
+
+        --adm-radius: 18px;
+        --adm-shadow: 0 10px 30px rgba(37, 71, 143, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    /* =========================================================
+       BODY / BACKGROUND
+    ========================================================= */
+    body {
+        background:
+            radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.07), transparent 28rem),
+            radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.05), transparent 25rem),
+            var(--adm-bg);
+
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+        content: "";
+        position: fixed;
+        border-radius: 50%;
+        background: #dbe5fb;
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    body::before { top: -180px; left: -180px; width: 520px; height: 520px; }
+    body::after  { bottom: -140px; right: -140px; width: 420px; height: 420px; }
+
+    .adm-page {
+        position: relative;
+        z-index: 1;
+
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 24px 24px 48px;
+
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+            BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--adm-text);
+    }
+
+    /* =========================================================
+       HEAD
+    ========================================================= */
+    .adm-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .adm-title {
+        margin: 0 0 6px;
+        font-size: clamp(24px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--adm-text);
+    }
+
+    .adm-sub { margin: 0; color: var(--adm-muted); font-size: 14px; }
+
+    .adm-clock {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+
+        padding: 12px 16px;
+
+        background: #fff;
+        border: 1px solid var(--adm-border);
+        border-radius: 14px;
+        box-shadow: var(--adm-shadow);
+        white-space: nowrap;
+    }
+
+    .adm-clock__icon {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: var(--adm-primary-soft);
+        color: var(--adm-primary);
+    }
+    .adm-clock__icon svg { width: 20px; height: 20px; }
+
+    .adm-clock__body { display: flex; flex-direction: column; line-height: 1.2; }
+    .adm-clock__label { color: var(--adm-muted); font-size: 11px; font-weight: 650; }
+    .adm-clock__value { color: var(--adm-text); font-size: 14px; font-weight: 800; }
+    .adm-clock__sub { color: var(--adm-muted); font-size: 11px; margin-top: 2px; }
+
+    /* =========================================================
+       STATS
+    ========================================================= */
+    .adm-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .adm-stat {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid var(--adm-border);
+        border-radius: var(--adm-radius);
+        box-shadow: var(--adm-shadow);
+    }
+
+    .adm-stat__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+    }
+    .adm-stat__icon svg { width: 22px; height: 22px; }
+
+    .adm-stat__icon--blue   { background: var(--adm-primary-soft); color: var(--adm-primary); }
+    .adm-stat__icon--green  { background: var(--adm-green-soft);   color: #16a34a; }
+    .adm-stat__icon--purple { background: var(--adm-purple-soft);  color: var(--adm-purple); }
+    .adm-stat__icon--red    { background: var(--adm-red-soft);     color: var(--adm-red); }
+
+    .adm-stat__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .adm-stat__label { color: var(--adm-muted); font-size: 12px; font-weight: 650; }
+    .adm-stat__value { color: var(--adm-text); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+
+    .adm-stat__trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 2px;
+        color: #16a34a;
+        font-size: 11px;
+        font-weight: 650;
+    }
+    .adm-stat__trend--muted { color: var(--adm-muted); }
+    .adm-stat__trend svg { width: 12px; height: 12px; }
+
+    /* =========================================================
+       CARD
+    ========================================================= */
+    .adm-card {
+        background: #fff;
+        border: 1px solid var(--adm-border);
+        border-radius: var(--adm-radius);
+        box-shadow: var(--adm-shadow);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .adm-card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--adm-border);
+    }
+
+    .adm-card__head-left { display: flex; align-items: center; gap: 14px; }
+
+    .adm-card__head-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #eff3fb;
+        color: var(--adm-primary);
+    }
+    .adm-card__head-icon svg { width: 22px; height: 22px; }
+
+    .adm-card__title { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: var(--adm-text); }
+    .adm-card__sub { margin: 3px 0 0; color: var(--adm-muted); font-size: 12.5px; }
+
+    .adm-card__head-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .adm-card__body { padding: 20px 24px; }
+
+    /* =========================================================
+       SEARCH
+    ========================================================= */
+    .adm-search { position: relative; display: flex; align-items: center; }
+
+    .adm-search svg {
+        position: absolute;
+        left: 12px;
+        width: 16px;
+        height: 16px;
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    .adm-search input {
+        width: 240px;
+        min-height: 40px;
+        padding: 8px 14px 8px 36px;
+        border: 1px solid var(--adm-border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--adm-text);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .adm-search input:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* =========================================================
+       BUTTONS
+    ========================================================= */
+    .adm-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 40px;
+        padding: 8px 16px;
+        border: 1px solid var(--adm-border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--adm-text);
+        font-size: 13px;
+        font-weight: 650;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background 0.15s ease, border-color 0.15s ease,
+            color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .adm-btn svg { width: 14px; height: 14px; }
+    .adm-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .adm-btn--primary {
+        background: var(--adm-primary);
+        border-color: var(--adm-primary);
+        color: #fff;
+    }
+    .adm-btn--primary:hover {
+        background: var(--adm-primary-dark);
+        border-color: var(--adm-primary-dark);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+    }
+
+    .adm-btn--danger { color: var(--adm-red); }
+    .adm-btn--danger:hover { background: #fef2f2; border-color: #fecaca; }
+
+    .adm-icon-btn {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--adm-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--adm-muted);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .adm-icon-btn svg { width: 15px; height: 15px; }
+    .adm-icon-btn:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--adm-text); }
+    .adm-icon-btn--danger { color: var(--adm-red); }
+    .adm-icon-btn--danger:hover { background: #fef2f2; border-color: #fecaca; color: var(--adm-red); }
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+    .adm-table-wrap { width: 100%; overflow-x: auto; }
+
+    .adm-table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .adm-table th {
+        padding: 12px 20px;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        text-align: left;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--adm-border);
+    }
+
+    .adm-table td {
+        padding: 14px 20px;
+        font-size: 13.5px;
+        border-bottom: 1px solid #f1f4f9;
+        vertical-align: middle;
+    }
+
+    .adm-table tbody tr:last-child td { border-bottom: 0; }
+    .adm-table tbody tr:hover { background: #fafbff; }
+
+    .adm-user { display: flex; align-items: center; gap: 12px; }
+
+    .adm-user__avatar {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 800;
+        font-size: 14px;
+    }
+
+    .av-admin   { background: linear-gradient(135deg, #7c3aed, #6366f1); }
+    .av-teacher { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+    .av-student { background: linear-gradient(135deg, #2563eb, #4f46e5); }
+
+    .adm-user__body { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+    .adm-user__name { font-weight: 700; color: var(--adm-text); }
+    .adm-user__id   { color: var(--adm-muted); font-size: 11px; }
+
+    /* =========================================================
+       BADGES
+    ========================================================= */
+    .adm-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .adm-badge--admin   { background: var(--adm-purple-soft); color: #6d28d9; }
+    .adm-badge--teacher { background: var(--adm-orange-soft); color: #c2410c; }
+    .adm-badge--student { background: var(--adm-primary-soft); color: #1d4ed8; }
+    .adm-badge--active  { background: var(--adm-green-soft); color: #15803d; }
+    .adm-badge--blocked { background: var(--adm-red-soft); color: #b91c1c; }
+
+    /* =========================================================
+       ACTIONS
+    ========================================================= */
+    .adm-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+    .adm-select {
+        min-height: 34px;
+        padding: 5px 26px 5px 10px;
+        border: 1px solid var(--adm-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--adm-text);
+        font-size: 12px;
+        font-weight: 650;
+        font-family: inherit;
+        cursor: pointer;
+    }
+    .adm-select:focus {
+        outline: none;
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* =========================================================
+       ANALYTICS
+    ========================================================= */
+    .adm-analytics {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    /* --- распределение оценок --- */
+    .adm-grade-bars { display: flex; flex-direction: column; gap: 14px; }
+
+    .adm-grade-bar__top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+
+    .adm-grade-bar__badge {
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 13px;
+    }
+
+    .adm-grade-bar__badge--green  { background: var(--adm-green-soft); color: #15803d; }
+    .adm-grade-bar__badge--blue   { background: var(--adm-primary-soft); color: #1d4ed8; }
+    .adm-grade-bar__badge--orange { background: var(--adm-orange-soft); color: #b45309; }
+    .adm-grade-bar__badge--red    { background: var(--adm-red-soft); color: #b91c1c; }
+
+    .adm-grade-bar__label {
+        flex: 1;
+        color: var(--adm-text);
+        font-size: 13px;
+        font-weight: 650;
+    }
+    .adm-grade-bar__count { color: var(--adm-text); font-size: 14px; font-weight: 800; }
+
+    .adm-grade-bar__track {
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: #eef2f8;
+        overflow: hidden;
+    }
+
+    .adm-grade-bar__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+        transition: width 0.6s ease;
+    }
+    .adm-grade-bar__fill--green  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .adm-grade-bar__fill--blue   { background: linear-gradient(90deg, #2563eb, #1d4ed8); }
+    .adm-grade-bar__fill--orange { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .adm-grade-bar__fill--red    { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+
+    /* --- топ студентов --- */
+    .adm-top-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .adm-top-row {
+        display: grid;
+        grid-template-columns: 30px 36px 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--adm-border);
+        border-radius: 12px;
+        background: #fbfcff;
+        transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .adm-top-row:hover { border-color: #c7d7fb; background: #f1f5ff; }
+
+    .adm-top-row__rank {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+    .adm-top-row__rank--1 { background: #fef3c7; color: #b45309; }
+    .adm-top-row__rank--2 { background: #e2e8f0; color: #475569; }
+    .adm-top-row__rank--3 { background: #fee2e2; color: #b45309; }
+    .adm-top-row__rank--default { background: #f1f5f9; color: #64748b; }
+
+    .adm-top-row__avatar {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+    }
+
+    .adm-top-row__body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .adm-top-row__name {
+        color: var(--adm-text);
+        font-weight: 700;
+        font-size: 13.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .adm-top-row__sub { color: var(--adm-muted); font-size: 11px; }
+
+    .adm-top-row__stat {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1px;
+        min-width: 60px;
+    }
+    .adm-top-row__stat b { color: var(--adm-text); font-size: 14px; font-weight: 800; }
+    .adm-top-row__stat span { color: var(--adm-muted); font-size: 10.5px; font-weight: 650; }
+    .adm-top-row__stat--pct b { color: #16a34a; }
+
+    /* --- статистика по дисциплинам --- */
+    .adm-subject-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .adm-subject-stat {
+        padding: 14px 16px;
+        border: 1px solid var(--adm-border);
+        border-radius: 12px;
+        background: #fbfcff;
+    }
+
+    .adm-subject-stat__head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .adm-subject-stat__name {
+        color: var(--adm-text);
+        font-size: 13.5px;
+        font-weight: 750;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .adm-subject-stat__pct {
+        color: var(--adm-text);
+        font-size: 15px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .adm-subject-stat__track {
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: #eef2f8;
+        overflow: hidden;
+    }
+
+    .adm-subject-stat__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+        transition: width 0.6s ease;
+    }
+    .adm-subject-stat__fill--green  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .adm-subject-stat__fill--blue   { background: linear-gradient(90deg, #2563eb, #1d4ed8); }
+    .adm-subject-stat__fill--orange { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .adm-subject-stat__fill--red    { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+
+    .adm-subject-stat__foot {
+        margin-top: 8px;
+        color: var(--adm-muted);
+        font-size: 11.5px;
+        font-weight: 650;
+    }
+
+    /* --- пользователи по ролям --- */
+    .adm-role-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .adm-role-row {
+        display: grid;
+        grid-template-columns: 12px 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--adm-border);
+    }
+    .adm-role-row:last-child { border-bottom: 0; }
+
+    .adm-role-row__dot { width: 10px; height: 10px; border-radius: 50%; }
+    .adm-role-row__dot--blue   { background: var(--adm-primary); }
+    .adm-role-row__dot--orange { background: #f59e0b; }
+    .adm-role-row__dot--purple { background: #7c3aed; }
+
+    .adm-role-row__label { color: var(--adm-text); font-size: 13px; font-weight: 650; }
+    .adm-role-row__value { color: var(--adm-text); font-size: 15px; font-weight: 800; }
+    .adm-role-row__pct   { color: var(--adm-muted); font-size: 12px; font-weight: 650; min-width: 36px; text-align: right; }
+
+    /* --- лента активности --- */
+    .adm-activity { display: flex; flex-direction: column; gap: 8px; }
+
+    .adm-activity-row {
+        display: grid;
+        grid-template-columns: 32px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--adm-border);
+    }
+    .adm-activity-row:last-child { border-bottom: 0; }
+
+    .adm-activity-row__grade {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+    .adm-activity-row__grade--5 { background: var(--adm-green-soft); color: #15803d; }
+    .adm-activity-row__grade--4 { background: var(--adm-primary-soft); color: #1d4ed8; }
+    .adm-activity-row__grade--3 { background: var(--adm-orange-soft); color: #b45309; }
+    .adm-activity-row__grade--2 { background: var(--adm-red-soft); color: #b91c1c; }
+
+    .adm-activity-row__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .adm-activity-row__title {
+        color: var(--adm-text);
+        font-size: 13px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .adm-activity-row__sub { color: var(--adm-muted); font-size: 11.5px; }
+
+    .adm-activity-row__time {
+        color: var(--adm-muted);
+        font-size: 11.5px;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    /* =========================================================
+       SUBJECTS
+    ========================================================= */
+    .adm-subject-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        padding: 20px 24px 24px;
+    }
+
+    .adm-summary {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 22px;
+        background: linear-gradient(135deg, #eff3fb, #f6f9ff);
+        border: 1px solid var(--adm-border);
+        border-radius: 14px;
+    }
+
+    .adm-summary__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: var(--adm-primary);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+    }
+    .adm-summary__icon svg { width: 26px; height: 26px; }
+
+    .adm-summary__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .adm-summary__label { color: var(--adm-muted); font-size: 12.5px; font-weight: 650; }
+    .adm-summary__value { color: var(--adm-text); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+
+    .adm-summary__stats { display: flex; gap: 24px; margin-left: auto; }
+    .adm-summary__stat { display: flex; flex-direction: column; gap: 2px; text-align: right; }
+    .adm-summary__stat b { color: var(--adm-text); font-size: 18px; font-weight: 800; }
+    .adm-summary__stat span { color: var(--adm-muted); font-size: 11.5px; font-weight: 650; }
+
+    .adm-subject {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        border: 1px solid var(--adm-border);
+        border-radius: 16px;
+        background: #fff;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .adm-subject:hover {
+        border-color: #c7d7fb;
+        box-shadow: 0 14px 30px rgba(37, 71, 143, 0.10);
+        transform: translateY(-3px);
+    }
+
+    .adm-subject__top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+
+    .adm-subject__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(37, 71, 143, 0.14);
+    }
+    .adm-subject__icon svg { width: 24px; height: 24px; }
+    .adm-subject__icon--code    { background: linear-gradient(135deg, #6366f1, #2563eb); }
+    .adm-subject__icon--math    { background: linear-gradient(135deg, #7c3aed, #c026d3); }
+    .adm-subject__icon--phys    { background: linear-gradient(135deg, #2563eb, #0891b2); }
+    .adm-subject__icon--default { background: linear-gradient(135deg, #64748b, #475569); }
+
+    .adm-subject__name { font-size: 16px; font-weight: 800; color: var(--adm-text); line-height: 1.3; letter-spacing: -0.01em; }
+
+    .adm-subject__desc {
+        color: var(--adm-muted);
+        font-size: 12.5px;
+        line-height: 1.55;
+        margin-bottom: 16px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.6em;
+    }
+
+    .adm-subject__meta {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+        padding: 12px 0 0;
+        border-top: 1px dashed var(--adm-border);
+        color: var(--adm-muted);
+        font-size: 11.5px;
+        font-weight: 650;
+    }
+
+    .adm-subject__meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 9px;
+        border-radius: 7px;
+        background: #f8fafc;
+    }
+    .adm-subject__meta-item svg { width: 13px; height: 13px; color: #94a3b8; }
+    .adm-subject__meta-item b { color: var(--adm-text); font-weight: 750; }
+
+    .adm-subject__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--adm-border);
+    }
+
+    .adm-subject__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex: 1;
+        min-height: 36px;
+        padding: 6px 12px;
+        border: 1px solid var(--adm-border);
+        border-radius: 9px;
+        background: #fff;
+        color: var(--adm-text);
+        font-size: 12.5px;
+        font-weight: 650;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease,
+            color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .adm-subject__btn svg { width: 14px; height: 14px; }
+
+    .adm-subject__btn--primary {
+        background: var(--adm-primary);
+        border-color: var(--adm-primary);
+        color: #fff;
+    }
+    .adm-subject__btn--primary:hover {
+        background: var(--adm-primary-dark);
+        border-color: var(--adm-primary-dark);
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+    }
+
+    .adm-subject__btn--danger { color: var(--adm-red); }
+    .adm-subject__btn--danger:hover { background: #fef2f2; border-color: #fecaca; }
+
+    .adm-empty {
+        grid-column: 1 / -1;
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--adm-muted);
+        font-size: 14px;
+    }
+
+    /* =========================================================
+       MODAL
+    ========================================================= */
+    .adm-modal-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px);
+    }
+    .adm-modal-bg.open { display: flex; }
+
+    .adm-modal {
+        width: 100%;
+        max-width: 500px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.30);
+        overflow: hidden;
+        animation: admModalIn 0.18s ease;
+    }
+    .adm-modal--wide { max-width: 720px; }
+
+    @keyframes admModalIn {
+        from { opacity: 0; transform: translateY(8px) scale(0.98); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .adm-modal__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--adm-border);
+    }
+    .adm-modal__title { margin: 0 0 4px; font-size: 17px; font-weight: 800; color: var(--adm-text); }
+    .adm-modal__sub { color: var(--adm-muted); font-size: 13px; }
+
+    .adm-modal__close {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #64748b;
+        font-size: 17px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .adm-modal__close:hover { background: #f1f5f9; color: #0f172a; }
+
+    .adm-modal__body { padding: 20px 24px; max-height: 65vh; overflow-y: auto; }
+
+    .adm-modal__foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 16px 24px;
+        border-top: 1px solid var(--adm-border);
+        background: #fbfcff;
+    }
+
+    .adm-field { display: block; margin-bottom: 14px; }
+    .adm-field span { display: block; margin-bottom: 6px; color: var(--adm-text); font-size: 13px; font-weight: 650; }
+
+    .adm-input,
+    .adm-textarea {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid var(--adm-border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--adm-text);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .adm-textarea { min-height: 90px; resize: vertical; }
+    .adm-input:focus,
+    .adm-textarea:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .adm-test-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--adm-border);
+        border-radius: 12px;
+        background: #fbfcff;
+        margin-bottom: 10px;
+    }
+    .adm-test-item:last-child { margin-bottom: 0; }
+    .adm-test-item h4 { margin: 0 0 6px; font-size: 14px; font-weight: 750; color: var(--adm-text); }
+    .adm-test-item__meta { display: flex; flex-wrap: wrap; gap: 12px; color: var(--adm-muted); font-size: 12px; }
+    .adm-test-item__meta b { color: var(--adm-text); font-weight: 750; }
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+    @media (max-width: 1100px) {
+        .adm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .adm-subject-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .adm-analytics { grid-template-columns: 1fr; }
+        .adm-subject-stats { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 767.98px) {
+        .adm-page { padding: 16px 16px 32px; }
+        .adm-head { flex-direction: column; align-items: stretch; }
+        .adm-clock { align-self: flex-start; }
+        .adm-search input { width: 100%; }
+        .adm-search { flex: 1; }
+        .adm-card__head-tools { width: 100%; }
+
+        .adm-summary { flex-wrap: wrap; }
+        .adm-summary__stats { margin-left: 0; width: 100%; justify-content: flex-start; }
+
+        .adm-top-row { grid-template-columns: 26px 1fr auto; gap: 8px; }
+        .adm-top-row__avatar { display: none; }
+        .adm-top-row__stat--pct { display: none; }
+    }
+
+    @media (max-width: 575.98px) {
+        .adm-stats { grid-template-columns: 1fr; }
+        .adm-subject-grid { grid-template-columns: 1fr; padding: 16px; }
+        .adm-card__head { padding: 16px; }
+        .adm-table th,
+        .adm-table td { padding: 12px 14px; }
+
+        body::before,
+        body::after { display: none; }
+    }
+
+    :focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.35);
+        outline-offset: 2px;
+    }
+</style>
+
+
+<div class="adm-page">
+
+    <!-- HEAD -->
+    <div class="adm-head">
+        <div>
+            <h1 class="adm-title">Панель администратора</h1>
+            <p class="adm-sub">Управление пользователями, дисциплинами и тестами</p>
+        </div>
+
+        <div class="adm-clock">
+            <span class="adm-clock__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="16" rx="3"/>
+                    <path d="M8 3v4"/>
+                    <path d="M16 3v4"/>
+                    <path d="M3 11h18"/>
+                </svg>
+            </span>
+            <div class="adm-clock__body">
+                <span class="adm-clock__label">Сегодня</span>
+                <span class="adm-clock__value" id="adm-clock-date">—</span>
+                <span class="adm-clock__sub" id="adm-clock-time">—</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- STATS -->
+    <div class="adm-stats">
+
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="8" r="3"/>
+                    <path d="M3 20a6 6 0 0 1 12 0"/>
+                    <path d="M16 11a3 3 0 1 0 0-6"/>
+                    <path d="M21 20a5 5 0 0 0-5-5"/>
+                </svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Всего пользователей</span>
+                <span class="adm-stat__value">{{ users|length }}</span>
+                <span class="adm-stat__trend">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12l5-5 5 5 5-5"/>
+                    </svg>
+                    активны в системе
+                </span>
+            </div>
+        </div>
+
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                    <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                </svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Дисциплины</span>
+                <span class="adm-stat__value">{{ subjects|length }}</span>
+                <span class="adm-stat__trend">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12l5-5 5 5 5-5"/>
+                    </svg>
+                    активны
+                </span>
+            </div>
+        </div>
+
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                    <path d="M14 3v6h6"/>
+                    <path d="M8 13h8"/>
+                    <path d="M8 17h5"/>
+                </svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Всего тестов</span>
+                <span class="adm-stat__value">
+                    {% set tt = namespace(v=0) %}
+                    {% for s in subjects %}{% set tt.v = tt.v + (s.tests|length) %}{% endfor %}
+                    {{ tt.v }}
+                </span>
+                <span class="adm-stat__trend">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12l5-5 5 5 5-5"/>
+                    </svg>
+                    по всем дисциплинам
+                </span>
+            </div>
+        </div>
+
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M9 9l6 6"/>
+                    <path d="M15 9l-6 6"/>
+                </svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Заблокировано</span>
+                <span class="adm-stat__value">
+                    {{ users|rejectattr("is_active_user")|list|length }}
+                </span>
+                <span class="adm-stat__trend adm-stat__trend--muted">
+                    без активных сессий
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         ANALYTICS — 2 колонки
+    ========================================================= -->
+    <div class="adm-analytics">
+
+        <!-- Распределение оценок -->
+        <section class="adm-card" style="margin-bottom:0;">
+
+            <div class="adm-card__head">
+                <div class="adm-card__head-left">
+                    <span class="adm-card__head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 20V10"/>
+                            <path d="M10 20V4"/>
+                            <path d="M16 20v-8"/>
+                            <path d="M22 20H2"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="adm-card__title">Распределение оценок</h2>
+                        <p class="adm-card__sub">
+                            Всего завершено попыток: {{ total_completed }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-card__body">
+
+                {% set grades = [
+                    (5, 'Отлично',    'green'),
+                    (4, 'Хорошо',     'blue'),
+                    (3, 'Удовлетв.',  'orange'),
+                    (2, 'Неудовл.',   'red')
+                ] %}
+
+                <div class="adm-grade-bars">
+
+                    {% for grade, label, color in grades %}
+                        {% set count = grade_distribution[grade] %}
+                        {% set pct = (count * 100 / total_completed) if total_completed else 0 %}
+
+                        <div class="adm-grade-bar">
+                            <div class="adm-grade-bar__top">
+                                <span class="adm-grade-bar__badge adm-grade-bar__badge--{{ color }}">
+                                    {{ grade }}
+                                </span>
+                                <span class="adm-grade-bar__label">{{ label }}</span>
+                                <span class="adm-grade-bar__count">{{ count }}</span>
+                            </div>
+                            <div class="adm-grade-bar__track">
+                                <div class="adm-grade-bar__fill adm-grade-bar__fill--{{ color }}"
+                                     style="width: {{ pct }}%;"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- Топ студентов -->
+        <section class="adm-card" style="margin-bottom:0;">
+
+            <div class="adm-card__head">
+                <div class="adm-card__head-left">
+                    <span class="adm-card__head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="adm-card__title">Топ студентов</h2>
+                        <p class="adm-card__sub">По числу завершённых попыток</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-card__body">
+
+                {% if top_students %}
+
+                    <div class="adm-top-list">
+
+                        {% for item in top_students %}
+                            {% set rank = loop.index %}
+                            {% set av = item.user.first_name[0]|upper if item.user.first_name else 'U' %}
+
+                            <div class="adm-top-row">
+                                <span class="adm-top-row__rank adm-top-row__rank--{{ rank if rank <= 3 else 'default' }}">
+                                    {{ rank }}
+                                </span>
+
+                                <span class="adm-top-row__avatar">{{ av }}</span>
+
+                                <div class="adm-top-row__body">
+                                    <span class="adm-top-row__name">
+                                        {{ item.user.last_name }} {{ item.user.first_name }}
+                                    </span>
+                                    <span class="adm-top-row__sub">{{ item.user.username }}</span>
+                                </div>
+
+                                <div class="adm-top-row__stat">
+                                    <b>{{ item.attempts }}</b>
+                                    <span>попыток</span>
+                                </div>
+
+                                <div class="adm-top-row__stat adm-top-row__stat--pct">
+                                    <b>{{ item.avg_percentage }}%</b>
+                                    <span>средний</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div style="padding:20px 0; color: var(--adm-muted); font-size: 14px;">
+                        Пока нет завершённых попыток
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </section>
+
+    </div>
+
+
+    <!-- =========================================================
+         СТАТИСТИКА ПО ДИСЦИПЛИНАМ
+    ========================================================= -->
+    <section class="adm-card">
+
+        <div class="adm-card__head">
+            <div class="adm-card__head-left">
+                <span class="adm-card__head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2 class="adm-card__title">Статистика по дисциплинам</h2>
+                    <p class="adm-card__sub">
+                        Средний процент и количество попыток
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="adm-card__body">
+
+            {% if subject_stats %}
+
+                <div class="adm-subject-stats">
+
+                    {% for item in subject_stats %}
+
+                        {% if item.avg_percentage >= 85 %}
+                            {% set bar = 'green' %}
+                        {% elif item.avg_percentage >= 60 %}
+                            {% set bar = 'blue' %}
+                        {% elif item.avg_percentage >= 40 %}
+                            {% set bar = 'orange' %}
+                        {% else %}
+                            {% set bar = 'red' %}
+                        {% endif %}
+
+                        <div class="adm-subject-stat">
+
+                            <div class="adm-subject-stat__head">
+                                <span class="adm-subject-stat__name">
+                                    {{ item.subject.name }}
+                                </span>
+                                <span class="adm-subject-stat__pct">
+                                    {{ item.avg_percentage }}%
+                                </span>
+                            </div>
+
+                            <div class="adm-subject-stat__track">
+                                <div class="adm-subject-stat__fill adm-subject-stat__fill--{{ bar }}"
+                                     style="width: {{ item.avg_percentage }}%;"></div>
+                            </div>
+
+                            <div class="adm-subject-stat__foot">
+                                <span>{{ item.attempts }} попыток</span>
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div style="padding:20px 0; color: var(--adm-muted); font-size: 14px;">
+                    Пока нет завершённых попыток по дисциплинам
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ПОЛЬЗОВАТЕЛИ ПО РОЛЯМ + ЛЕНТА АКТИВНОСТИ
+    ========================================================= -->
+    <div class="adm-analytics">
+
+        <!-- Пользователи по ролям -->
+        <section class="adm-card" style="margin-bottom:0;">
+
+            <div class="adm-card__head">
+                <div class="adm-card__head-left">
+                    <span class="adm-card__head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="8" r="3"/>
+                            <path d="M3 20a6 6 0 0 1 12 0"/>
+                            <path d="M16 11a3 3 0 1 0 0-6"/>
+                            <path d="M21 20a5 5 0 0 0-5-5"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="adm-card__title">Пользователи по ролям</h2>
+                        <p class="adm-card__sub">Распределение аккаунтов</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-card__body">
+
+                {% set total_users = role_stats.students + role_stats.teachers + role_stats.admins %}
+
+                <div class="adm-role-list">
+
+                    {% set roles = [
+                        ('Студенты',       role_stats.students, 'blue'),
+                        ('Преподаватели',  role_stats.teachers, 'orange'),
+                        ('Администраторы', role_stats.admins,   'purple')
+                    ] %}
+
+                    {% for label, count, color in roles %}
+
+                        {% set pct = (count * 100 / total_users) if total_users else 0 %}
+
+                        <div class="adm-role-row">
+                            <span class="adm-role-row__dot adm-role-row__dot--{{ color }}"></span>
+                            <span class="adm-role-row__label">{{ label }}</span>
+                            <span class="adm-role-row__value">{{ count }}</span>
+                            <span class="adm-role-row__pct">{{ pct|round(0)|int }}%</span>
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- Лента активности -->
+        <section class="adm-card" style="margin-bottom:0;">
+
+            <div class="adm-card__head">
+                <div class="adm-card__head-left">
+                    <span class="adm-card__head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 7v5l3 2"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="adm-card__title">Последняя активность</h2>
+                        <p class="adm-card__sub">Свежие завершённые попытки</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-card__body">
+
+                {% if recent_attempts %}
+
+                    <div class="adm-activity">
+
+                        {% for a in recent_attempts %}
+
+                            {% set g = a.grade if a.grade else 2 %}
+
+                            <div class="adm-activity-row">
+                                <span class="adm-activity-row__grade adm-activity-row__grade--{{ g }}">
+                                    {{ g }}
+                                </span>
+
+                                <div class="adm-activity-row__body">
+                                    <span class="adm-activity-row__title">
+                                        {{ a.test.title }}
+                                    </span>
+                                    <span class="adm-activity-row__sub">
+                                        {{ a.student.last_name }} {{ a.student.first_name }}
+                                        · {{ a.percentage }}%
+                                    </span>
+                                </div>
+
+                                <span class="adm-activity-row__time">
+                                    {{ a.completed_at.strftime('%d.%m %H:%M') }}
+                                </span>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div style="padding:20px 0; color: var(--adm-muted); font-size:14px;">
+                        Нет недавних событий
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </section>
+
+    </div>
+
+
+    <!-- USERS -->
+    <div class="adm-card">
+
+        <div class="adm-card__head">
+            <div class="adm-card__head-left">
+                <span class="adm-card__head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="8" r="3"/>
+                        <path d="M3 20a6 6 0 0 1 12 0"/>
+                        <path d="M16 11a3 3 0 1 0 0-6"/>
+                        <path d="M21 20a5 5 0 0 0-5-5"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2 class="adm-card__title">Пользователи</h2>
+                    <p class="adm-card__sub">Управление пользователями системы</p>
+                </div>
+            </div>
+
+            <div class="adm-card__head-tools">
+                <label class="adm-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="M21 21l-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="adm-user-search" placeholder="Поиск по имени, email…">
+                </label>
+
+                <a href="{{ url_for('auth.register') }}" class="adm-btn adm-btn--primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14"/>
+                        <path d="M5 12h14"/>
+                    </svg>
+                    Добавить пользователя
+                </a>
+            </div>
+        </div>
+
+        <div class="adm-table-wrap">
+            <table class="adm-table" id="adm-users-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Пользователь</th>
+                        <th>Email</th>
+                        <th>ФИО</th>
+                        <th>Роль</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        {% set av = 'av-admin' if u.role == 'admin'
+                                    else ('av-teacher' if u.role == 'teacher' else 'av-student') %}
+
+                        <tr data-username="{{ u.username|lower }}"
+                            data-email="{{ (u.email or '')|lower }}"
+                            data-fio="{{ (u.last_name ~ ' ' ~ u.first_name)|lower }}">
+
+                            <td style="color:var(--adm-muted); font-weight:650;">{{ loop.index }}</td>
+
+                            <td>
+                                <div class="adm-user">
+                                    <span class="adm-user__avatar {{ av }}">
+                                        {{ (u.first_name or u.username or 'U')[0]|upper }}
+                                    </span>
+                                    <div class="adm-user__body">
+                                        <span class="adm-user__name">{{ u.username }}</span>
+                                        <span class="adm-user__id">ID: {{ u.id }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>{{ u.email or '—' }}</td>
+                            <td>{{ u.last_name }} {{ u.first_name }}</td>
+
+                            <td>
+                                {% if u.role == 'admin' %}
+                                    <span class="adm-badge adm-badge--admin">Администратор</span>
+                                {% elif u.role == 'teacher' %}
+                                    <span class="adm-badge adm-badge--teacher">Преподаватель</span>
+                                {% else %}
+                                    <span class="adm-badge adm-badge--student">Студент</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if u.is_active_user %}
+                                    <span class="adm-badge adm-badge--active">Активен</span>
+                                {% else %}
+                                    <span class="adm-badge adm-badge--blocked">Заблокирован</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if u.id != current_user.id %}
+                                    <div class="adm-actions">
+
+                                        <form method="post"
+                                              action="{{ url_for('admin.change_user_role', user_id=u.id) }}"
+                                              style="display:inline;">
+                                            <select name="role"
+                                                    class="adm-select"
+                                                    onchange="this.form.submit()">
+                                                <option value="student" {% if u.role == 'student' %}selected{% endif %}>Студент</option>
+                                                <option value="teacher" {% if u.role == 'teacher' %}selected{% endif %}>Преподаватель</option>
+                                                <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Администратор</option>
+                                            </select>
+                                        </form>
+
+                                        <form method="post"
+                                              action="{{ url_for('admin.toggle_user', user_id=u.id) }}"
+                                              style="display:inline;">
+                                            <button type="submit"
+                                                    class="adm-btn {% if u.is_active_user %}adm-btn--danger{% endif %}"
+                                                    style="min-height:34px; padding: 5px 12px; font-size:12px;">
+                                                {% if u.is_active_user %}Заблокировать{% else %}Активировать{% endif %}
+                                            </button>
+                                        </form>
+
+                                        <button type="button"
+                                                class="adm-icon-btn adm-icon-btn--danger"
+                                                data-role="user"
+                                                data-name="{{ u.username|e }}"
+                                                data-url="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                                                title="Удалить">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18"/>
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+                                            </svg>
+                                        </button>
+
+                                    </div>
+                                {% else %}
+                                    <span style="color:var(--adm-muted); font-size:12px;">
+                                        Текущий аккаунт
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- SUBJECTS -->
+    <div class="adm-card">
+
+        <div class="adm-card__head">
+            <div class="adm-card__head-left">
+                <span class="adm-card__head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2 class="adm-card__title">Дисциплины</h2>
+                    <p class="adm-card__sub">
+                        Добавление, просмотр и управление учебными дисциплинами
+                    </p>
+                </div>
+            </div>
+
+            <button type="button" class="adm-btn adm-btn--primary" id="btn-add-subject">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14"/>
+                    <path d="M5 12h14"/>
+                </svg>
+                Добавить дисциплину
+            </button>
+        </div>
+
+
+        <div class="adm-subject-grid">
+
+            {% set total_q = namespace(v=0) %}
+            {% for s in subjects %}
+                {% for t in s.tests %}
+                    {% set total_q.v = total_q.v + (t.questions|length) %}
+                {% endfor %}
+            {% endfor %}
+
+            <div class="adm-summary">
+
+                <div class="adm-summary__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+
+                <div class="adm-summary__body">
+                    <div class="adm-summary__label">Всего дисциплин</div>
+                    <div class="adm-summary__value">{{ subjects|length }}</div>
+                </div>
+
+                <div class="adm-summary__stats">
+
+                    {% set total_tests = namespace(v=0) %}
+                    {% for s in subjects %}
+                        {% set total_tests.v = total_tests.v + (s.tests|length) %}
+                    {% endfor %}
+
+                    <div class="adm-summary__stat">
+                        <b>{{ total_tests.v }}</b>
+                        <span>тестов</span>
+                    </div>
+
+                    <div class="adm-summary__stat">
+                        <b>{{ total_q.v }}</b>
+                        <span>вопросов</span>
+                    </div>
+                </div>
+
+            </div>
+
+
+            {% if subjects %}
+
+                {% for s in subjects %}
+                    {% set icon_class =
+                        'adm-subject__icon--code' if 'програм' in s.name|lower
+                        else ('adm-subject__icon--math' if 'матем' in s.name|lower
+                        else ('adm-subject__icon--phys' if 'физ' in s.name|lower
+                        else 'adm-subject__icon--default')) %}
+
+                    {% set qc = namespace(v=0) %}
+                    {% for t in s.tests %}{% set qc.v = qc.v + (t.questions|length) %}{% endfor %}
+
+                    <div class="adm-subject">
+
+                        <div class="adm-subject__top">
+                            <span class="adm-subject__icon {{ icon_class }}">
+                                {% if 'програм' in s.name|lower %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M8 8l-4 4 4 4"/>
+                                        <path d="M16 8l4 4-4 4"/>
+                                        <path d="M14 4l-4 16"/>
+                                    </svg>
+                                {% elif 'матем' in s.name|lower %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="M8 16l8-8"/>
+                                        <path d="M8 8h.01"/>
+                                        <path d="M16 16h.01"/>
+                                    </svg>
+                                {% elif 'физ' in s.name|lower %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="2"/>
+                                        <ellipse cx="12" cy="12" rx="10" ry="4"/>
+                                        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/>
+                                        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>
+                                    </svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                {% endif %}
+                            </span>
+
+                            <div>
+                                <div class="adm-subject__name">{{ s.name }}</div>
+                            </div>
+                        </div>
+
+                        <div class="adm-subject__desc">
+                            {% if s.description %}{{ s.description }}{% else %}&nbsp;{% endif %}
+                        </div>
+
+                        <div class="adm-subject__meta">
+                            <span class="adm-subject__meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                                    <path d="M14 3v6h6"/>
+                                </svg>
+                                <b>{{ s.tests|length }}</b> тестов
+                            </span>
+
+                            <span class="adm-subject__meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9"/>
+                                    <path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3"/>
+                                    <path d="M12 17h.01"/>
+                                </svg>
+                                <b>{{ qc.v }}</b> вопросов
+                            </span>
+                        </div>
+
+                        <div class="adm-subject__actions">
+
+                            <button type="button"
+                                    class="adm-subject__btn adm-subject__btn--primary"
+                                    data-role="show-tests"
+                                    data-name="{{ s.name|e }}"
+                                    data-json-id="json-{{ s.id }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Тесты
+                            </button>
+
+                            <button type="button"
+                                    class="adm-subject__btn adm-subject__btn--danger"
+                                    data-role="subject"
+                                    data-name="{{ s.name|e }}"
+                                    data-url="{{ url_for('admin.delete_subject', subject_id=s.id) }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h18"/>
+                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+                                </svg>
+                                Удалить
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <script type="application/json" id="json-{{ s.id }}">
+                    [
+                        {% for t in s.tests %}
+                        {
+                            "title": {{ t.title|tojson }},
+                            "questions": {{ t.questions|length }},
+                            "time_limit": {{ t.time_limit }},
+                            "max_attempts": {{ t.max_attempts|tojson }},
+                            "status": {{ t.status|tojson }},
+                            "delete_url": {{ url_for('admin.delete_test', test_id=t.id)|tojson }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                    </script>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="adm-empty">
+                    Дисциплины пока не добавлены
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- DELETE MODAL -->
+<div class="adm-modal-bg" id="modal-delete">
+    <div class="adm-modal">
+        <div class="adm-modal__head">
+            <div>
+                <h3 class="adm-modal__title" id="del-title">Удалить?</h3>
+                <div class="adm-modal__sub" id="del-sub">Это действие нельзя отменить.</div>
+            </div>
+            <button type="button" class="adm-modal__close" data-close="modal-delete">✕</button>
+        </div>
+
+        <div class="adm-modal__body">
+            <p style="margin:0; line-height:1.6; color: var(--adm-muted);">
+                Вы действительно хотите удалить
+                <b id="del-name" style="color: var(--adm-text);"></b>?
+            </p>
+        </div>
+
+        <form id="form-delete" method="post" class="adm-modal__foot">
+            <button type="button" class="adm-btn" data-close="modal-delete">Отмена</button>
+            <button type="submit" class="adm-btn adm-btn--danger">Удалить</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- CREATE SUBJECT MODAL -->
+<div class="adm-modal-bg" id="modal-create">
+    <div class="adm-modal">
+        <div class="adm-modal__head">
+            <div>
+                <h3 class="adm-modal__title">Новая дисциплина</h3>
+                <div class="adm-modal__sub">Введите название и описание</div>
+            </div>
+            <button type="button" class="adm-modal__close" data-close="modal-create">✕</button>
+        </div>
+
+        <form method="post" action="{{ url_for('admin.create_subject') }}">
+            <div class="adm-modal__body">
+                <label class="adm-field">
+                    <span>Название</span>
+                    <input type="text" name="name" class="adm-input"
+                           placeholder="Например: Веб-разработка" required>
+                </label>
+                <label class="adm-field" style="margin-bottom:0;">
+                    <span>Описание</span>
+                    <textarea name="description" class="adm-textarea"
+                              placeholder="Краткое описание дисциплины"></textarea>
+                </label>
+            </div>
+            <div class="adm-modal__foot">
+                <button type="button" class="adm-btn" data-close="modal-create">Отмена</button>
+                <button type="submit" class="adm-btn adm-btn--primary">Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- TESTS MODAL -->
+<div class="adm-modal-bg" id="modal-tests">
+    <div class="adm-modal adm-modal--wide">
+        <div class="adm-modal__head">
+            <div>
+                <h3 class="adm-modal__title" id="tests-title">Тесты дисциплины</h3>
+                <div class="adm-modal__sub" id="tests-sub"></div>
+            </div>
+            <button type="button" class="adm-modal__close" data-close="modal-tests">✕</button>
+        </div>
+
+        <div class="adm-modal__body" id="tests-body"></div>
+
+        <div class="adm-modal__foot">
+            <button type="button" class="adm-btn" data-close="modal-tests">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function () {
+    'use strict';
+
+    console.log('[admin] script loaded');
+
+    function open(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function close(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function closeAll() {
+        document.querySelectorAll('.adm-modal-bg.open').forEach(function (m) {
+            m.classList.remove('open');
+        });
+        document.body.style.overflow = '';
+    }
+
+    (function () {
+        var dateEl = document.getElementById('adm-clock-date');
+        var timeEl = document.getElementById('adm-clock-time');
+        if (!dateEl || !timeEl) return;
+
+        var months = ['января','февраля','марта','апреля','мая','июня',
+                      'июля','августа','сентября','октября','ноября','декабря'];
+        var days = ['Воскресенье','Понедельник','Вторник','Среда',
+                    'Четверг','Пятница','Суббота'];
+
+        function tick() {
+            var now = new Date();
+            var hh = String(now.getHours()).padStart(2, '0');
+            var mm = String(now.getMinutes()).padStart(2, '0');
+
+            dateEl.textContent = String(now.getDate()).padStart(2, '0') + ' '
+                + months[now.getMonth()] + ' ' + now.getFullYear();
+            timeEl.textContent = days[now.getDay()] + ', ' + hh + ':' + mm;
+        }
+
+        tick();
+        setInterval(tick, 15000);
+    })();
+
+    (function () {
+        var input = document.getElementById('adm-user-search');
+        if (!input) return;
+
+        var rows = document.querySelectorAll('#adm-users-table tbody tr');
+
+        input.addEventListener('input', function () {
+            var q = input.value.trim().toLowerCase();
+
+            rows.forEach(function (row) {
+                if (!row.dataset.username) return;
+                var hay = (row.dataset.username || '') + ' '
+                        + (row.dataset.email    || '') + ' '
+                        + (row.dataset.fio      || '');
+                row.style.display = (!q || hay.includes(q)) ? '' : 'none';
+            });
+        });
+    })();
+
+    document.addEventListener('click', function (e) {
+
+        var closer = e.target.closest('[data-close]');
+        if (closer) {
+            e.preventDefault();
+            close(closer.getAttribute('data-close'));
+            return;
+        }
+
+        if (e.target.classList && e.target.classList.contains('adm-modal-bg')) {
+            closeAll();
+            return;
+        }
+
+        if (e.target.closest('#btn-add-subject')) {
+            e.preventDefault();
+            open('modal-create');
+            return;
+        }
+
+        var delBtn = e.target.closest('[data-role="user"], [data-role="subject"], [data-role="test"]');
+        if (delBtn) {
+            e.preventDefault();
+
+            var role = delBtn.getAttribute('data-role');
+            var name = delBtn.getAttribute('data-name');
+            var url  = delBtn.getAttribute('data-url');
+
+            var titles = {
+                user:    ['Удалить пользователя?',  'Все связанные данные также будут удалены.'],
+                subject: ['Удалить дисциплину?',    'Вместе с ней удалятся все её тесты и вопросы.'],
+                test:    ['Удалить тест?',          'Вместе с ним удалятся все вопросы и ответы.']
+            };
+
+            var t = titles[role] || ['Удалить?', ''];
+
+            document.getElementById('del-title').textContent = t[0];
+            document.getElementById('del-sub').textContent   = t[1];
+            document.getElementById('del-name').textContent  = name;
+            document.getElementById('form-delete').action    = url;
+
+            open('modal-delete');
+            return;
+        }
+
+        var testsBtn = e.target.closest('[data-role="show-tests"]');
+        if (testsBtn) {
+            e.preventDefault();
+
+            var name    = testsBtn.getAttribute('data-name');
+            var jsonId  = testsBtn.getAttribute('data-json-id');
+            var holder  = document.getElementById(jsonId);
+
+            var tests = [];
+            if (holder) {
+                try { tests = JSON.parse(holder.textContent || '[]'); }
+                catch (err) { console.error('bad json', err); }
+            }
+
+            document.getElementById('tests-title').textContent = name;
+            document.getElementById('tests-sub').textContent =
+                tests.length ? ('Всего тестов: ' + tests.length) : 'Тестов пока нет';
+
+            var body = document.getElementById('tests-body');
+
+            if (!tests.length) {
+                body.innerHTML = '<div style="padding:12px 0;color:var(--adm-muted);">' +
+                                 'В этой дисциплине пока нет тестов.</div>';
+            } else {
+                body.innerHTML = tests.map(function (t) {
+                    var att = (t.max_attempts === null || t.max_attempts === undefined)
+                        ? '∞' : t.max_attempts;
+
+                    return '' +
+                        '<div class="adm-test-item">' +
+                            '<div>' +
+                                '<h4>' + t.title + '</h4>' +
+                                '<div class="adm-test-item__meta">' +
+                                    '<span>Вопросов: <b>' + t.questions + '</b></span>' +
+                                    '<span>Время: <b>' + t.time_limit + ' мин</b></span>' +
+                                    '<span>Попытки: <b>' + att + '</b></span>' +
+                                    '<span>Статус: <b>' + t.status + '</b></span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button type="button" class="adm-btn adm-btn--danger"' +
+                                ' data-role="test"' +
+                                ' data-name="' + String(t.title).replace(/"/g, '&quot;') + '"' +
+                                ' data-url="' + t.delete_url + '"' +
+                                ' style="min-height:34px; padding:6px 14px; font-size:12px;">' +
+                                'Удалить' +
+                            '</button>' +
+                        '</div>';
+                }).join('');
+            }
+
+            open('modal-tests');
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAll();
+    });
+
+    console.log('[admin] handlers ready');
+})();
+</script>
+
+{% endblock %}

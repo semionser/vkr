@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="fw-bold mb-4">Панель администратора</h2>
+<h4 class="mb-3">Пользователи</h4>
+<div class="table-responsive mb-4"><table class="table table-sm mb-0">
+<tr><th>Логин</th><th>ФИО</th><th>Роль</th><th>Статус</th><th></th></tr>
+{% for u in users %}
+<tr>
+<td>{{ u.username }}</td><td>{{ u.last_name }} {{ u.first_name }}</td><td>{{ u.role }}</td><td>{{ "Активен" if u.is_active else "Заблокирован" }}</td>
+<td>{% if u.id != current_user.id %}<form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}"><button class="btn btn-sm btn-outline-warning">Изменить статус</button></form>{% endif %}</td>
+</tr>
+{% endfor %}
+</table></div>
+<h4 class="mb-3">Добавить дисциплину</h4>
+<form method="post" action="{{ url_for('admin.create_subject') }}" class="form-card">
+<input class="form-control mb-2" name="name" placeholder="Название дисциплины" required>
+<textarea class="form-control mb-2" name="description" placeholder="Описание"></textarea>
+<button class="btn btn-success">Добавить</button>
+</form>
+<h5 class="mt-4">Дисциплины</h5>
+<ul>{% for s in subjects %}<li>{{ s.name }}</li>{% endfor %}</ul>
+{% endblock %}

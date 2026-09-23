@@ -1,0 +1,852 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты студентов{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --t-bg: #eef2f9;
+        --t-card: #ffffff;
+        --t-text: #172033;
+        --t-muted: #687386;
+        --t-border: #e4e9f0;
+        --t-primary: #2563eb;
+        --t-primary-dark: #1d4ed8;
+        --t-primary-soft: #dbeafe;
+        --t-green-soft: #dcfce7;
+        --t-orange-soft: #fef3c7;
+        --t-purple-soft: #ede9fe;
+        --t-red-soft: #fee2e2;
+        --t-radius: 18px;
+        --t-shadow: 0 10px 30px rgba(37, 71, 143, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        background:
+            radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.07), transparent 28rem),
+            radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.05), transparent 25rem),
+            var(--t-bg);
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+        content: "";
+        position: fixed;
+        border-radius: 50%;
+        background: #dbe5fb;
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: 0;
+    }
+    body::before { top: -180px; left: -180px; width: 520px; height: 520px; }
+    body::after  { bottom: -140px; right: -140px; width: 420px; height: 420px; }
+
+    /* ---------- LAYOUT ---------- */
+    .t-layout {
+        position: relative;
+        z-index: 1;
+
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 1.5rem;
+
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 1.75rem 1.5rem 3rem;
+
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+            BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--t-text);
+    }
+
+    /* ---------- SIDEBAR ---------- */
+    .t-sidebar {
+        position: sticky;
+        top: 1.75rem;
+        align-self: start;
+
+        padding: 1.25rem 1rem;
+
+        background: #fff;
+        border-radius: var(--t-radius);
+        box-shadow: var(--t-shadow);
+    }
+
+    .t-sidebar__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+
+        padding: 0 0.5rem 1rem;
+        margin-bottom: 0.85rem;
+
+        border-bottom: 1px solid var(--t-border);
+
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: var(--t-text);
+    }
+
+    .t-sidebar__brand-mark {
+        display: grid;
+        place-items: center;
+
+        width: 36px;
+        height: 36px;
+
+        border-radius: 10px;
+
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #fff;
+
+        font-size: 0.95rem;
+        font-weight: 900;
+    }
+
+    .t-sidebar__nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .t-sidebar__nav a {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+
+        padding: 0.65rem 0.75rem;
+
+        border-radius: 10px;
+
+        color: var(--t-muted);
+        text-decoration: none;
+
+        font-size: 0.92rem;
+        font-weight: 600;
+
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .t-sidebar__nav a:hover { background: #f1f5ff; color: var(--t-primary); }
+    .t-sidebar__nav a.is-active { background: #e8efff; color: var(--t-primary); }
+    .t-sidebar__nav svg { flex-shrink: 0; width: 18px; height: 18px; }
+
+    /* ---------- MAIN ---------- */
+    .t-main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        min-width: 0;
+    }
+
+    /* ---------- HEAD ---------- */
+    .t-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .t-head__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        padding: 0.35rem 0.85rem;
+        margin-bottom: 0.75rem;
+
+        border-radius: 999px;
+
+        background: #fff;
+        color: var(--t-primary);
+
+        font-size: 0.8rem;
+        font-weight: 650;
+
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+    }
+    .t-head__badge svg { width: 14px; height: 14px; }
+
+    .t-head h1 {
+        margin: 0 0 0.4rem;
+        font-size: clamp(1.6rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .t-head p {
+        margin: 0;
+        max-width: 560px;
+        color: var(--t-muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+    }
+
+    .t-head__actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .t-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+
+        min-height: 42px;
+        padding: 8px 16px;
+
+        border: 1px solid var(--t-border);
+        border-radius: 10px;
+
+        background: #fff;
+        color: var(--t-text);
+
+        font-size: 13px;
+        font-weight: 650;
+        font-family: inherit;
+
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+
+        transition: background 0.15s ease, border-color 0.15s ease,
+            color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .t-btn svg { width: 14px; height: 14px; }
+    .t-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .t-btn--primary {
+        background: var(--t-primary);
+        border-color: var(--t-primary);
+        color: #fff;
+    }
+    .t-btn--primary:hover {
+        background: var(--t-primary-dark);
+        border-color: var(--t-primary-dark);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+    }
+
+    /* ---------- HERO STAT ---------- */
+    .t-hero-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+
+        padding: 14px 20px;
+
+        background: #fff;
+        border: 1px solid var(--t-border);
+        border-radius: 14px;
+        box-shadow: var(--t-shadow);
+    }
+
+    .t-hero-stat__icon {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--t-primary-soft);
+        color: var(--t-primary);
+    }
+    .t-hero-stat__icon svg { width: 22px; height: 22px; }
+
+    .t-hero-stat__body { display: flex; flex-direction: column; }
+    .t-hero-stat__label { color: var(--t-muted); font-size: 12px; font-weight: 650; }
+    .t-hero-stat__value { color: var(--t-text); font-size: 22px; font-weight: 800; line-height: 1.1; }
+    .t-hero-stat__trend {
+        display: inline-flex; align-items: center; gap: 4px;
+        margin-top: 2px; color: #16a34a; font-size: 11px; font-weight: 650;
+    }
+    .t-hero-stat__trend svg { width: 12px; height: 12px; }
+
+    /* ---------- CARD ---------- */
+    .t-card {
+        background: #fff;
+        border: 1px solid var(--t-border);
+        border-radius: var(--t-radius);
+        box-shadow: var(--t-shadow);
+        overflow: hidden;
+    }
+
+    .t-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--t-border);
+    }
+
+    .t-card__head-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .t-card__icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #eff3fb;
+        color: var(--t-primary);
+    }
+    .t-card__icon svg { width: 20px; height: 20px; }
+
+    .t-card__title { margin: 0; font-size: 1rem; font-weight: 800; color: var(--t-text); }
+    .t-card__sub   { margin: 2px 0 0; color: var(--t-muted); font-size: 12.5px; }
+
+    .t-card__tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* ---------- SEARCH ---------- */
+    .t-search {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .t-search svg {
+        position: absolute;
+        left: 12px;
+        width: 15px; height: 15px;
+        color: #94a3b8;
+        pointer-events: none;
+    }
+    .t-search input {
+        width: 260px;
+        min-height: 38px;
+        padding: 8px 12px 8px 34px;
+        border: 1px solid var(--t-border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--t-text);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .t-search input:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* ---------- TABLE ---------- */
+    .t-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        max-height: 640px;
+        overflow-y: auto;
+    }
+
+    .t-table-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+    .t-table-wrap::-webkit-scrollbar-track { background: transparent; }
+    .t-table-wrap::-webkit-scrollbar-thumb {
+        background: #cfd8e6;
+        border-radius: 999px;
+        border: 3px solid #fff;
+    }
+    .t-table-wrap::-webkit-scrollbar-thumb:hover { background: #b6c2d4; }
+    .t-table-wrap { scrollbar-width: thin; scrollbar-color: #cfd8e6 transparent; }
+
+    .t-table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .t-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+
+        padding: 12px 20px;
+
+        background: #f8fafc;
+        color: #64748b;
+
+        font-size: 11px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+
+        text-align: left;
+        white-space: nowrap;
+
+        border-bottom: 1px solid var(--t-border);
+    }
+
+    .t-table tbody td {
+        padding: 14px 20px;
+
+        font-size: 13.5px;
+
+        border-bottom: 1px solid #f1f4f9;
+        vertical-align: middle;
+    }
+
+    .t-table tbody tr:last-child td { border-bottom: 0; }
+    .t-table tbody tr:hover { background: #fafbff; }
+
+    /* студент */
+    .t-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .t-user__avatar {
+        display: grid;
+        place-items: center;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 800;
+        font-size: 14px;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+    }
+
+    .t-user__body { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+    .t-user__name { font-weight: 700; color: var(--t-text); }
+    .t-user__meta { color: var(--t-muted); font-size: 11px; }
+
+    /* тест */
+    .t-test-cell { display: flex; flex-direction: column; gap: 2px; }
+    .t-test-cell__title { font-weight: 650; color: var(--t-text); }
+    .t-test-cell__sub   { color: var(--t-muted); font-size: 11.5px; }
+
+    /* результат */
+    .t-result {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .t-result__pct {
+        font-weight: 800;
+        color: var(--t-text);
+        font-size: 14px;
+    }
+
+    .t-result__score {
+        color: var(--t-muted);
+        font-size: 12px;
+    }
+
+    /* прогресс-бар */
+    .t-progress {
+        position: relative;
+
+        width: 90px;
+        height: 6px;
+
+        border-radius: 999px;
+        background: #eef2f8;
+        overflow: hidden;
+    }
+    .t-progress__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+    }
+    .t-progress__fill--green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .t-progress__fill--blue  { background: linear-gradient(90deg, #2563eb, #1d4ed8); }
+    .t-progress__fill--warn  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .t-progress__fill--red   { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+
+    /* оценка */
+    .t-grade {
+        display: inline-grid;
+        place-items: center;
+        min-width: 38px;
+        height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+    .t-grade--5 { background: var(--t-green-soft);  color: #15803d; }
+    .t-grade--4 { background: var(--t-primary-soft); color: #1d4ed8; }
+    .t-grade--3 { background: var(--t-orange-soft);  color: #b45309; }
+    .t-grade--2 { background: var(--t-red-soft);     color: #b91c1c; }
+
+    /* дата */
+    .t-date { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+    .t-date__day { color: var(--t-text); font-weight: 650; }
+    .t-date__time { color: var(--t-muted); font-size: 11.5px; }
+
+    /* пусто */
+    .t-empty {
+        padding: 60px 22px;
+        text-align: center;
+        color: var(--t-muted);
+        font-size: 14px;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 1150px) {
+        .t-layout { grid-template-columns: 1fr; }
+        .t-sidebar { position: static; }
+    }
+
+    @media (max-width: 767.98px) {
+        .t-layout { padding: 1rem 1rem 2rem; }
+        .t-head { flex-direction: column; align-items: stretch; }
+        .t-search input { width: 100%; }
+        .t-search { flex: 1; }
+        .t-card__tools { width: 100%; }
+    }
+
+    @media (max-width: 575.98px) {
+        body::before,
+        body::after { display: none; }
+        .t-card__head { padding: 14px 16px; }
+        .t-table thead th,
+        .t-table tbody td { padding: 12px 14px; }
+    }
+
+    :focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.35);
+        outline-offset: 2px;
+    }
+</style>
+
+
+<div class="t-layout">
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================= -->
+    <aside class="t-sidebar">
+
+        <div class="t-sidebar__brand">
+            <span class="t-sidebar__brand-mark">S</span>
+            <span>STS</span>
+        </div>
+
+        <nav>
+            <ul class="t-sidebar__nav">
+                <li>
+                    <a href="{{ url_for('main.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 11l9-8 9 8"/>
+                            <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>
+                        </svg>
+                        Главная
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('teacher.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="3"/>
+                            <path d="M8 9h8"/>
+                            <path d="M8 13h8"/>
+                            <path d="M8 17h5"/>
+                        </svg>
+                        Мои тесты
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('teacher.dashboard') }}#subjects">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
+                            <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Дисциплины
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('teacher.results') }}" class="is-active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 20V10"/>
+                            <path d="M10 20V4"/>
+                            <path d="M16 20v-8"/>
+                            <path d="M22 20H2"/>
+                        </svg>
+                        Результаты
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.logout') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <path d="M16 17l5-5-5-5"/>
+                            <path d="M21 12H9"/>
+                        </svg>
+                        Выход
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================= -->
+    <div class="t-main">
+
+        <!-- HEAD -->
+        <div class="t-head">
+
+            <div>
+                <span class="t-head__badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7z"/>
+                    </svg>
+                    Кабинет преподавателя
+                </span>
+
+                <h1>Результаты студентов</h1>
+
+                <p>
+                    Все завершённые попытки прохождения ваших тестов.
+                    Вы можете фильтровать результаты и анализировать успеваемость.
+                </p>
+
+                <div class="t-head__actions">
+                    <a class="t-btn" href="{{ url_for('teacher.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5"/>
+                            <path d="M12 19l-7-7 7-7"/>
+                        </svg>
+                        К тестам
+                    </a>
+                </div>
+            </div>
+
+            <div class="t-hero-stat">
+                <div class="t-hero-stat__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 20V10"/>
+                        <path d="M10 20V4"/>
+                        <path d="M16 20v-8"/>
+                        <path d="M22 20H2"/>
+                    </svg>
+                </div>
+                <div class="t-hero-stat__body">
+                    <span class="t-hero-stat__label">Всего попыток</span>
+                    <span class="t-hero-stat__value">{{ attempts|length }}</span>
+                    <span class="t-hero-stat__trend">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12l5-5 5 5 5-5"/>
+                        </svg>
+                        по вашим тестам
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- =========================================================
+             RESULTS TABLE
+        ========================================================= -->
+        <section class="t-card">
+
+            <div class="t-card__head">
+                <div class="t-card__head-left">
+                    <span class="t-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 20V10"/>
+                            <path d="M10 20V4"/>
+                            <path d="M16 20v-8"/>
+                            <path d="M22 20H2"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="t-card__title">Список результатов</h2>
+                        <p class="t-card__sub">
+                            Нажмите на поиск, чтобы отфильтровать по студенту или тесту
+                        </p>
+                    </div>
+                </div>
+
+                <div class="t-card__tools">
+                    <label class="t-search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="M21 21l-4.3-4.3"/>
+                        </svg>
+                        <input type="text" id="results-search"
+                               placeholder="Поиск по студенту, тесту…">
+                    </label>
+                </div>
+            </div>
+
+            {% if attempts %}
+
+                <div class="t-table-wrap">
+
+                    <table class="t-table" id="results-table">
+
+                        <thead>
+                            <tr>
+                                <th>Студент</th>
+                                <th>Тест</th>
+                                <th>Результат</th>
+                                <th>Оценка</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for a in attempts %}
+
+                                {# Цвет прогресса по проценту #}
+                                {% if a.percentage >= 85 %}
+                                    {% set bar = 'green' %}
+                                {% elif a.percentage >= 60 %}
+                                    {% set bar = 'blue' %}
+                                {% elif a.percentage >= 40 %}
+                                    {% set bar = 'warn' %}
+                                {% else %}
+                                    {% set bar = 'red' %}
+                                {% endif %}
+
+                                <tr data-search="{{ (a.student.last_name ~ ' ' ~ a.student.first_name ~ ' ' ~ a.test.title)|lower }}">
+
+                                    <td>
+                                        <div class="t-user">
+                                            <span class="t-user__avatar">
+                                                {{ (a.student.first_name or a.student.username or 'U')[0]|upper }}
+                                            </span>
+                                            <div class="t-user__body">
+                                                <span class="t-user__name">
+                                                    {{ a.student.last_name }} {{ a.student.first_name }}
+                                                </span>
+                                                <span class="t-user__meta">
+                                                    ID: {{ a.student.id }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="t-test-cell">
+                                            <span class="t-test-cell__title">
+                                                {{ a.test.title }}
+                                            </span>
+                                            {% if a.test.subject %}
+                                                <span class="t-test-cell__sub">
+                                                    {{ a.test.subject.name }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div style="display:flex; flex-direction:column; gap:6px;">
+                                            <div class="t-result">
+                                                <span class="t-result__pct">{{ a.percentage }}%</span>
+                                                <span class="t-result__score">
+                                                    ({{ a.score }}/{{ a.max_score }})
+                                                </span>
+                                            </div>
+                                            <div class="t-progress">
+                                                <div class="t-progress__fill t-progress__fill--{{ bar }}"
+                                                     style="width: {{ a.percentage }}%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        {% set g = a.grade if a.grade else 2 %}
+                                        <span class="t-grade t-grade--{{ g }}">{{ g }}</span>
+                                    </td>
+
+                                    <td>
+                                        <div class="t-date">
+                                            <span class="t-date__day">
+                                                {{ a.completed_at.strftime('%d.%m.%Y') }}
+                                            </span>
+                                            <span class="t-date__time">
+                                                {{ a.completed_at.strftime('%H:%M') }}
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="t-empty">
+                    Пока нет завершённых попыток по вашим тестам.
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<script>
+(function () {
+    'use strict';
+
+    var input = document.getElementById('results-search');
+    if (!input) return;
+
+    var rows = document.querySelectorAll('#results-table tbody tr');
+
+    input.addEventListener('input', function () {
+        var q = input.value.trim().toLowerCase();
+
+        rows.forEach(function (row) {
+            var hay = (row.getAttribute('data-search') || '').toLowerCase();
+            row.style.display = (!q || hay.includes(q)) ? '' : 'none';
+        });
+    });
+})();
+</script>
+
+{% endblock %}
