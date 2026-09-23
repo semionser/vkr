@@ -4,23 +4,28 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 
 from app import db
-from app.models import Test, Attempt, StudentAnswer, Answer, TestGrade
+from app.models import Test, Attempt, StudentAnswer
+from app.quiz import (
+    apply_layout,
+    attempt_questions,
+    build_attempt_layout,
+    grade_for,
+    max_score_for,
+    review_permissions,
+    score_question,
+)
 
 
 student_bp = Blueprint("student", __name__)
 
 
+# Запас на задержку сети при автоотправке формы по таймеру.
+# Ответы, пришедшие позже, не засчитываются.
+TIME_GRACE_SECONDS = 30
+
+
 def student_required():
     return current_user.role == "student"
-
-
-def get_grade(test, percentage):
-    grade = TestGrade.query.filter(
-        TestGrade.test_id == test.id,
-        TestGrade.min_percent <= percentage
-    ).order_by(TestGrade.min_percent.desc()).first()
-
-    return grade.grade if grade else 2
 
 
 def get_attempt_count(test_id, student_id):
@@ -63,70 +68,53 @@ def update_best_attempt(attempt):
     attempt.is_best = True
 
 
+def selected_answer_ids(form, question, answers):
+    """ID вариантов, отмеченных студентом, только из этого вопроса."""
+    if form is None:
+        return set()
+
+    allowed = {a.id for a in answers}
+    selected = set()
+
+    for value in form.getlist(f"question_{question.id}"):
+        if value.isdigit() and int(value) in allowed:
+            selected.add(int(value))
+
+    return selected
+
+
 def finish_attempt(attempt, form):
+    """
+    Проверяет ответы и завершает попытку.
+    form=None — время вышло, ответы не принимаются.
+    """
     test = attempt.test
+    mode = test.scoring_mode or "strict"
 
     StudentAnswer.query.filter_by(
         attempt_id=attempt.id
     ).delete(synchronize_session=False)
 
-    score = 0
+    score = 0.0
 
-    questions = sorted(
-        test.questions,
-        key=lambda question: question.question_order
-    )
+    for question, answers in attempt_questions(attempt):
+        selected = selected_answer_ids(form, question, answers)
+        points, fully_correct = score_question(question, selected, mode)
+        score += points
 
-    for question in questions:
-        correct_answers = {
-            answer.id
-            for answer in question.answers
-            if answer.is_correct
-        }
-
-        selected_answers = set()
-
-        values = form.getlist(
-            f"question_{question.id}"
-        )
-
-        for value in values:
-            if not value.isdigit():
-                continue
-
-            answer = db.session.get(
-                Answer,
-                int(value)
-            )
-
-            if answer and answer.question_id == question.id:
-                selected_answers.add(answer.id)
-
-        question_correct = (
-            len(correct_answers) > 0
-            and selected_answers == correct_answers
-        )
-
-        question_points = question.points if question_correct else 0
-
-        if question_correct:
-            score += question.points
-
-        if selected_answers:
-            first_answer = True
-
-            for answer_id in selected_answers:
+        if selected:
+            # Баллы за вопрос записываются в первую строку,
+            # чтобы сумма по StudentAnswer совпадала со score
+            for index, answer_id in enumerate(sorted(selected)):
                 db.session.add(
                     StudentAnswer(
                         attempt_id=attempt.id,
                         question_id=question.id,
                         answer_id=answer_id,
-                        is_correct=question_correct,
-                        points=question_points if first_answer else 0
+                        is_correct=fully_correct,
+                        points=points if index == 0 else 0
                     )
                 )
-
-                first_answer = False
         else:
             db.session.add(
                 StudentAnswer(
@@ -138,7 +126,7 @@ def finish_attempt(attempt, form):
                 )
             )
 
-    attempt.score = score
+    attempt.score = round(score, 2)
 
     if attempt.max_score:
         attempt.percentage = round(
@@ -148,10 +136,7 @@ def finish_attempt(attempt, form):
     else:
         attempt.percentage = 0
 
-    attempt.grade = get_grade(
-        test,
-        attempt.percentage
-    )
+    attempt.grade = grade_for(test, attempt.percentage)
 
     attempt.completed_at = datetime.utcnow()
     attempt.status = "completed"
@@ -184,6 +169,10 @@ def dashboard():
 
     for test in tests:
         if not test.questions:
+            continue
+
+        # Тест назначен другим группам — студент его не видит
+        if not test.is_available_for(current_user):
             continue
 
         attempts_count = get_attempt_count(
@@ -277,7 +266,7 @@ def start_test(test_id):
         test_id
     )
 
-    if test.status != "published":
+    if test.status != "published" or not test.is_available_for(current_user):
         flash(
             "Тест недоступен.",
             "danger"
@@ -328,21 +317,22 @@ def start_test(test_id):
             url_for("student.dashboard")
         )
 
-    max_score = sum(
-        question.points
-        for question in test.questions
-    )
+    # Случайная выборка вопросов и перемешивание фиксируются
+    # в попытке, чтобы не меняться при обновлении страницы
+    question_ids, answer_orders = build_attempt_layout(test)
 
     attempt = Attempt(
         test_id=test.id,
         student_id=current_user.id,
-        max_score=max_score,
+        max_score=max_score_for(question_ids),
         score=0,
         percentage=0,
         grade=None,
         status="in_progress",
         is_best=False
     )
+
+    apply_layout(attempt, question_ids, answer_orders)
 
     db.session.add(attempt)
     db.session.commit()
@@ -390,17 +380,19 @@ def take_test(attempt_id):
         attempt.test.time_limit * 60
     )
 
-    if elapsed_seconds >= time_limit_seconds:
-        return finish_attempt(
-            attempt,
-            request.form
-        )
+    if elapsed_seconds >= time_limit_seconds + TIME_GRACE_SECONDS:
+        # Время вышло давно — ответы из формы не принимаем
+        flash("Время на прохождение теста истекло.", "warning")
+        return finish_attempt(attempt, None)
 
     if request.method == "POST":
         return finish_attempt(
             attempt,
             request.form
         )
+
+    if elapsed_seconds >= time_limit_seconds:
+        return finish_attempt(attempt, None)
 
     remaining_seconds = max(
         0,
@@ -409,15 +401,10 @@ def take_test(attempt_id):
         )
     )
 
-    questions = sorted(
-        attempt.test.questions,
-        key=lambda question: question.question_order
-    )
-
     return render_template(
         "student/take_test.html",
         attempt=attempt,
-        questions=questions,
+        items=attempt_questions(attempt),
         remaining_seconds=remaining_seconds
     )
 
@@ -441,10 +428,79 @@ def result(attempt_id):
         current_user.id
     )
 
+    can_review, _ = review_permissions(attempt, attempts_count)
+
     return render_template(
         "student/result.html",
         attempt=attempt,
-        attempts_count=attempts_count
+        attempts_count=attempts_count,
+        can_review=can_review
+    )
+
+
+@student_bp.route("/result/<int:attempt_id>/review")
+@login_required
+def review(attempt_id):
+    if not student_required():
+        return redirect(url_for("main.index"))
+
+    attempt = db.get_or_404(Attempt, attempt_id)
+
+    if attempt.student_id != current_user.id:
+        return redirect(url_for("main.index"))
+
+    attempts_count = get_attempt_count(attempt.test_id, current_user.id)
+    can_review, show_correct = review_permissions(attempt, attempts_count)
+
+    if not can_review:
+        flash("Преподаватель отключил просмотр разбора для этого теста.", "warning")
+        return redirect(url_for("student.result", attempt_id=attempt.id))
+
+    # Ответы студента по вопросам
+    chosen = {}
+    earned = {}
+    for sa in attempt.student_answers:
+        if sa.answer_id is not None:
+            chosen.setdefault(sa.question_id, set()).add(sa.answer_id)
+        earned[sa.question_id] = earned.get(sa.question_id, 0) + (sa.points or 0)
+
+    items = []
+    for question, answers in attempt_questions(attempt):
+        selected = chosen.get(question.id, set())
+        points = earned.get(question.id, 0)
+
+        if points >= question.points:
+            status = "correct"
+        elif points > 0:
+            status = "partial"
+        else:
+            status = "wrong"
+
+        items.append({
+            "question": question,
+            "answers": answers,
+            "selected": selected,
+            "points": points,
+            "status": status,
+        })
+
+    summary = {
+        "correct": sum(1 for i in items if i["status"] == "correct"),
+        "partial": sum(1 for i in items if i["status"] == "partial"),
+        "wrong": sum(1 for i in items if i["status"] == "wrong"),
+    }
+
+    attempts_left = None
+    if attempt.test.max_attempts is not None:
+        attempts_left = max(0, attempt.test.max_attempts - attempts_count)
+
+    return render_template(
+        "student/review.html",
+        attempt=attempt,
+        items=items,
+        summary=summary,
+        show_correct=show_correct,
+        attempts_left=attempts_left
     )
 
 

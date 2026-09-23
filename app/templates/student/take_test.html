@@ -650,6 +650,14 @@
             outline: 3px solid rgba(37, 99, 235, 0.35);
             outline-offset: 2px;
         }
+        .test-head__note {
+            margin-top: 0.6rem;
+            max-width: 640px;
+            color: var(--app-muted);
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+
     </style>
 </head>
 
@@ -719,10 +727,23 @@
             <h1>{{ attempt.test.title }}</h1>
 
             <div class="test-head__meta">
-                {{ questions|length }}
-                {% if questions|length == 1 %}вопрос{% elif questions|length < 5 %}вопроса{% else %}вопросов{% endif %}
+                {{ items|length }}
+                {% if items|length == 1 %}вопрос{% elif items|length < 5 %}вопроса{% else %}вопросов{% endif %}
                 · макс. {{ attempt.max_score }} баллов
             </div>
+
+            {% if attempt.test.scoring_mode == 'partial' %}
+                <div class="test-head__note">
+                    В вопросах может быть несколько правильных вариантов.
+                    Балл начисляется частично: за каждый верно отмеченный вариант
+                    он растёт, за ошибочно отмеченный — уменьшается.
+                </div>
+            {% else %}
+                <div class="test-head__note">
+                    В вопросах может быть несколько правильных вариантов.
+                    Балл начисляется, только если отмечены все правильные и ни одного лишнего.
+                </div>
+            {% endif %}
 
         </div>
 
@@ -744,7 +765,7 @@
          ========================================================= -->
     <form method="post" id="test-form" autocomplete="off">
 
-        {% for question in questions %}
+        {% for question, answers in items %}
 
             <div class="question-card">
 
@@ -774,7 +795,7 @@
 
                 <ul class="answer-list">
 
-                    {% for answer in question.answers|sort(attribute="answer_order") %}
+                    {% for answer in answers %}
 
                         <li>
                             <label class="answer" for="answer_{{ answer.id }}">

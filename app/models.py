@@ -1,9 +1,51 @@
+import json
 from datetime import datetime
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
+
+
+# =========================================================
+# TEST ↔ GROUP (многие ко многим)
+# Если у теста нет ни одной группы — он доступен всем студентам.
+# =========================================================
+
+test_groups = db.Table(
+    "test_groups",
+    db.Column(
+        "test_id",
+        db.Integer,
+        db.ForeignKey("tests.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "group_id",
+        db.Integer,
+        db.ForeignKey("groups.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+# =========================================================
+# GROUP (учебная группа)
+# =========================================================
+
+class Group(db.Model):
+    __tablename__ = "groups"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    students = db.relationship(
+        "User",
+        back_populates="group",
+        lazy=True,
+    )
 
 
 # =========================================================
@@ -22,6 +64,15 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default="student")
     is_active_user = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Учебная группа (только для студентов)
+    group_id = db.Column(
+        db.Integer,
+        db.ForeignKey("groups.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    group = db.relationship("Group", back_populates="students")
 
     # Тесты, созданные пользователем, удаляются вместе с ним
     created_tests = db.relationship(
@@ -102,6 +153,39 @@ class Test(db.Model):
 
     status = db.Column(db.String(20), nullable=False, default="draft")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # --- Защита от списывания ---
+    shuffle_questions = db.Column(db.Boolean, nullable=False, default=False)
+    shuffle_answers = db.Column(db.Boolean, nullable=False, default=False)
+    # Сколько вопросов случайно выбирать из банка; None = все вопросы
+    questions_per_attempt = db.Column(db.Integer, nullable=True)
+
+    # --- Оценивание ---
+    # "strict"  — балл только за полностью верный ответ
+    # "partial" — частичный балл за вопросы с несколькими ответами
+    scoring_mode = db.Column(db.String(20), nullable=False, default="strict")
+
+    # --- Разбор ошибок после завершения ---
+    # "none"      — только итог
+    # "own"       — свои ответы и отметки верно/неверно
+    # "after_all" — как "own", а правильные ответы после последней попытки
+    # "always"    — правильные ответы сразу после каждой попытки
+    review_mode = db.Column(db.String(20), nullable=False, default="after_all")
+
+    groups = db.relationship(
+        "Group",
+        secondary=test_groups,
+        lazy="subquery",
+        backref=db.backref("tests", lazy=True),
+    )
+
+    def is_available_for(self, user):
+        """Доступен ли тест студенту с учётом учебных групп."""
+        if not self.groups:
+            return True
+        return user.group_id is not None and any(
+            g.id == user.group_id for g in self.groups
+        )
 
     questions = db.relationship(
         "Question",
@@ -244,7 +328,8 @@ class Attempt(db.Model):
 
     completed_at = db.Column(db.DateTime)
 
-    score = db.Column(db.Integer, default=0, nullable=False)
+    # Float — при частичном оценивании балл может быть дробным
+    score = db.Column(db.Float, default=0, nullable=False)
     max_score = db.Column(db.Integer, default=0, nullable=False)
     percentage = db.Column(db.Float, default=0, nullable=False)
     grade = db.Column(db.Integer)
@@ -256,6 +341,25 @@ class Attempt(db.Model):
     )
 
     is_best = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Набор вопросов этой попытки и порядок вариантов (JSON).
+    # Фиксируется при старте, чтобы обновление страницы
+    # не меняло вопросы и порядок ответов.
+    question_order_json = db.Column(db.Text)  # [qid, qid, ...]
+    answer_order_json = db.Column(db.Text)    # {"qid": [aid, aid, ...]}
+
+    @property
+    def question_ids(self):
+        """ID вопросов попытки в порядке показа (или None для старых попыток)."""
+        if not self.question_order_json:
+            return None
+        return json.loads(self.question_order_json)
+
+    @property
+    def answer_orders(self):
+        if not self.answer_order_json:
+            return {}
+        return {int(k): v for k, v in json.loads(self.answer_order_json).items()}
 
     test = db.relationship(
         "Test",
@@ -299,4 +403,4 @@ class StudentAnswer(db.Model):
     )
 
     is_correct = db.Column(db.Boolean, default=False, nullable=False)
-    points = db.Column(db.Integer, default=0, nullable=False)
+    points = db.Column(db.Float, default=0, nullable=False)

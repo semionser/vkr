@@ -17,8 +17,11 @@ from app.models import (
     Question,
     Answer,
     Attempt,
-    TestGrade
+    TestGrade,
+    Group,
+    User
 )
+from app.quiz import SCORING_MODES, REVIEW_MODES
 
 
 teacher_bp = Blueprint("teacher", __name__)
@@ -26,6 +29,44 @@ teacher_bp = Blueprint("teacher", __name__)
 
 def teacher_required():
     return current_user.role == "teacher"
+
+
+def options_context():
+    """Данные для блока дополнительных параметров теста."""
+    return {
+        "groups": Group.query.order_by(Group.name).all(),
+        "scoring_modes": SCORING_MODES,
+        "review_modes": REVIEW_MODES,
+    }
+
+
+def apply_test_options(test, form):
+    """
+    Сохраняет перемешивание, выборку вопросов, режим оценивания,
+    разбор ошибок и группы. Бросает ValueError при неверном числе.
+    """
+    test.shuffle_questions = form.get("shuffle_questions") == "1"
+    test.shuffle_answers = form.get("shuffle_answers") == "1"
+
+    raw_limit = form.get("questions_per_attempt", "").strip()
+    test.questions_per_attempt = max(1, int(raw_limit)) if raw_limit else None
+
+    scoring_mode = form.get("scoring_mode", "strict")
+    test.scoring_mode = scoring_mode if scoring_mode in SCORING_MODES else "strict"
+
+    review_mode = form.get("review_mode", "after_all")
+    test.review_mode = review_mode if review_mode in REVIEW_MODES else "after_all"
+
+    group_ids = {
+        int(value)
+        for value in form.getlist("group_ids")
+        if value.isdigit()
+    }
+
+    test.groups = (
+        Group.query.filter(Group.id.in_(group_ids)).all()
+        if group_ids else []
+    )
 
 
 
@@ -124,7 +165,8 @@ def create_test():
 
             return render_template(
                 "teacher/create_test.html",
-                subjects=subjects
+                subjects=subjects,
+                **options_context()
             )
 
         try:
@@ -227,7 +269,8 @@ def create_test():
 
             return render_template(
                 "teacher/create_test.html",
-                subjects=subjects
+                subjects=subjects,
+                **options_context()
             )
 
         # Создаём тест
@@ -241,6 +284,20 @@ def create_test():
             passing_score=passing_score,
             max_attempts=max_attempts
         )
+
+        try:
+            apply_test_options(test, request.form)
+        except (ValueError, TypeError):
+            flash(
+                "Проверьте количество вопросов в попытке.",
+                "danger"
+            )
+
+            return render_template(
+                "teacher/create_test.html",
+                subjects=subjects,
+                **options_context()
+            )
 
         db.session.add(test)
         db.session.flush()
@@ -280,7 +337,8 @@ def create_test():
 
     return render_template(
         "teacher/create_test.html",
-        subjects=subjects
+        subjects=subjects,
+        **options_context()
     )
 
 
@@ -444,8 +502,49 @@ def edit_test(test_id):
 
     return render_template(
         "teacher/edit_test.html",
-        test=test
+        test=test,
+        **options_context()
     )
+
+
+@teacher_bp.route("/test/<int:test_id>/settings", methods=["POST"])
+@login_required
+def update_test_settings(test_id):
+    if not teacher_required():
+        return redirect(url_for("main.index"))
+
+    test = db.get_or_404(Test, test_id)
+
+    if test.teacher_id != current_user.id:
+        return redirect(url_for("teacher.dashboard"))
+
+    title = request.form.get("title", "").strip()
+
+    if not title:
+        flash("Название теста не может быть пустым.", "danger")
+        return redirect(url_for("teacher.edit_test", test_id=test.id))
+
+    try:
+        time_limit = max(1, int(request.form.get("time_limit", test.time_limit)))
+
+        raw_attempts = request.form.get("max_attempts", "").strip()
+        max_attempts = max(1, int(raw_attempts)) if raw_attempts else None
+
+        apply_test_options(test, request.form)
+    except (ValueError, TypeError):
+        db.session.rollback()
+        flash("Проверьте числовые значения.", "danger")
+        return redirect(url_for("teacher.edit_test", test_id=test.id))
+
+    test.title = title
+    test.description = request.form.get("description", "").strip()
+    test.time_limit = time_limit
+    test.max_attempts = max_attempts
+
+    db.session.commit()
+
+    flash("Настройки теста сохранены.", "success")
+    return redirect(url_for("teacher.edit_test", test_id=test.id))
 
 
 @teacher_bp.route("/test/<int:test_id>/question/<int:question_id>/edit", methods=["GET", "POST"])
@@ -643,22 +742,33 @@ def results():
     if not teacher_required():
         return redirect(url_for("main.index"))
 
-    attempts = (
+    query = (
         Attempt.query
         .join(Test)
         .filter(
             Test.teacher_id == current_user.id,
             Attempt.status == "completed"
         )
-        .order_by(
-            Attempt.completed_at.desc()
-        )
-        .all()
     )
+
+    # Фильтр по учебной группе студента
+    group_id = request.args.get("group", type=int)
+    if group_id:
+        query = (
+            query
+            .join(User, Attempt.student_id == User.id)
+            .filter(User.group_id == group_id)
+        )
+
+    attempts = query.order_by(
+        Attempt.completed_at.desc()
+    ).all()
 
     return render_template(
         "teacher/results.html",
-        attempts=attempts
+        attempts=attempts,
+        groups=Group.query.order_by(Group.name).all(),
+        current_group=group_id
     )
 # =========================================================
 # SUBJECTS — CREATE / EDIT / DELETE (для преподавателя)

@@ -699,6 +699,20 @@
                 </div>
 
                 <div class="t-card__tools">
+                    {% if groups %}
+                        <form method="get" style="margin:0;">
+                            <select name="group" onchange="this.form.submit()"
+                                    style="min-height:40px; padding:6px 12px; border:1px solid var(--t-border);
+                                           border-radius:10px; background:#fff; font-size:14px;">
+                                <option value="">Все группы</option>
+                                {% for g in groups %}
+                                    <option value="{{ g.id }}" {% if current_group == g.id %}selected{% endif %}>
+                                        {{ g.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    {% endif %}
                     <label class="t-search">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -742,7 +756,7 @@
                                     {% set bar = 'red' %}
                                 {% endif %}
 
-                                <tr data-search="{{ (a.student.last_name ~ ' ' ~ a.student.first_name ~ ' ' ~ a.test.title)|lower }}">
+                                <tr data-search="{{ (a.student.last_name ~ ' ' ~ a.student.first_name ~ ' ' ~ a.test.title ~ ' ' ~ (a.student.group.name if a.student.group else ''))|lower }}">
 
                                     <td>
                                         <div class="t-user">
@@ -754,7 +768,7 @@
                                                     {{ a.student.last_name }} {{ a.student.first_name }}
                                                 </span>
                                                 <span class="t-user__meta">
-                                                    ID: {{ a.student.id }}
+                                                    ID: {{ a.student.id }}{% if a.student.group %} · {{ a.student.group.name }}{% endif %}
                                                 </span>
                                             </div>
                                         </div>
@@ -778,7 +792,7 @@
                                             <div class="t-result">
                                                 <span class="t-result__pct">{{ a.percentage }}%</span>
                                                 <span class="t-result__score">
-                                                    ({{ a.score }}/{{ a.max_score }})
+                                                    ({{ a.score|num }}/{{ a.max_score }})
                                                 </span>
                                             </div>
                                             <div class="t-progress">

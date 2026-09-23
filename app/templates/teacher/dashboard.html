@@ -1015,6 +1015,13 @@
                                         {{ test.description }}
                                     </div>
                                 {% endif %}
+                                <div class="t-test-row__sub" style="color:#1d4ed8;">
+                                    {% if test.groups %}
+                                        Группы: {{ test.groups|map(attribute='name')|join(', ') }}
+                                    {% else %}
+                                        Доступен всем группам
+                                    {% endif %}
+                                </div>
                             </div>
 
                             <div class="t-test-row__subject">

@@ -1040,6 +1040,73 @@
 
 
         <!-- =========================================================
+             SETTINGS
+        ========================================================= -->
+        <form method="post"
+              action="{{ url_for('teacher.update_test_settings', test_id=test.id) }}"
+              class="t-card">
+
+            <div class="t-card__head">
+                <div class="t-card__head-left">
+                    <span class="t-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="t-card__title">Настройки теста</h2>
+                        <p class="t-card__sub">Параметры прохождения, защита от списывания и доступ</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="t-card__body">
+
+                <div class="to-grid" style="margin-bottom:14px;">
+                    <label class="to-field">
+                        <span class="to-label">Название теста</span>
+                        <input class="to-input" name="title" value="{{ test.title }}" required>
+                    </label>
+
+                    <label class="to-field">
+                        <span class="to-label">Описание</span>
+                        <input class="to-input" name="description" value="{{ test.description or '' }}">
+                    </label>
+
+                    <label class="to-field">
+                        <span class="to-label">Время, минут</span>
+                        <input class="to-input" type="number" name="time_limit" min="1"
+                               value="{{ test.time_limit }}" required>
+                    </label>
+
+                    <label class="to-field">
+                        <span class="to-label">Количество попыток</span>
+                        <input class="to-input" type="number" name="max_attempts" min="1"
+                               placeholder="Без ограничений"
+                               value="{{ test.max_attempts or '' }}">
+                    </label>
+                </div>
+
+                {% include "teacher/_test_options.html" %}
+
+                <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                    <button class="t-btn t-btn--primary" type="submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12l5 5L20 7"/>
+                        </svg>
+                        Сохранить настройки
+                    </button>
+                </div>
+
+            </div>
+
+        </form>
+
+
+        <!-- =========================================================
              ADD QUESTION FORM
         ========================================================= -->
         <form method="post" class="t-card">

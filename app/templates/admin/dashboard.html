@@ -918,6 +918,27 @@
         transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .adm-textarea { min-height: 90px; resize: vertical; }
+
+    .adm-group-create {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        gap: 10px;
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--adm-border);
+    }
+
+    .adm-group-edit {
+        display: grid;
+        grid-template-columns: minmax(120px, 0.8fr) minmax(160px, 1.2fr);
+        gap: 8px;
+        min-width: 320px;
+    }
+
+    .adm-group-edit .adm-input { min-height: 36px; padding: 6px 10px; }
+
+    @media (max-width: 767.98px) {
+        .adm-group-create { grid-template-columns: 1fr; padding: 14px 16px; }
+    }
     .adm-input:focus,
     .adm-textarea:focus {
         border-color: #93c5fd;
@@ -1497,6 +1518,7 @@
                         <th>Email</th>
                         <th>ФИО</th>
                         <th>Роль</th>
+                        <th>Группа</th>
                         <th>Статус</th>
                         <th>Действия</th>
                     </tr>
@@ -1508,7 +1530,7 @@
 
                         <tr data-username="{{ u.username|lower }}"
                             data-email="{{ (u.email or '')|lower }}"
-                            data-fio="{{ (u.last_name ~ ' ' ~ u.first_name)|lower }}">
+                            data-fio="{{ (u.last_name ~ ' ' ~ u.first_name ~ ' ' ~ (u.group.name if u.group else ''))|lower }}">
 
                             <td style="color:var(--adm-muted); font-weight:650;">{{ loop.index }}</td>
 
@@ -1534,6 +1556,26 @@
                                     <span class="adm-badge adm-badge--teacher">Преподаватель</span>
                                 {% else %}
                                     <span class="adm-badge adm-badge--student">Студент</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if u.role == 'student' %}
+                                    <form method="post"
+                                          action="{{ url_for('admin.change_user_group', user_id=u.id) }}"
+                                          style="display:inline;">
+                                        <select name="group_id" class="adm-select"
+                                                onchange="this.form.submit()">
+                                            <option value="">Без группы</option>
+                                            {% for g in groups %}
+                                                <option value="{{ g.id }}" {% if u.group_id == g.id %}selected{% endif %}>
+                                                    {{ g.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                {% else %}
+                                    <span style="color:var(--adm-muted);">—</span>
                                 {% endif %}
                             </td>
 
@@ -1597,6 +1639,101 @@
                 </tbody>
             </table>
         </div>
+
+    </div>
+
+
+    <!-- GROUPS -->
+    <div class="adm-card" id="groups">
+
+        <div class="adm-card__head">
+            <div class="adm-card__head-left">
+                <span class="adm-card__head-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10L12 5 2 10l10 5 10-5z"/>
+                        <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+                    </svg>
+                </span>
+                <div>
+                    <h2 class="adm-card__title">Учебные группы</h2>
+                    <p class="adm-card__sub">
+                        Преподаватель назначает тесты группам. Тест без групп видят все студенты.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{{ url_for('admin.create_group') }}" class="adm-group-create">
+            <input type="text" name="name" class="adm-input" placeholder="Название, например ИВТ-21" required>
+            <input type="text" name="description" class="adm-input" placeholder="Описание (необязательно)">
+            <button type="submit" class="adm-btn adm-btn--primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14"/>
+                    <path d="M5 12h14"/>
+                </svg>
+                Добавить группу
+            </button>
+        </form>
+
+        {% if groups %}
+            <div class="adm-table-wrap">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Группа</th>
+                            <th>Студентов</th>
+                            <th>Назначено тестов</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in groups %}
+                            <tr>
+                                <td>
+                                    <form method="post"
+                                          action="{{ url_for('admin.edit_group', group_id=g.id) }}"
+                                          class="adm-group-edit" id="group-form-{{ g.id }}">
+                                        <input type="text" name="name" class="adm-input"
+                                               value="{{ g.name }}" required>
+                                        <input type="text" name="description" class="adm-input"
+                                               value="{{ g.description or '' }}" placeholder="Описание">
+                                    </form>
+                                </td>
+                                <td><b>{{ g.students|length }}</b></td>
+                                <td><b>{{ g.tests|length }}</b></td>
+                                <td>
+                                    <div class="adm-actions">
+                                        <button type="submit" form="group-form-{{ g.id }}" class="adm-btn"
+                                                style="min-height:34px; padding:5px 12px; font-size:12px;">
+                                            Сохранить
+                                        </button>
+                                        <button type="button"
+                                                class="adm-icon-btn adm-icon-btn--danger"
+                                                data-role="group"
+                                                data-name="{{ g.name|e }}"
+                                                data-url="{{ url_for('admin.delete_group', group_id=g.id) }}"
+                                                title="Удалить">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18"/>
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding: 18px 22px; color: var(--adm-muted);">
+                Групп пока нет. Пока их нет, все опубликованные тесты видят все студенты.
+            </div>
+        {% endif %}
 
     </div>
 
@@ -1989,7 +2126,7 @@
             return;
         }
 
-        var delBtn = e.target.closest('[data-role="user"], [data-role="subject"], [data-role="test"]');
+        var delBtn = e.target.closest('[data-role="user"], [data-role="subject"], [data-role="test"], [data-role="group"]');
         if (delBtn) {
             e.preventDefault();
 
@@ -2000,7 +2137,8 @@
             var titles = {
                 user:    ['Удалить пользователя?',  'Все связанные данные также будут удалены.'],
                 subject: ['Удалить дисциплину?',    'Вместе с ней удалятся все её тесты и вопросы.'],
-                test:    ['Удалить тест?',          'Вместе с ним удалятся все вопросы и ответы.']
+                test:    ['Удалить тест?',          'Вместе с ним удалятся все вопросы и ответы.'],
+                group:   ['Удалить группу?',        'Студенты останутся в системе без группы, результаты сохранятся.']
             };
 
             var t = titles[role] || ['Удалить?', ''];

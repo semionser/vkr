@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user
 from app import db
-from app.models import User
+from app.models import User, Group
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -19,6 +19,11 @@ def login():
         flash("Неверный логин или пароль.", "danger")
     return render_template("auth/login.html")
 
+def render_register():
+    groups = Group.query.order_by(Group.name).all()
+    return render_template("auth/register.html", groups=groups)
+
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -30,21 +35,25 @@ def register():
 
         if not all([username, password, first_name, last_name]):
             flash("Заполните обязательные поля.", "danger")
-            return render_template("auth/register.html")
+            return render_register()
 
         if User.query.filter_by(username=username).first():
             flash("Такой логин уже существует.", "danger")
-            return render_template("auth/register.html")
+            return render_register()
+
+        group_raw = request.form.get("group_id", "").strip()
+        group = db.session.get(Group, int(group_raw)) if group_raw.isdigit() else None
 
         user = User(username=username, email=email, first_name=first_name,
-                    last_name=last_name, role="student")
+                    last_name=last_name, role="student",
+                    group_id=group.id if group else None)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
         flash("Регистрация выполнена. Теперь войдите.", "success")
         return redirect(url_for("auth.login"))
 
-    return render_template("auth/register.html")
+    return render_register()
 
 @auth_bp.route("/logout")
 def logout():

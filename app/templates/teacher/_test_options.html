@@ -1,0 +1,240 @@
+{#
+    Дополнительные параметры теста: защита от списывания, оценивание,
+    разбор ошибок, учебные группы.
+    Ожидает: test (или None при создании), groups, scoring_modes, review_modes.
+#}
+
+<style>
+    .to-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 18px;
+    }
+
+    .to-field { display: block; margin: 0; }
+
+    .to-label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--t-text);
+        font-size: 13px;
+        font-weight: 650;
+    }
+
+    .to-hint {
+        display: block;
+        margin-top: 5px;
+        color: var(--t-muted);
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .to-input,
+    .to-select {
+        width: 100%;
+        min-height: 42px;
+        padding: 8px 12px;
+        border: 1px solid var(--t-border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--t-text);
+        font-size: 14px;
+    }
+
+    .to-input:focus,
+    .to-select:focus {
+        outline: none;
+        border-color: var(--t-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .to-switch {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 11px 13px;
+        border: 1px solid var(--t-border);
+        border-radius: 12px;
+        background: #f8fafc;
+        cursor: pointer;
+    }
+
+    .to-switch input {
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        flex: 0 0 auto;
+        accent-color: var(--t-primary);
+    }
+
+    .to-switch b {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 650;
+    }
+
+    .to-switch small {
+        display: block;
+        color: var(--t-muted);
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .to-groups {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .to-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 12px;
+        border: 1px solid var(--t-border);
+        border-radius: 999px;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .to-chip input { accent-color: var(--t-primary); }
+
+    .to-chip:has(input:checked) {
+        border-color: var(--t-primary);
+        background: var(--t-primary-soft);
+        color: #1e3a8a;
+    }
+
+    .to-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 22px 0 14px;
+        color: var(--t-text);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .to-divider hr {
+        flex: 1;
+        margin: 0;
+        border-color: var(--t-border);
+        opacity: 1;
+    }
+
+    @media (max-width: 767.98px) {
+        .to-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+
+<div class="to-divider">
+    <span>Защита от списывания</span>
+    <hr>
+</div>
+
+<div class="to-grid">
+
+    <label class="to-switch">
+        <input type="checkbox" name="shuffle_questions" value="1"
+               {% if test and test.shuffle_questions %}checked{% endif %}>
+        <span>
+            <b>Перемешивать вопросы</b>
+            <small>У каждого студента свой порядок вопросов</small>
+        </span>
+    </label>
+
+    <label class="to-switch">
+        <input type="checkbox" name="shuffle_answers" value="1"
+               {% if test and test.shuffle_answers %}checked{% endif %}>
+        <span>
+            <b>Перемешивать варианты ответов</b>
+            <small>Порядок вариантов внутри вопроса случайный</small>
+        </span>
+    </label>
+
+    <label class="to-field">
+        <span class="to-label">Вопросов в одной попытке</span>
+        <input class="to-input" type="number" name="questions_per_attempt" min="1"
+               placeholder="Все вопросы"
+               value="{{ test.questions_per_attempt if test and test.questions_per_attempt else '' }}">
+        <small class="to-hint">
+            Пусто — все вопросы. Если указать меньше, чем в банке,
+            каждому студенту достанется случайный набор.
+            {% if test %}Сейчас в банке: {{ test.questions|length }}.{% endif %}
+        </small>
+    </label>
+
+</div>
+
+
+<div class="to-divider">
+    <span>Оценивание и разбор</span>
+    <hr>
+</div>
+
+<div class="to-grid">
+
+    <label class="to-field">
+        <span class="to-label">Начисление баллов</span>
+        <select class="to-select" name="scoring_mode">
+            {% for key, label in scoring_modes.items() %}
+                <option value="{{ key }}"
+                        {% if (test.scoring_mode if test else 'strict') == key %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+        <small class="to-hint">
+            Частичные баллы: (верно отмеченные − ошибочно отмеченные) / число правильных.
+            Отметить всё подряд не выйдет — лишние отметки снижают балл.
+        </small>
+    </label>
+
+    <label class="to-field">
+        <span class="to-label">Разбор ошибок для студента</span>
+        <select class="to-select" name="review_mode">
+            {% for key, label in review_modes.items() %}
+                <option value="{{ key }}"
+                        {% if (test.review_mode if test else 'after_all') == key %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+        <small class="to-hint">
+            «После последней попытки» при неограниченных попытках
+            правильные ответы не покажет никогда — только отметки верно/неверно.
+        </small>
+    </label>
+
+</div>
+
+
+<div class="to-divider">
+    <span>Доступ для групп</span>
+    <hr>
+</div>
+
+{% if groups %}
+    {% set selected_ids = test.groups|map(attribute='id')|list if test else [] %}
+    <div class="to-groups">
+        {% for g in groups %}
+            <label class="to-chip">
+                <input type="checkbox" name="group_ids" value="{{ g.id }}"
+                       {% if g.id in selected_ids %}checked{% endif %}>
+                {{ g.name }}
+            </label>
+        {% endfor %}
+    </div>
+    <small class="to-hint">
+        Если не выбрана ни одна группа, тест видят все студенты.
+    </small>
+{% else %}
+    <small class="to-hint">
+        Учебные группы ещё не созданы — тест будет доступен всем студентам.
+        Группы добавляет администратор.
+    </small>
+{% endif %}

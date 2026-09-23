@@ -890,6 +890,12 @@
 
 <main class="page-wrap">
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="border-radius:12px;">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
     <!-- =========================================================
          HEAD
          ========================================================= -->
@@ -907,6 +913,12 @@
             </span>
 
             <h1>Кабинет студента</h1>
+
+            {% if current_user.group %}
+                <div style="margin:-0.2rem 0 0.5rem; font-weight:650; color:#1d4ed8;">
+                    Группа {{ current_user.group.name }}
+                </div>
+            {% endif %}
 
             <p>
                 Здесь вы можете проходить тесты, просматривать результаты
@@ -1225,7 +1237,7 @@
                                 <td>
                                     <b>{{ attempt.percentage }}%</b>
                                     <span style="color:var(--app-muted);">
-                                        ({{ attempt.score }}/{{ attempt.max_score }})
+                                        ({{ attempt.score|num }}/{{ attempt.max_score }})
                                     </span>
                                 </td>
 

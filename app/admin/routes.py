@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, desc
 
 from app import db
-from app.models import User, Subject, Test, Attempt
+from app.models import User, Subject, Test, Attempt, Group
 
 
 
@@ -27,6 +27,7 @@ def dashboard():
 
     users = User.query.order_by(User.created_at.desc()).all()
     subjects = Subject.query.order_by(Subject.name).all()
+    groups = Group.query.order_by(Group.name).all()
 
     # =========================================================
     # АНАЛИТИКА
@@ -146,6 +147,7 @@ def dashboard():
         "admin/dashboard.html",
         users=users,
         subjects=subjects,
+        groups=groups,
         # аналитика
         grade_distribution=grade_distribution,
         total_completed=total_completed,
@@ -357,4 +359,104 @@ def delete_test(test_id):
         print("DELETE TEST ERROR:", e)
         flash(f"Не удалось удалить тест {test_title}: {e}", "danger")
 
+    return redirect(url_for("admin.dashboard"))
+
+
+# =========================================================
+# GROUPS — CREATE / RENAME / DELETE
+# =========================================================
+
+@admin_bp.route("/group/create", methods=["POST"])
+@login_required
+def create_group():
+    if not admin_required():
+        return redirect(url_for("main.index"))
+
+    name = request.form.get("name", "").strip()
+    description = request.form.get("description", "").strip() or None
+
+    if not name:
+        flash("Название группы не может быть пустым.", "danger")
+        return redirect(url_for("admin.dashboard") + "#groups")
+
+    if Group.query.filter_by(name=name).first():
+        flash(f"Группа «{name}» уже существует.", "danger")
+        return redirect(url_for("admin.dashboard") + "#groups")
+
+    db.session.add(Group(name=name, description=description))
+    db.session.commit()
+
+    flash(f"Группа «{name}» создана.", "success")
+    return redirect(url_for("admin.dashboard") + "#groups")
+
+
+@admin_bp.route("/group/<int:group_id>/edit", methods=["POST"])
+@login_required
+def edit_group(group_id):
+    if not admin_required():
+        return redirect(url_for("main.index"))
+
+    group = db.get_or_404(Group, group_id)
+    name = request.form.get("name", "").strip()
+
+    if not name:
+        flash("Название группы не может быть пустым.", "danger")
+        return redirect(url_for("admin.dashboard") + "#groups")
+
+    duplicate = Group.query.filter(Group.name == name, Group.id != group.id).first()
+    if duplicate:
+        flash(f"Группа «{name}» уже существует.", "danger")
+        return redirect(url_for("admin.dashboard") + "#groups")
+
+    group.name = name
+    group.description = request.form.get("description", "").strip() or None
+    db.session.commit()
+
+    flash(f"Группа «{name}» обновлена.", "success")
+    return redirect(url_for("admin.dashboard") + "#groups")
+
+
+@admin_bp.route("/group/<int:group_id>/delete", methods=["POST"])
+@login_required
+def delete_group(group_id):
+    if not admin_required():
+        return redirect(url_for("main.index"))
+
+    group = db.get_or_404(Group, group_id)
+    name = group.name
+
+    # Студенты остаются без группы, тесты теряют привязку к ней
+    for student in group.students:
+        student.group_id = None
+    group.tests = []
+
+    db.session.delete(group)
+    db.session.commit()
+
+    flash(f"Группа «{name}» удалена. Студенты из неё остались без группы.", "success")
+    return redirect(url_for("admin.dashboard") + "#groups")
+
+
+@admin_bp.route("/user/<int:user_id>/group", methods=["POST"])
+@login_required
+def change_user_group(user_id):
+    if not admin_required():
+        return redirect(url_for("main.index"))
+
+    user = db.get_or_404(User, user_id)
+    raw = request.form.get("group_id", "").strip()
+
+    if raw:
+        group = db.session.get(Group, int(raw)) if raw.isdigit() else None
+        if group is None:
+            flash("Группа не найдена.", "danger")
+            return redirect(url_for("admin.dashboard"))
+        user.group_id = group.id
+        message = f"{user.username} переведён в группу «{group.name}»."
+    else:
+        user.group_id = None
+        message = f"{user.username} исключён из группы."
+
+    db.session.commit()
+    flash(message, "success")
     return redirect(url_for("admin.dashboard"))

@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from app import create_app, db
 from app.models import (
+    Group,
     User,
     Subject,
     Test,
@@ -20,6 +21,42 @@ from app.models import (
     Attempt,
     StudentAnswer,
 )
+
+
+# =========================================================
+# УЧЕБНЫЕ ГРУППЫ
+# =========================================================
+
+GROUPS = [
+    {"name": "ИВТ-21", "description": "Информатика и вычислительная техника"},
+    {"name": "ПИ-22",  "description": "Прикладная информатика"},
+]
+
+# Логин студента -> группа
+STUDENT_GROUPS = {
+    "student":  "ИВТ-21",
+    "student2": "ПИ-22",
+}
+
+# Дополнительные параметры отдельных тестов (для демонстрации)
+TEST_OPTIONS = {
+    "Основы Python": {
+        "shuffle_questions": True,
+        "shuffle_answers": True,
+        "scoring_mode": "partial",
+        "review_mode": "after_all",
+    },
+    "Алгоритмы сортировки": {
+        "shuffle_questions": True,
+        "shuffle_answers": True,
+        "questions_per_attempt": 3,
+        "review_mode": "always",
+    },
+    # Тест только для группы ПИ-22 — студент из ИВТ-21 его не увидит
+    "Лексика и идиомы": {
+        "groups": ["ПИ-22"],
+    },
+}
 
 
 # =========================================================
@@ -935,6 +972,33 @@ def get_or_create_user(data):
     return user, "updated"
 
 
+def get_or_create_group(data):
+    group = Group.query.filter_by(name=data["name"]).first()
+
+    if group is None:
+        group = Group(name=data["name"], description=data["description"])
+        db.session.add(group)
+        db.session.flush()
+        return group, "created"
+
+    group.description = data["description"]
+    return group, "updated"
+
+
+def apply_test_options(test, groups_by_name):
+    options = TEST_OPTIONS.get(test.title)
+    if not options:
+        return
+
+    for key in ("shuffle_questions", "shuffle_answers",
+                "questions_per_attempt", "scoring_mode", "review_mode"):
+        if key in options:
+            setattr(test, key, options[key])
+
+    if "groups" in options:
+        test.groups = [groups_by_name[name] for name in options["groups"]]
+
+
 def get_or_create_subject(data):
     subject = Subject.query.filter_by(name=data["name"]).first()
 
@@ -1121,6 +1185,22 @@ def seed():
 
         print()
 
+        # ---------- Группы ----------
+        print("Учебные группы:")
+        groups_by_name = {}
+        for data in GROUPS:
+            group, action = get_or_create_group(data)
+            groups_by_name[group.name] = group
+            marker = "＋" if action == "created" else "↻"
+            print(f"  {marker} {group.name}")
+
+        for username, group_name in STUDENT_GROUPS.items():
+            if username in users_by_name:
+                users_by_name[username].group_id = groups_by_name[group_name].id
+                print(f"      {username} → {group_name}")
+
+        print()
+
         # ---------- Дисциплины, тесты, вопросы ----------
         print("Дисциплины и тесты:")
 
@@ -1134,6 +1214,7 @@ def seed():
 
             for t_data in s_data["tests"]:
                 test, t_action = get_or_create_test(subject, teacher, t_data)
+                apply_test_options(test, groups_by_name)
                 t_marker = "＋" if t_action == "created" else "·"
 
                 attempts_label = (
