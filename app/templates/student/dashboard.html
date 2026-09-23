@@ -294,132 +294,6 @@
         .btn-history svg { width: 18px; height: 18px; }
 
         /* ---------------------------------------------------------
-           SUBJECT CARD
-        --------------------------------------------------------- */
-        .subject-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 1.25rem;
-
-            margin-bottom: 2.5rem;
-        }
-
-        .subject-card {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 1.25rem;
-
-            width: 100%;
-
-            padding: 1.5rem;
-
-            border: 0;
-            border-radius: 18px;
-
-            background: #fff;
-            color: inherit;
-
-            text-align: left;
-
-            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
-
-            cursor: pointer;
-
-            font-family: inherit;
-
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-        }
-
-        .subject-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 18px 38px rgba(37, 71, 143, 0.12);
-        }
-
-        .subject-card:focus-visible {
-            outline: 3px solid rgba(37, 99, 235, 0.35);
-            outline-offset: 2px;
-        }
-
-        .subject-card__icon {
-            display: grid;
-            place-items: center;
-
-            width: 56px;
-            height: 56px;
-
-            border-radius: 16px;
-
-            background: linear-gradient(135deg, #6366f1, #2563eb);
-            color: #fff;
-
-            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28);
-        }
-
-        .subject-card__icon svg {
-            width: 26px;
-            height: 26px;
-        }
-
-        .subject-card__body h3 {
-            margin: 0 0 0.35rem;
-
-            font-size: 1.2rem;
-            font-weight: 800;
-            letter-spacing: -0.01em;
-            color: var(--app-text);
-        }
-
-        .subject-card__body p {
-            margin: 0 0 1rem;
-
-            color: var(--app-muted);
-
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .subject-card__btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            min-height: 38px;
-            padding: 0.5rem 1rem;
-
-            border-radius: 9px;
-
-            background: var(--app-primary);
-            color: #fff;
-
-            font-size: 0.88rem;
-            font-weight: 650;
-
-            pointer-events: none;
-
-            transition: background 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .subject-card:hover .subject-card__btn {
-            background: var(--app-primary-dark);
-            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
-        }
-
-        .subject-card__btn svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        .subject-card__hint {
-            display: block;
-
-            margin-top: 0.6rem;
-
-            color: var(--app-muted);
-
-            font-size: 0.82rem;
-        }
-
-        /* ---------------------------------------------------------
            RESULTS PANEL
         --------------------------------------------------------- */
         .results-panel {
@@ -625,138 +499,6 @@
             font-size: 0.95rem;
         }
 
-        /* =========================================================
-           CUSTOM MODAL
-           ========================================================= */
-        .custom-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 1050;
-
-            display: none;
-
-            align-items: center;
-            justify-content: center;
-
-            padding: 1.5rem;
-        }
-
-        .custom-modal.is-open {
-            display: flex;
-        }
-
-        .custom-modal__backdrop {
-            position: absolute;
-            inset: 0;
-
-            background: rgba(15, 23, 42, 0.55);
-
-            animation: customModalFade 0.2s ease;
-        }
-
-        .custom-modal__dialog {
-            position: relative;
-            z-index: 1;
-
-            width: 100%;
-            max-width: 1100px;
-            max-height: calc(100vh - 3rem);
-
-            display: flex;
-            flex-direction: column;
-
-            animation: customModalSlide 0.2s ease;
-        }
-
-        .custom-modal__content {
-            display: flex;
-            flex-direction: column;
-
-            max-height: calc(100vh - 3rem);
-
-            background: #fff;
-            border-radius: 18px;
-
-            overflow: hidden;
-
-            box-shadow: 0 25px 70px rgba(15, 23, 42, 0.30);
-        }
-
-        .custom-modal__header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1rem;
-
-            padding: 1.25rem 1.5rem;
-
-            border-bottom: 1px solid var(--app-border);
-        }
-
-        .custom-modal__title {
-            margin: 0;
-
-            font-size: 1.2rem;
-            font-weight: 800;
-        }
-
-        .custom-modal__close {
-            display: grid;
-            place-items: center;
-
-            width: 32px;
-            height: 32px;
-
-            border: 0;
-            border-radius: 8px;
-
-            background: transparent;
-            color: #64748b;
-
-            font-size: 1rem;
-            font-weight: 700;
-
-            cursor: pointer;
-
-            transition: background 0.15s ease, color 0.15s ease;
-        }
-
-        .custom-modal__close:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        .custom-modal__body {
-            flex: 1 1 auto;
-
-            padding: 1.5rem;
-
-            overflow-y: auto;
-        }
-
-        .custom-modal__footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-
-            padding: 1rem 1.5rem;
-
-            border-top: 1px solid var(--app-border);
-        }
-
-        body.modal-lock {
-            overflow: hidden;
-        }
-
-        @keyframes customModalFade {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-
-        @keyframes customModalSlide {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
 
         /* ---------------------------------------------------------
            FOOTER
@@ -781,59 +523,426 @@
             padding: 1.1rem 1.5rem;
         }
 
+
+        /* ---------------------------------------------------------
+           STATS
+        --------------------------------------------------------- */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            padding: 1.1rem 1.25rem;
+            border-radius: 16px;
+            background: var(--app-surface);
+            box-shadow: 0 10px 25px rgba(37, 71, 143, 0.05);
+        }
+
+        .stat__label {
+            color: var(--app-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .stat__value {
+            margin-top: 0.2rem;
+            font-size: 1.65rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat__value small {
+            color: var(--app-muted);
+            font-size: 0.95rem;
+            font-weight: 650;
+        }
+
+        .stat__bar {
+            height: 6px;
+            margin-top: 0.7rem;
+            border-radius: 999px;
+            background: #edf1f7;
+            overflow: hidden;
+        }
+
+        .stat__bar i {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--app-primary);
+        }
+
+        /* ---------------------------------------------------------
+           PANELS (общая оболочка блоков)
+        --------------------------------------------------------- */
+        .panel {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem 1.75rem;
+            border-radius: 20px;
+            background: var(--app-surface);
+            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.06);
+        }
+
+        .panel__head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .panel__head h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        .panel__head span {
+            color: var(--app-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .panel__link {
+            color: var(--app-primary);
+            font-size: 0.88rem;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .panel__link:hover { text-decoration: underline; }
+
+        /* ---------------------------------------------------------
+           TODO — нужно пройти
+        --------------------------------------------------------- */
+        .todo {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .todo-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1rem 0.9rem 1.1rem;
+            border: 1px solid var(--app-border);
+            border-radius: 14px;
+            transition: border-color .15s ease, background .15s ease;
+        }
+
+        .todo-item:hover { border-color: #c7d6f5; background: #fafcff; }
+
+        .todo-item--progress {
+            border-color: #fcd34d;
+            background: #fffbeb;
+        }
+
+        .todo-item--progress:hover { border-color: #f59e0b; background: #fff8e1; }
+
+        .todo-item__title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            font-weight: 700;
+        }
+
+        .todo-item__subject {
+            color: var(--app-primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .todo-item__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 1rem;
+            margin-top: 0.2rem;
+            color: var(--app-muted);
+            font-size: 0.84rem;
+        }
+
+        .tag-progress {
+            padding: 0.1rem 0.55rem;
+            border-radius: 999px;
+            background: #fde68a;
+            color: #92400e;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .btn-act {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 40px;
+            padding: 0.45rem 1.1rem;
+            border-radius: 10px;
+            background: var(--app-primary);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background .15s ease, box-shadow .15s ease;
+        }
+
+        .btn-act:hover { background: var(--app-primary-dark); color: #fff; box-shadow: 0 8px 18px rgba(37, 99, 235, .25); }
+        .btn-act svg { width: 14px; height: 14px; }
+
+        .btn-act--warn { background: #d97706; }
+        .btn-act--warn:hover { background: #b45309; box-shadow: 0 8px 18px rgba(217, 119, 6, .25); }
+
+        .btn-act--light {
+            background: #fff;
+            border: 1px solid var(--app-border);
+            color: var(--app-text);
+        }
+
+        .btn-act--light:hover { background: #f8fafc; color: var(--app-text); box-shadow: none; border-color: #cbd5e1; }
+
+        .todo-item--extra { display: none; }
+        .todo.is-expanded .todo-item--extra { display: grid; }
+
+        .todo-more {
+            display: block;
+            width: 100%;
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border: 1px dashed #c7d6f5;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--app-primary);
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .todo-more:hover { background: #f5f8fd; }
+
+        .done-note {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.1rem;
+            border-radius: 14px;
+            background: #f0fdf4;
+            color: #166534;
+            font-weight: 650;
+        }
+
+        .done-note svg { width: 22px; height: 22px; flex: 0 0 auto; }
+
+        /* ---------------------------------------------------------
+           SUBJECTS — строки прогресса
+        --------------------------------------------------------- */
+        .subject {
+            border-top: 1px solid var(--app-border);
+        }
+
+        .subject:first-of-type { border-top: 0; }
+
+        .subject > summary {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 70px 20px;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 0.95rem 0.25rem;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .subject > summary::-webkit-details-marker { display: none; }
+
+        .subject__name { font-weight: 700; }
+
+        .subject__sub {
+            color: var(--app-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .subject__progress {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .subject__bar {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: #edf1f7;
+            overflow: hidden;
+        }
+
+        .subject__bar i {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--app-primary);
+        }
+
+        .subject__bar i.is-full { background: #16a34a; }
+
+        .subject__count {
+            min-width: 44px;
+            color: var(--app-muted);
+            font-size: 0.82rem;
+            font-weight: 650;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .subject__avg {
+            font-weight: 750;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .subject__avg--none { color: #cbd5e1; }
+
+        .subject__chev {
+            width: 18px;
+            height: 18px;
+            color: var(--app-muted);
+            transition: transform .2s ease;
+        }
+
+        .subject[open] .subject__chev { transform: rotate(180deg); }
+
+        .subject__tests {
+            margin: 0 0 1rem;
+            padding: 0;
+            list-style: none;
+            border-radius: 14px;
+            background: #f8fafc;
+        }
+
+        .subject-test {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #edf1f7;
+        }
+
+        .subject-test:first-child { border-top: 0; }
+
+        .subject-test__title { font-weight: 650; font-size: 0.93rem; }
+
+        .subject-test__meta {
+            color: var(--app-muted);
+            font-size: 0.8rem;
+        }
+
+        .subject-test__result {
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .muted { color: var(--app-muted); font-weight: 600; }
+
+        /* ---------------------------------------------------------
+           RECENT RESULTS
+        --------------------------------------------------------- */
+        .recent {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .recent a {
+            display: grid;
+            grid-template-columns: 36px minmax(0, 1fr) auto 18px;
+            align-items: center;
+            gap: 0.9rem;
+            padding: 0.7rem 0.6rem;
+            border-radius: 12px;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .recent a:hover { background: #f5f8fd; }
+
+        .grade-dot {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-weight: 800;
+        }
+
+        .grade-dot--2 { background: #fee2e2; color: #b91c1c; }
+        .grade-dot--3 { background: #fef3c7; color: #92400e; }
+        .grade-dot--4 { background: #dbeafe; color: #1e40af; }
+        .grade-dot--5 { background: #dcfce7; color: #15803d; }
+
+        .recent__title { font-weight: 650; font-size: 0.93rem; }
+        .recent__date { color: var(--app-muted); font-size: 0.8rem; }
+
+        .recent__pct {
+            font-weight: 750;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        .recent__pct small {
+            display: block;
+            color: var(--app-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .recent__chev { width: 16px; height: 16px; color: #94a3b8; }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .two-col .panel { margin-bottom: 0; }
+
         /* ---------------------------------------------------------
            RESPONSIVE
         --------------------------------------------------------- */
+        @media (max-width: 991.98px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 767.98px) {
-
-            .page-head {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .btn-history { justify-content: center; }
-
-            .subject-card {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .subject-card__icon { margin: 0 auto; }
-
-            .results-panel { padding: 1.25rem; }
-
-            .results-table thead th:nth-child(2),
-            .results-table tbody td:nth-child(2) { display: none; }
-
-            .custom-modal { padding: 0.75rem; }
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .subject > summary { grid-template-columns: minmax(0, 1fr) 56px 18px; }
+            .subject__progress { grid-column: 1 / -1; grid-row: 2; }
+            .subject-test { grid-template-columns: minmax(0, 1fr) auto; }
+            .subject-test__result { grid-column: 1; }
         }
 
         @media (max-width: 575.98px) {
-
             .app-navbar__inner { padding: 0 1rem; }
-            .app-brand { font-size: 1rem; }
-            .app-brand__mark { width: 36px; height: 36px; border-radius: 10px; font-size: 1rem; }
-
-            .user-chip__name { max-width: 100px; }
-
+            .user-chip__name { display: none; }
             .page-wrap { padding: 1.5rem 1rem 2.5rem; }
-
-            .results-table thead th:nth-child(3),
-            .results-table tbody td:nth-child(3) { display: none; }
-
-            .app-footer__inner {
-                flex-direction: column;
-                text-align: center;
-                gap: 0.35rem;
-            }
-
-            body::before,
-            body::after { display: none; }
-
-            .custom-modal { padding: 0.5rem; }
-            .custom-modal__body { padding: 1rem; }
-            .custom-modal__header,
-            .custom-modal__footer { padding: 1rem; }
+            .page-head { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .panel { padding: 1.2rem 1rem; }
+            .todo-item { grid-template-columns: 1fr; }
+            .todo-item .btn-act { justify-content: center; }
+            .app-footer__inner { flex-direction: column; text-align: center; gap: .35rem; }
+            body::before, body::after { display: none; }
         }
 
         :focus-visible {
@@ -887,7 +996,6 @@
     </div>
 </nav>
 
-
 <main class="page-wrap">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -896,444 +1004,281 @@
         {% endfor %}
     {% endwith %}
 
-    <!-- =========================================================
-         HEAD
-         ========================================================= -->
+    {% macro chevron(cls) -%}
+        <svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    {%- endmacro %}
+
+    {% macro qword(n) -%}
+        {%- if n % 10 == 1 and n % 100 != 11 -%}вопрос
+        {%- elif n % 10 in [2,3,4] and n % 100 not in [12,13,14] -%}вопроса
+        {%- else -%}вопросов{%- endif -%}
+    {%- endmacro %}
+
+    {% macro qcount(test) -%}
+        {%- set n = test.questions_per_attempt if test.questions_per_attempt and test.questions_per_attempt < test.questions|length else test.questions|length -%}
+        {{ n }} {{ qword(n) }}
+    {%- endmacro %}
+
+    <!-- HEAD -->
     <div class="page-head">
-
         <div>
-
             <span class="page-head__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="8" r="3.5"/>
                     <path d="M4.5 19.5a7.5 7.5 0 0 1 15 0"/>
                 </svg>
-                Личный кабинет
+                {% if current_user.group %}Группа {{ current_user.group.name }}{% else %}Личный кабинет{% endif %}
             </span>
 
-            <h1>Кабинет студента</h1>
-
-            {% if current_user.group %}
-                <div style="margin:-0.2rem 0 0.5rem; font-weight:650; color:#1d4ed8;">
-                    Группа {{ current_user.group.name }}
-                </div>
-            {% endif %}
+            <h1>Здравствуйте, {{ current_user.first_name }}!</h1>
 
             <p>
-                Здесь вы можете проходить тесты, просматривать результаты
-                и отслеживать свой прогресс в обучении.
+                {% if todo %}
+                    {% set n = todo|length %}
+                    Вас {{ 'ждёт' if n % 10 == 1 and n % 100 != 11 else 'ждут' }} {{ n }}
+                    {% if n % 10 == 1 and n % 100 != 11 %}тест{% elif n % 10 in [2,3,4] and n % 100 not in [12,13,14] %}теста{% else %}тестов{% endif %}.
+                {% elif stats.available %}
+                    Все доступные тесты начаты или пройдены.
+                {% else %}
+                    Пока для вас нет опубликованных тестов.
+                {% endif %}
             </p>
-
         </div>
 
         <a href="{{ url_for('student.history') }}" class="btn-history">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 20V10"/>
-                <path d="M10 20V4"/>
-                <path d="M16 20v-8"/>
-                <path d="M22 20H2"/>
+                <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/>
             </svg>
             История результатов
         </a>
-
     </div>
 
 
-    <!-- =========================================================
-         SUBJECTS
-         ========================================================= -->
-    {% if disciplines %}
+    <!-- STATS -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat__label">Пройдено тестов</div>
+            <div class="stat__value">{{ stats.passed }} <small>из {{ stats.available }}</small></div>
+            <div class="stat__bar"><i style="width: {{ (stats.passed * 100 / stats.available) if stats.available else 0 }}%"></i></div>
+        </div>
+        <div class="stat">
+            <div class="stat__label">Нужно пройти</div>
+            <div class="stat__value">{{ todo|length }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat__label">Средний результат</div>
+            <div class="stat__value">
+                {% if stats.avg_percentage is not none %}{{ stats.avg_percentage }}<small>%</small>{% else %}—{% endif %}
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat__label">Средняя оценка</div>
+            <div class="stat__value">
+                {% if stats.avg_grade is not none %}{{ stats.avg_grade|num }}{% else %}—{% endif %}
+            </div>
+        </div>
+    </div>
 
-        <div class="subject-grid">
 
-            {% for item in disciplines %}
+    <!-- TODO -->
+    <section class="panel">
+        <div class="panel__head">
+            <h2>Нужно пройти</h2>
+            {% if todo %}<span>сначала начатые</span>{% endif %}
+        </div>
 
-                {% set subject = item.subject %}
-                {% set tests = item.tests %}
+        {% if todo %}
+            <ul class="todo" id="todo-list">
+                {% for item in todo %}
+                    {% set test = item.test %}
+                    {% set in_progress = item.in_progress_attempt %}
+                    <li class="todo-item {% if in_progress %}todo-item--progress{% endif %} {% if loop.index > 4 %}todo-item--extra{% endif %}">
+                        <div>
+                            <div class="todo-item__subject">{{ test.subject.name }}</div>
+                            <div class="todo-item__title">
+                                {{ test.title }}
+                                {% if in_progress %}<span class="tag-progress">начат</span>{% endif %}
+                            </div>
+                            <div class="todo-item__meta">
+                                <span>{{ qcount(test) }}</span>
+                                <span>{{ test.time_limit }} мин</span>
+                                <span>
+                                    {% if test.max_attempts is none %}попытки без ограничений
+                                    {% else %}попыток: {{ item.attempts_left }} из {{ test.max_attempts }}{% endif %}
+                                </span>
+                            </div>
+                        </div>
 
-                <button
-                    type="button"
-                    class="subject-card"
-                    data-open-modal="subjectModal{{ subject.id }}"
-                    aria-label="Открыть тесты по дисциплине {{ subject.name }}"
-                >
+                        {% if in_progress %}
+                            <a class="btn-act btn-act--warn"
+                               href="{{ url_for('student.take_test', attempt_id=in_progress.id) }}">
+                                Продолжить {{ chevron('') }}
+                            </a>
+                        {% else %}
+                            <a class="btn-act" href="{{ url_for('student.start_test', test_id=test.id) }}">
+                                Начать {{ chevron('') }}
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
 
-                    <div class="subject-card__icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="4" width="16" height="16" rx="3"/>
-                            <path d="M8 9h8"/>
-                            <path d="M8 13h8"/>
-                            <path d="M8 17h5"/>
-                        </svg>
-                    </div>
-
-                    <div class="subject-card__body">
-
-                        <h3>{{ subject.name }}</h3>
-
-                        <p>
-                            {% if subject.description %}
-                                {{ subject.description }}
-                            {% else %}
-                                Простые тесты для студентов для проверки знаний
-                            {% endif %}
-                        </p>
-
-                        <span class="subject-card__btn">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
-                            {{ tests|length }}
-                            {% if tests|length == 1 %}
-                                тест
-                            {% elif tests|length < 5 %}
-                                теста
-                            {% else %}
-                                тестов
-                            {% endif %}
-                        </span>
-
-                        <span class="subject-card__hint">
-                            Нажмите, чтобы посмотреть тесты
-                        </span>
-
-                    </div>
-
+            {% if todo|length > 4 %}
+                <button type="button" class="todo-more" id="todo-more"
+                        data-more="Показать все ({{ todo|length }})" data-less="Свернуть">
+                    Показать все ({{ todo|length }})
                 </button>
+            {% endif %}
+        {% elif stats.available %}
+            <div class="done-note">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>
+                </svg>
+                Новых тестов нет. Улучшить результат можно в разделе «Дисциплины».
+            </div>
+        {% else %}
+            <div class="empty-state">Преподаватели ещё не назначили тесты вашей группе.</div>
+        {% endif %}
+    </section>
 
-            {% endfor %}
 
-        </div>
+    <div class="two-col">
 
+        <!-- SUBJECTS -->
+        <section class="panel">
+            <div class="panel__head">
+                <h2>Дисциплины</h2>
+                <span>пройдено · средний %</span>
+            </div>
 
-        <!-- =========================================================
-             CUSTOM MODALS
-             ========================================================= -->
-        {% for item in disciplines %}
-
-            {% set subject = item.subject %}
-            {% set tests = item.tests %}
-
-            <div class="custom-modal" id="subjectModal{{ subject.id }}" aria-hidden="true">
-
-                <div class="custom-modal__backdrop" data-close-modal></div>
-
-                <div class="custom-modal__dialog" role="dialog" aria-modal="true">
-
-                    <div class="custom-modal__content">
-
-                        <div class="custom-modal__header">
-
+            {% if disciplines %}
+                {% for item in disciplines %}
+                    {% set subject = item.subject %}
+                    <details class="subject">
+                        <summary>
                             <div>
-                                <h4 class="custom-modal__title">
-                                    {{ subject.name }}
-                                </h4>
-                                <small class="text-muted">Доступные тесты</small>
+                                <div class="subject__name">{{ subject.name }}</div>
+                                <div class="subject__sub">
+                                    {{ item.total }}
+                                    {% if item.total % 10 == 1 and item.total % 100 != 11 %}тест{% elif item.total % 10 in [2,3,4] and item.total % 100 not in [12,13,14] %}теста{% else %}тестов{% endif %}
+                                </div>
                             </div>
 
-                            <button type="button"
-                                    class="custom-modal__close"
-                                    data-close-modal
-                                    aria-label="Закрыть">✕</button>
-
-                        </div>
-
-
-                        <div class="custom-modal__body">
-
-                            <div class="row">
-
-                                {% for test_item in tests %}
-
-                                    {% set test = test_item.test %}
-
-                                    <div class="col-md-6 col-lg-4 mb-3">
-
-                                        <div class="card h-100 shadow-sm">
-
-                                            <div class="card-body">
-
-                                                <h5 class="card-title">{{ test.title }}</h5>
-
-                                                {% if test.description %}
-                                                    <p class="text-muted">{{ test.description }}</p>
-                                                {% else %}
-                                                    <p class="text-muted">Описание отсутствует</p>
-                                                {% endif %}
-
-                                                <hr>
-
-                                                <p class="mb-1">
-                                                    <b>Время:</b> {{ test.time_limit }} мин.
-                                                </p>
-
-                                                <p class="mb-1">
-                                                    <b>Вопросов:</b> {{ test.questions|length }}
-                                                </p>
-
-                                                {% if test.max_attempts is none %}
-                                                    <p class="mb-1">
-                                                        <b>Попытки:</b> Неограниченно
-                                                    </p>
-                                                {% else %}
-                                                    <p class="mb-1">
-                                                        <b>Попытки:</b>
-                                                        {{ test_item.attempts_count }} / {{ test.max_attempts }}
-                                                    </p>
-
-                                                    {% if test_item.attempts_left > 0 %}
-                                                        <p class="text-muted">
-                                                            Осталось: {{ test_item.attempts_left }}
-                                                        </p>
-                                                    {% endif %}
-                                                {% endif %}
-
-                                                {% if test_item.best_attempt %}
-                                                    <div class="alert alert-success py-2 mt-3">
-                                                        <small>
-                                                            <b>Лучший результат:</b>
-                                                            {{ test_item.best_attempt.percentage }}%
-                                                            · оценка {{ test_item.best_attempt.grade }}
-                                                        </small>
-                                                    </div>
-                                                {% endif %}
-
-                                                <div class="mt-3">
-
-                                                    {% if test_item.in_progress_attempt %}
-                                                        <a href="{{ url_for('student.take_test', attempt_id=test_item.in_progress_attempt.id) }}"
-                                                           class="btn btn-warning w-100">
-                                                            Продолжить тест
-                                                        </a>
-
-                                                    {% elif test.max_attempts is none or test_item.attempts_left > 0 %}
-                                                        <a href="{{ url_for('student.start_test', test_id=test.id) }}"
-                                                           class="btn btn-primary w-100">
-                                                            Начать тест
-                                                        </a>
-
-                                                    {% else %}
-                                                        <button class="btn btn-secondary w-100" disabled>
-                                                            Попытки закончились
-                                                        </button>
-                                                    {% endif %}
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                {% endfor %}
-
+                            <div class="subject__progress">
+                                <div class="subject__bar">
+                                    <i class="{% if item.passed == item.total %}is-full{% endif %}"
+                                       style="width: {{ item.passed * 100 / item.total }}%"></i>
+                                </div>
+                                <span class="subject__count">{{ item.passed }}/{{ item.total }}</span>
                             </div>
 
-                        </div>
+                            <div class="subject__avg {% if item.avg_percentage is none %}subject__avg--none{% endif %}">
+                                {% if item.avg_percentage is not none %}{{ item.avg_percentage }}%{% else %}—{% endif %}
+                            </div>
 
+                            <svg class="subject__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </summary>
 
-                        <div class="custom-modal__footer">
-                            <button type="button"
-                                    class="btn btn-secondary"
-                                    data-close-modal>
-                                Закрыть
-                            </button>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <div class="results-panel">
-            <div class="empty-state">
-                Сейчас нет дисциплин с доступными тестами.
-            </div>
-        </div>
-
-    {% endif %}
-
-
-    <!-- =========================================================
-         RECENT RESULTS
-         ========================================================= -->
-    {% if attempts %}
-
-        <section class="results-panel">
-
-            <div class="results-panel__head">
-
-                <div class="results-panel__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="9"/>
-                        <path d="M12 7v5l3 2"/>
-                    </svg>
-                </div>
-
-                <div>
-                    <h2>Последние результаты</h2>
-                    <p>Ваши последние попытки прохождения тестов</p>
-                </div>
-
-            </div>
-
-
-            <div class="table-responsive">
-
-                <table class="results-table">
-
-                    <thead>
-                        <tr>
-                            <th>Тест</th>
-                            <th>Дата</th>
-                            <th>Результат</th>
-                            <th>Оценка</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        {% for attempt in attempts %}
-
-                            <tr>
-
-                                <td>
-                                    <div class="test-cell">
-                                        <span class="test-cell__icon">
-                                            <svg viewBox="0 0 24 24" fill="none"
-                                                 stroke="currentColor"
-                                                 stroke-width="1.8"
-                                                 stroke-linecap="round"
-                                                 stroke-linejoin="round">
-                                                <circle cx="12" cy="12" r="9"/>
-                                                <path d="M12 3a9 9 0 0 0-9 9h9z"/>
-                                                <path d="M12 12l6.5 3.5"/>
-                                            </svg>
-                                        </span>
-                                        <div class="test-cell__name">
-                                            <span>{{ attempt.test.title }}</span>
-                                            {% if attempt.is_best %}
-                                                <span class="badge-best">Лучший</span>
-                                            {% endif %}
+                        <ul class="subject__tests">
+                            {% for t in item.tests %}
+                                {% set test = t.test %}
+                                <li class="subject-test">
+                                    <div>
+                                        <div class="subject-test__title">{{ test.title }}</div>
+                                        <div class="subject-test__meta">
+                                            {{ qcount(test) }} · {{ test.time_limit }} мин ·
+                                            {% if test.max_attempts is none %}попыток ∞{% else %}попыток {{ t.attempts_left }} из {{ test.max_attempts }}{% endif %}
                                         </div>
                                     </div>
-                                </td>
 
-                                <td>
-                                    {{ attempt.completed_at.strftime('%d.%m.%Y %H:%M') }}
-                                </td>
+                                    <div class="subject-test__result">
+                                        {% if t.best_attempt %}
+                                            {{ t.best_attempt.percentage|round|int }}%
+                                            <span class="grade-pill grade-pill--{{ t.best_attempt.grade }}" style="margin-left:.35rem;">{{ t.best_attempt.grade }}</span>
+                                        {% else %}
+                                            <span class="muted">не пройден</span>
+                                        {% endif %}
+                                    </div>
 
-                                <td>
-                                    <b>{{ attempt.percentage }}%</b>
-                                    <span style="color:var(--app-muted);">
-                                        ({{ attempt.score|num }}/{{ attempt.max_score }})
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <span class="grade-pill grade-pill--{{ attempt.grade }}">
-                                        {{ attempt.grade }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <a href="{{ url_for('student.result', attempt_id=attempt.id) }}"
-                                       class="result-btn">
-                                        <svg viewBox="0 0 24 24" fill="none"
-                                             stroke="currentColor"
-                                             stroke-width="1.8"
-                                             stroke-linecap="round"
-                                             stroke-linejoin="round">
-                                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
-                                            <circle cx="12" cy="12" r="3"/>
-                                        </svg>
-                                        Результат
-                                        <svg viewBox="0 0 24 24" fill="none"
-                                             stroke="currentColor"
-                                             stroke-width="2.2"
-                                             stroke-linecap="round"
-                                             stroke-linejoin="round">
-                                            <path d="M9 6l6 6-6 6"/>
-                                        </svg>
-                                    </a>
-                                </td>
-
-                            </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
+                                    <div>
+                                        {% if t.in_progress_attempt %}
+                                            <a class="btn-act btn-act--warn" href="{{ url_for('student.take_test', attempt_id=t.in_progress_attempt.id) }}">Продолжить</a>
+                                        {% elif test.max_attempts is none or t.attempts_left > 0 %}
+                                            <a class="btn-act {% if t.best_attempt %}btn-act--light{% endif %}"
+                                               href="{{ url_for('student.start_test', test_id=test.id) }}">
+                                                {% if t.best_attempt %}Ещё раз{% else %}Начать{% endif %}
+                                            </a>
+                                        {% else %}
+                                            <span class="muted" style="font-size:.82rem;">попытки исчерпаны</span>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">Дисциплин с тестами пока нет.</div>
+            {% endif %}
         </section>
 
-    {% endif %}
+
+        <!-- RECENT -->
+        <section class="panel">
+            <div class="panel__head">
+                <h2>Последние результаты</h2>
+                <a class="panel__link" href="{{ url_for('student.history') }}">Вся история</a>
+            </div>
+
+            {% if attempts %}
+                <ul class="recent">
+                    {% for a in attempts %}
+                        <li>
+                            <a href="{{ url_for('student.result', attempt_id=a.id) }}">
+                                <span class="grade-dot grade-dot--{{ a.grade or 2 }}">{{ a.grade or '—' }}</span>
+                                <div style="min-width:0;">
+                                    <div class="recent__title">{{ a.test.title }}</div>
+                                    <div class="recent__date">{{ a.completed_at.strftime('%d.%m.%Y, %H:%M') }}</div>
+                                </div>
+                                <div class="recent__pct">
+                                    {{ a.percentage|round|int }}%
+                                    <small>{{ a.score|num }} из {{ a.max_score }}</small>
+                                </div>
+                                {{ chevron('recent__chev') }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">Здесь появятся результаты пройденных тестов.</div>
+            {% endif %}
+        </section>
+
+    </div>
 
 </main>
 
 
+<footer class="app-footer">
+    <div class="app-footer__inner">
+        <span>Student Testing System</span>
+        <span>Программный комплекс тестирования знаний студентов</span>
+    </div>
+</footer>
 
-
-
-<!-- =========================================================
-     CUSTOM MODAL SCRIPT
-     ========================================================= -->
 <script>
     (function () {
-        function openModal(id) {
-            const modal = document.getElementById(id);
-            if (!modal) return;
-
-            modal.classList.add('is-open');
-            modal.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('modal-lock');
-        }
-
-        function closeModal(modal) {
-            if (!modal) return;
-
-            modal.classList.remove('is-open');
-            modal.setAttribute('aria-hidden', 'true');
-
-            if (!document.querySelector('.custom-modal.is-open')) {
-                document.body.classList.remove('modal-lock');
-            }
-        }
-
-        document.addEventListener('click', function (e) {
-            const opener = e.target.closest('[data-open-modal]');
-            if (opener) {
-                e.preventDefault();
-                openModal(opener.getAttribute('data-open-modal'));
-                return;
-            }
-
-            const closer = e.target.closest('[data-close-modal]');
-            if (closer) {
-                e.preventDefault();
-                closeModal(closer.closest('.custom-modal'));
-            }
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.custom-modal.is-open')
-                    .forEach(closeModal);
-            }
+        var btn = document.getElementById('todo-more');
+        var list = document.getElementById('todo-list');
+        if (!btn || !list) return;
+        btn.addEventListener('click', function () {
+            var open = list.classList.toggle('is-expanded');
+            btn.textContent = open ? btn.dataset.less : btn.dataset.more;
         });
     })();
 </script>

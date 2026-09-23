@@ -240,17 +240,52 @@ def dashboard():
             )
         )
 
-    attempts = Attempt.query.filter_by(
+        passed = [t for t in item["tests"] if t["best_attempt"]]
+        item["passed"] = len(passed)
+        item["total"] = len(item["tests"])
+        item["avg_percentage"] = (
+            round(sum(t["best_attempt"].percentage for t in passed) / len(passed))
+            if passed else None
+        )
+
+    all_items = [t for item in disciplines.values() for t in item["tests"]]
+
+    # «Нужно пройти»: начатые и ещё не открытые тесты
+    todo = sorted(
+        (t for t in all_items if t["sort_order"] in (0, 1)),
+        key=lambda t: (t["sort_order"], t["test"].created_at)
+    )
+
+    best = [t["best_attempt"] for t in all_items if t["best_attempt"]]
+    stats = {
+        "available": len(all_items),
+        "passed": len(best),
+        "avg_percentage": round(sum(a.percentage for a in best) / len(best)) if best else None,
+        "avg_grade": (
+            round(sum(a.grade or 2 for a in best) / len(best), 1) if best else None
+        ),
+    }
+
+    # Последние результаты: по одной (самой свежей) попытке на тест
+    recent = []
+    seen_tests = set()
+    for attempt in Attempt.query.filter_by(
         student_id=current_user.id,
         status="completed"
-    ).order_by(
-        Attempt.completed_at.desc()
-    ).limit(10).all()
+    ).order_by(Attempt.completed_at.desc()).all():
+        if attempt.test_id in seen_tests:
+            continue
+        seen_tests.add(attempt.test_id)
+        recent.append(attempt)
+        if len(recent) == 6:
+            break
 
     return render_template(
         "student/dashboard.html",
-        disciplines=list(disciplines.values()),
-        attempts=attempts
+        disciplines=sorted(disciplines.values(), key=lambda d: d["subject"].name),
+        todo=todo,
+        stats=stats,
+        attempts=recent
     )
 
 
