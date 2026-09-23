@@ -1152,7 +1152,7 @@
                     <div>
                         <h2 class="adm-card__title">Распределение оценок</h2>
                         <p class="adm-card__sub">
-                            Всего завершено попыток: {{ total_completed }}
+                            По лучшей попытке в каждом тесте: {{ total_completed }}
                         </p>
                     </div>
                 </div>
@@ -1207,7 +1207,7 @@
                     </span>
                     <div>
                         <h2 class="adm-card__title">Топ студентов</h2>
-                        <p class="adm-card__sub">По числу завершённых попыток</p>
+                        <p class="adm-card__sub">По среднему лучшему результату</p>
                     </div>
                 </div>
             </div>
@@ -1238,7 +1238,7 @@
 
                                 <div class="adm-top-row__stat">
                                     <b>{{ item.attempts }}</b>
-                                    <span>попыток</span>
+                                    <span>тестов</span>
                                 </div>
 
                                 <div class="adm-top-row__stat adm-top-row__stat--pct">
@@ -1281,7 +1281,7 @@
                 <div>
                     <h2 class="adm-card__title">Статистика по дисциплинам</h2>
                     <p class="adm-card__sub">
-                        Средний процент и количество попыток
+                        Средний лучший результат и число сданных тестов
                     </p>
                 </div>
             </div>
@@ -1322,7 +1322,7 @@
                             </div>
 
                             <div class="adm-subject-stat__foot">
-                                <span>{{ item.attempts }} попыток</span>
+                                <span>сдано тестов: {{ item.attempts }}</span>
                             </div>
 
                         </div>

@@ -381,5 +381,47 @@ class GroupTests(BaseCase):
         self.assertEqual(User.query.filter_by(username="newbie").one().group_id, self.g2.id)
 
 
+class BestAttemptTests(BaseCase):
+    """В статистике учитывается только лучшая попытка по каждому тесту."""
+
+    def pass_twice(self):
+        self.login("s1")
+        flow = FlowTests.start.__get__(self)
+        submit = FlowTests.submit.__get__(self)
+        good = flow()
+        submit(good, [(q, [a.text for a in q.answers if a.is_correct]) for q in self.test.questions])
+        bad = flow()
+        submit(bad, [])
+        return good, bad
+
+    def test_only_best_is_marked(self):
+        good, bad = self.pass_twice()
+        db.session.refresh(good)
+        db.session.refresh(bad)
+        self.assertTrue(good.is_best)
+        self.assertFalse(bad.is_best)
+
+    def test_student_stats_use_best(self):
+        self.pass_twice()
+        page = self.client.get("/student/dashboard").get_data(as_text=True)
+        self.assertRegex(page, r"Средний результат</div>\s*<div class=\"stat__value\">\s*100<small>%")
+
+    def test_teacher_results_default_to_best(self):
+        self.pass_twice()
+        self.login("teacher")
+        best = self.client.get("/teacher/results").get_data(as_text=True)
+        every = self.client.get("/teacher/results?all=1").get_data(as_text=True)
+        self.assertEqual(best.count('class="t-user__name"'), 1)
+        self.assertEqual(every.count('class="t-user__name"'), 2)
+
+    def test_admin_grade_distribution_uses_best(self):
+        self.pass_twice()
+        self.make_user("admin", "admin")
+        db.session.commit()
+        self.login("admin")
+        page = self.client.get("/admin/dashboard").get_data(as_text=True)
+        self.assertIn("По лучшей попытке в каждом тесте: 1", page)
+
+
 if __name__ == "__main__":
     unittest.main()

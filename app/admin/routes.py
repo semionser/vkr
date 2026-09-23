@@ -33,10 +33,15 @@ def dashboard():
     # АНАЛИТИКА
     # =========================================================
 
+    # Успеваемость считается только по ЛУЧШЕЙ попытке студента
+    # в каждом тесте: неудачные пробные попытки не портят статистику.
+    # Активность (попытки за неделю/месяц, лента) — по всем попыткам.
+    best_only = (Attempt.status == "completed", Attempt.is_best.is_(True))
+
     # 1. Распределение оценок (2, 3, 4, 5)
     grade_rows = (
         db.session.query(Attempt.grade, func.count(Attempt.id))
-        .filter(Attempt.status == "completed", Attempt.grade.isnot(None))
+        .filter(*best_only, Attempt.grade.isnot(None))
         .group_by(Attempt.grade)
         .all()
     )
@@ -48,10 +53,10 @@ def dashboard():
 
     total_completed = sum(grade_distribution.values())
 
-    # 2. Средний процент по всем завершённым попыткам
+    # 2. Средний процент по лучшим результатам
     avg_row = (
         db.session.query(func.avg(Attempt.percentage))
-        .filter(Attempt.status == "completed")
+        .filter(*best_only)
         .scalar()
     )
     avg_percentage = round(float(avg_row or 0), 1)
@@ -79,7 +84,7 @@ def dashboard():
         .count()
     )
 
-    # 4. Топ-5 активных студентов (по числу завершённых попыток)
+    # 4. Топ-5 студентов по среднему лучшему результату
     top_students_rows = (
         db.session.query(
             User,
@@ -87,9 +92,9 @@ def dashboard():
             func.avg(Attempt.percentage).label("avg_pct"),
         )
         .join(Attempt, Attempt.student_id == User.id)
-        .filter(Attempt.status == "completed")
+        .filter(*best_only)
         .group_by(User.id)
-        .order_by(desc("cnt"))
+        .order_by(desc("avg_pct"), desc("cnt"))
         .limit(5)
         .all()
     )
@@ -103,7 +108,7 @@ def dashboard():
         for user, cnt, avg_pct in top_students_rows
     ]
 
-    # 5. Статистика по дисциплинам — средний процент и число попыток
+    # 5. Статистика по дисциплинам — средний лучший результат и число сданных тестов
     subject_stats_rows = (
         db.session.query(
             Subject,
@@ -112,7 +117,7 @@ def dashboard():
         )
         .join(Test, Test.subject_id == Subject.id)
         .join(Attempt, Attempt.test_id == Test.id)
-        .filter(Attempt.status == "completed")
+        .filter(*best_only)
         .group_by(Subject.id)
         .order_by(desc("cnt"))
         .all()

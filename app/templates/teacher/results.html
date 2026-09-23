@@ -315,6 +315,32 @@
     .t-card__title { margin: 0; font-size: 1rem; font-weight: 800; color: var(--t-text); }
     .t-card__sub   { margin: 2px 0 0; color: var(--t-muted); font-size: 12.5px; }
 
+    .t-seg {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--t-border);
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .t-seg__btn {
+        padding: 6px 12px;
+        border-radius: 8px;
+        color: var(--t-muted);
+        font-size: 13px;
+        font-weight: 650;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .t-seg__btn:hover { color: var(--t-text); }
+
+    .t-seg__btn.is-active {
+        background: #fff;
+        color: var(--t-primary);
+        box-shadow: 0 1px 4px rgba(23, 32, 51, .08);
+    }
+
     .t-card__tools {
         display: flex;
         align-items: center;
@@ -659,7 +685,7 @@
                     </svg>
                 </div>
                 <div class="t-hero-stat__body">
-                    <span class="t-hero-stat__label">Всего попыток</span>
+                    <span class="t-hero-stat__label">{% if show_all %}Всего попыток{% else %}Лучших результатов{% endif %}</span>
                     <span class="t-hero-stat__value">{{ attempts|length }}</span>
                     <span class="t-hero-stat__trend">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -699,8 +725,15 @@
                 </div>
 
                 <div class="t-card__tools">
+                    <form method="get" style="margin:0; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        {% if show_all %}<input type="hidden" name="all" value="1">{% endif %}
+                        <div class="t-seg" role="group" aria-label="Какие попытки показывать">
+                            <a class="t-seg__btn {% if not show_all %}is-active{% endif %}"
+                               href="{{ url_for('teacher.results', group=current_group or None) }}">Лучшие</a>
+                            <a class="t-seg__btn {% if show_all %}is-active{% endif %}"
+                               href="{{ url_for('teacher.results', group=current_group or None, all=1) }}">Все попытки</a>
+                        </div>
                     {% if groups %}
-                        <form method="get" style="margin:0;">
                             <select name="group" onchange="this.form.submit()"
                                     style="min-height:40px; padding:6px 12px; border:1px solid var(--t-border);
                                            border-radius:10px; background:#fff; font-size:14px;">
@@ -711,8 +744,8 @@
                                     </option>
                                 {% endfor %}
                             </select>
-                        </form>
                     {% endif %}
+                    </form>
                     <label class="t-search">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

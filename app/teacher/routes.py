@@ -751,6 +751,12 @@ def results():
         )
     )
 
+    # По умолчанию — только лучшая попытка студента в каждом тесте.
+    # ?all=1 показывает все попытки.
+    show_all = request.args.get("all") == "1"
+    if not show_all:
+        query = query.filter(Attempt.is_best.is_(True))
+
     # Фильтр по учебной группе студента
     group_id = request.args.get("group", type=int)
     if group_id:
@@ -768,7 +774,8 @@ def results():
         "teacher/results.html",
         attempts=attempts,
         groups=Group.query.order_by(Group.name).all(),
-        current_group=group_id
+        current_group=group_id,
+        show_all=show_all
     )
 # =========================================================
 # SUBJECTS — CREATE / EDIT / DELETE (для преподавателя)

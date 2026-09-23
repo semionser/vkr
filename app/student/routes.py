@@ -266,19 +266,12 @@ def dashboard():
         ),
     }
 
-    # Последние результаты: по одной (самой свежей) попытке на тест
-    recent = []
-    seen_tests = set()
-    for attempt in Attempt.query.filter_by(
+    # Лучшие результаты: лучшая попытка по каждому тесту, свежие сверху
+    recent = Attempt.query.filter_by(
         student_id=current_user.id,
-        status="completed"
-    ).order_by(Attempt.completed_at.desc()).all():
-        if attempt.test_id in seen_tests:
-            continue
-        seen_tests.add(attempt.test_id)
-        recent.append(attempt)
-        if len(recent) == 6:
-            break
+        status="completed",
+        is_best=True
+    ).order_by(Attempt.completed_at.desc()).limit(6).all()
 
     return render_template(
         "student/dashboard.html",
