@@ -61,3 +61,20 @@ http://127.0.0.1:5000/
 ```bash
 python -m unittest discover tests -v
 ```
+
+## Развёртывание на сервере (Ubuntu 22.04 / 24.04)
+
+На чистом VPS под root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/semionser/vkr/main/deploy/install.sh -o install.sh
+bash install.sh                                        # по IP-адресу, без HTTPS
+DOMAIN=sts.example.ru EMAIL=me@mail.ru bash install.sh # с доменом и HTTPS (Let's Encrypt)
+```
+
+Схема работы: браузер → **nginx** (порт 80/443, HTTPS, статика) → **gunicorn** (127.0.0.1:8000, служба systemd `sts`) → Flask-приложение → SQLite (`/var/lib/sts/database.db`).
+
+- Настройки и секретный ключ — `/opt/sts/.env` (доступен только пользователю `sts`).
+- Обновление до последней версии из GitHub: `bash /opt/sts/deploy/update.sh`.
+- Журнал приложения: `journalctl -u sts -f`.
+- Открыты только порты SSH, 80 и 443 (ufw).
