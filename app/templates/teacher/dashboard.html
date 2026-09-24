@@ -1052,6 +1052,7 @@
                                     <form method="post"
                                           action="{{ url_for('teacher.change_test_status', test_id=test.id) }}"
                                           style="display:inline;">
+{{ csrf_input() }}
                                         <input type="hidden" name="status" value="published">
                                         <button class="t-btn-xs t-btn-xs--green" type="submit">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1066,6 +1067,7 @@
                                           action="{{ url_for('teacher.change_test_status', test_id=test.id) }}"
                                           style="display:inline;"
                                           onsubmit="return confirm('Снять тест с публикации?');">
+{{ csrf_input() }}
                                         <input type="hidden" name="status" value="draft">
                                         <button class="t-btn-xs t-btn-xs--warn" type="submit">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1082,6 +1084,7 @@
                                       action="{{ url_for('teacher.delete_test', test_id=test.id) }}"
                                       style="display:inline;"
                                       onsubmit="return confirm('Удалить тест?');">
+{{ csrf_input() }}
                                     <button class="t-btn-xs t-btn-xs--danger" type="submit">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1345,6 +1348,7 @@
         </div>
 
         <form id="form-delete" method="post" class="t-modal__foot">
+{{ csrf_input() }}
             <button type="button" class="t-btn" data-close="modal-delete">Отмена</button>
             <button type="submit" class="t-btn t-btn--primary"
                     style="background:#dc2626; border-color:#dc2626;">Удалить</button>
@@ -1367,6 +1371,7 @@
         </div>
 
         <form method="post" action="{{ url_for('teacher.create_subject') }}">
+{{ csrf_input() }}
             <div class="t-modal__body">
                 <label class="t-field">
                     <span>Название</span>
@@ -1402,6 +1407,7 @@
         </div>
 
         <form id="form-edit" method="post">
+{{ csrf_input() }}
             <div class="t-modal__body">
                 <label class="t-field">
                     <span>Название</span>

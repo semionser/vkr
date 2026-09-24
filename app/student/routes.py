@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 
 from app import db
+from app.security import require_role
 from app.models import Test, Attempt, StudentAnswer
 from app.quiz import (
     apply_layout,
@@ -17,6 +18,9 @@ from app.quiz import (
 
 
 student_bp = Blueprint("student", __name__)
+
+# Все маршруты раздела — только для роли «student» (см. app/security.py)
+require_role(student_bp, "student")
 
 
 # Запас на задержку сети при автоотправке формы по таймеру.

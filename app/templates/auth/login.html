@@ -571,6 +571,7 @@
         {% endwith %}
 
         <form method="post">
+{{ csrf_input() }}
 
             <div class="field">
                 <label class="form-label" for="username">Логин</label>

@@ -10,6 +10,7 @@ from flask import (
 from flask_login import login_required, current_user
 
 from app import db
+from app.security import require_role
 
 from app.models import (
     Test,
@@ -25,6 +26,9 @@ from app.quiz import SCORING_MODES, REVIEW_MODES
 
 
 teacher_bp = Blueprint("teacher", __name__)
+
+# Все маршруты раздела — только для роли «teacher» (см. app/security.py)
+require_role(teacher_bp, "teacher")
 
 
 def teacher_required():
@@ -806,7 +810,7 @@ def create_subject():
     except Exception as e:
         db.session.rollback()
         print("CREATE SUBJECT ERROR:", e)
-        flash(f"Не удалось добавить дисциплину: {e}", "danger")
+        flash(f"Не удалось добавить дисциплину", "danger")
 
     return redirect(url_for("teacher.dashboard"))
 
@@ -844,7 +848,7 @@ def edit_subject(subject_id):
     except Exception as e:
         db.session.rollback()
         print("EDIT SUBJECT ERROR:", e)
-        flash(f"Не удалось изменить дисциплину: {e}", "danger")
+        flash(f"Не удалось изменить дисциплину", "danger")
 
     return redirect(url_for("teacher.dashboard"))
 
@@ -877,6 +881,6 @@ def delete_subject(subject_id):
     except Exception as e:
         db.session.rollback()
         print("DELETE SUBJECT ERROR:", e)
-        flash(f"Не удалось удалить дисциплину: {e}", "danger")
+        flash(f"Не удалось удалить дисциплину", "danger")
 
     return redirect(url_for("teacher.dashboard"))

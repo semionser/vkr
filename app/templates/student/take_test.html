@@ -764,6 +764,7 @@
          FORM
          ========================================================= -->
     <form method="post" id="test-form" autocomplete="off">
+{{ csrf_input() }}
 
         {% for question, answers in items %}
 

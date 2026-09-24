@@ -1564,6 +1564,7 @@
                                     <form method="post"
                                           action="{{ url_for('admin.change_user_group', user_id=u.id) }}"
                                           style="display:inline;">
+{{ csrf_input() }}
                                         <select name="group_id" class="adm-select"
                                                 onchange="this.form.submit()">
                                             <option value="">Без группы</option>
@@ -1594,6 +1595,7 @@
                                         <form method="post"
                                               action="{{ url_for('admin.change_user_role', user_id=u.id) }}"
                                               style="display:inline;">
+{{ csrf_input() }}
                                             <select name="role"
                                                     class="adm-select"
                                                     onchange="this.form.submit()">
@@ -1606,6 +1608,7 @@
                                         <form method="post"
                                               action="{{ url_for('admin.toggle_user', user_id=u.id) }}"
                                               style="display:inline;">
+{{ csrf_input() }}
                                             <button type="submit"
                                                     class="adm-btn {% if u.is_active_user %}adm-btn--danger{% endif %}"
                                                     style="min-height:34px; padding: 5px 12px; font-size:12px;">
@@ -1665,6 +1668,7 @@
         </div>
 
         <form method="post" action="{{ url_for('admin.create_group') }}" class="adm-group-create">
+{{ csrf_input() }}
             <input type="text" name="name" class="adm-input" placeholder="Название, например ИВТ-21" required>
             <input type="text" name="description" class="adm-input" placeholder="Описание (необязательно)">
             <button type="submit" class="adm-btn adm-btn--primary">
@@ -1695,6 +1699,7 @@
                                     <form method="post"
                                           action="{{ url_for('admin.edit_group', group_id=g.id) }}"
                                           class="adm-group-edit" id="group-form-{{ g.id }}">
+{{ csrf_input() }}
                                         <input type="text" name="name" class="adm-input"
                                                value="{{ g.name }}" required>
                                         <input type="text" name="description" class="adm-input"
@@ -1976,6 +1981,7 @@
         </div>
 
         <form id="form-delete" method="post" class="adm-modal__foot">
+{{ csrf_input() }}
             <button type="button" class="adm-btn" data-close="modal-delete">Отмена</button>
             <button type="submit" class="adm-btn adm-btn--danger">Удалить</button>
         </form>
@@ -1995,6 +2001,7 @@
         </div>
 
         <form method="post" action="{{ url_for('admin.create_subject') }}">
+{{ csrf_input() }}
             <div class="adm-modal__body">
                 <label class="adm-field">
                     <span>Название</span>
@@ -2176,6 +2183,14 @@
                 body.innerHTML = '<div style="padding:12px 0;color:var(--adm-muted);">' +
                                  'В этой дисциплине пока нет тестов.</div>';
             } else {
+                // Экранирование: название теста вводит преподаватель,
+                // поэтому вставлять его в HTML как есть нельзя (XSS)
+                var esc = function (v) {
+                    return String(v).replace(/[&<>"']/g, function (c) {
+                        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
+                    });
+                };
+
                 body.innerHTML = tests.map(function (t) {
                     var att = (t.max_attempts === null || t.max_attempts === undefined)
                         ? '∞' : t.max_attempts;
@@ -2183,18 +2198,18 @@
                     return '' +
                         '<div class="adm-test-item">' +
                             '<div>' +
-                                '<h4>' + t.title + '</h4>' +
+                                '<h4>' + esc(t.title) + '</h4>' +
                                 '<div class="adm-test-item__meta">' +
                                     '<span>Вопросов: <b>' + t.questions + '</b></span>' +
                                     '<span>Время: <b>' + t.time_limit + ' мин</b></span>' +
                                     '<span>Попытки: <b>' + att + '</b></span>' +
-                                    '<span>Статус: <b>' + t.status + '</b></span>' +
+                                    '<span>Статус: <b>' + esc(t.status) + '</b></span>' +
                                 '</div>' +
                             '</div>' +
                             '<button type="button" class="adm-btn adm-btn--danger"' +
                                 ' data-role="test"' +
-                                ' data-name="' + String(t.title).replace(/"/g, '&quot;') + '"' +
-                                ' data-url="' + t.delete_url + '"' +
+                                ' data-name="' + esc(t.title) + '"' +
+                                ' data-url="' + esc(t.delete_url) + '"' +
                                 ' style="min-height:34px; padding:6px 14px; font-size:12px;">' +
                                 'Удалить' +
                             '</button>' +

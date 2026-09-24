@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+# .idea/ — оставлена в репозитории (настройки PyCharm)
+.vscode/
+
+# Секреты и локальные данные — не публикуются
+.env
+instance/
+*.db
+*.sqlite3
+
+# Прочее
+.DS_Store
+Thumbs.db

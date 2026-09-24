@@ -25,6 +25,7 @@ from app.models import (
     User,
 )
 from app.quiz import build_attempt_layout, review_permissions, score_question
+from app.security import login_limiter
 
 
 # =========================================================
@@ -48,10 +49,13 @@ class BaseCase(unittest.TestCase):
         self.app = create_app({
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite://",
+            # CSRF проверяется отдельно в SecurityTests
+            "CSRF_ENABLED": False,
         })
         self.ctx = self.app.app_context()
         self.ctx.push()
         db.create_all()
+        login_limiter._fails.clear()
 
         self.g1 = Group(name="ИВТ-21")
         self.g2 = Group(name="ПИ-22")
@@ -375,7 +379,7 @@ class GroupTests(BaseCase):
 
     def test_register_with_group(self):
         self.client.post("/auth/register", data={
-            "username": "newbie", "password": "x", "first_name": "Н", "last_name": "Н",
+            "username": "newbie", "password": "longpass1", "first_name": "Н", "last_name": "Н",
             "group_id": str(self.g2.id),
         })
         self.assertEqual(User.query.filter_by(username="newbie").one().group_id, self.g2.id)
@@ -421,6 +425,77 @@ class BestAttemptTests(BaseCase):
         self.login("admin")
         page = self.client.get("/admin/dashboard").get_data(as_text=True)
         self.assertIn("По лучшей попытке в каждом тесте: 1", page)
+
+
+class SecurityTests(BaseCase):
+
+    def setUp(self):
+        super().setUp()
+        self.app.config["CSRF_ENABLED"] = True
+
+    def token(self, path="/auth/login"):
+        page = self.client.get(path).get_data(as_text=True)
+        return re.search(r'name="csrf_token" value="([^"]+)"', page).group(1)
+
+    def test_post_without_csrf_token_is_rejected(self):
+        response = self.client.post("/auth/login", data={"username": "s1", "password": "pass"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_with_wrong_token_is_rejected(self):
+        self.token()
+        response = self.client.post("/auth/login", data={
+            "username": "s1", "password": "pass", "csrf_token": "forged"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_with_token_works(self):
+        response = self.client.post("/auth/login", data={
+            "username": "s1", "password": "pass", "csrf_token": self.token()})
+        self.assertEqual(response.status_code, 302)
+
+    def test_every_post_form_has_token(self):
+        self.client.post("/auth/login", data={
+            "username": "teacher", "password": "pass", "csrf_token": self.token()})
+        for path in ("/teacher/dashboard", f"/teacher/test/{self.test.id}/edit", "/teacher/test/create"):
+            page = self.client.get(path).get_data(as_text=True)
+            forms = re.findall(r'<form\b[^>]*method="post"[^>]*>', page, flags=re.I)
+            self.assertTrue(forms, path)
+            self.assertEqual(page.count('name="csrf_token"'), len(forms), path)
+
+    def test_role_guard_returns_403(self):
+        self.app.config["CSRF_ENABLED"] = False
+        self.login("s1")
+        self.assertEqual(self.client.get("/teacher/dashboard").status_code, 403)
+        self.assertEqual(self.client.get("/admin/dashboard").status_code, 403)
+        self.login("teacher")
+        self.assertEqual(self.client.get("/student/dashboard").status_code, 403)
+
+    def test_anonymous_is_sent_to_login(self):
+        response = self.client.get("/student/dashboard")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/auth/login", response.headers["Location"])
+
+    def test_login_bruteforce_is_limited(self):
+        self.app.config["CSRF_ENABLED"] = False
+        for _ in range(5):
+            self.client.post("/auth/login", data={"username": "s1", "password": "wrong"})
+        # Даже верный пароль не принимается, пока действует блокировка
+        response = self.client.post("/auth/login", data={"username": "s1", "password": "pass"})
+        self.assertEqual(response.status_code, 429)
+
+    def test_security_headers(self):
+        response = self.client.get("/")
+        self.assertEqual(response.headers["X-Frame-Options"], "DENY")
+        self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+
+    def test_register_rejects_weak_password(self):
+        self.app.config["CSRF_ENABLED"] = False
+        self.client.post("/auth/register", data={
+            "username": "weak", "password": "123", "first_name": "A", "last_name": "B"})
+        self.assertIsNone(User.query.filter_by(username="weak").first())
+
+    def test_secret_key_is_not_default(self):
+        self.assertNotEqual(self.app.config["SECRET_KEY"], "change-this-secret-key")
+        self.assertGreaterEqual(len(self.app.config["SECRET_KEY"]), 32)
 
 
 if __name__ == "__main__":

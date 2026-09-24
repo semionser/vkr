@@ -583,6 +583,7 @@
         {% endwith %}
 
         <form method="post">
+{{ csrf_input() }}
 
             <div class="field field-row">
 
@@ -647,6 +648,8 @@
                         class="form-control"
                         id="username"
                         name="username"
+                        pattern="[A-Za-z0-9_.\-]{3,40}"
+                        title="3–40 символов: латинские буквы, цифры, точка, дефис, подчёркивание"
                         type="text"
                         placeholder="Введите логин"
                         autocomplete="username"
@@ -715,8 +718,9 @@
                         id="password"
                         name="password"
                         type="password"
-                        placeholder="Введите пароль"
+                        placeholder="Не меньше 8 символов"
                         autocomplete="new-password"
+                        minlength="8"
                         required
                     >
                     <button

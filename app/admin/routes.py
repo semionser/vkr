@@ -5,11 +5,15 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, desc
 
 from app import db
+from app.security import require_role
 from app.models import User, Subject, Test, Attempt, Group
 
 
 
 admin_bp = Blueprint("admin", __name__)
+
+# Все маршруты раздела — только для роли «admin» (см. app/security.py)
+require_role(admin_bp, "admin")
 
 
 def admin_required():
@@ -267,7 +271,7 @@ def delete_user(user_id):
         print("DELETE USER ERROR:", e)
 
         flash(
-            f"Не удалось удалить пользователя {username}: {e}",
+            f"Не удалось удалить пользователя {username}",
             "danger"
         )
 
@@ -306,7 +310,7 @@ def create_subject():
         db.session.rollback()
         print("CREATE SUBJECT ERROR:", e)
 
-        flash(f"Не удалось добавить дисциплину: {e}", "danger")
+        flash(f"Не удалось добавить дисциплину", "danger")
 
     return redirect(url_for("admin.dashboard"))
 
@@ -335,7 +339,7 @@ def delete_subject(subject_id):
         print("DELETE SUBJECT ERROR:", e)
 
         flash(
-            f"Не удалось удалить дисциплину {subject_name}: {e}",
+            f"Не удалось удалить дисциплину {subject_name}",
             "danger"
         )
 
@@ -362,7 +366,7 @@ def delete_test(test_id):
     except Exception as e:
         db.session.rollback()
         print("DELETE TEST ERROR:", e)
-        flash(f"Не удалось удалить тест {test_title}: {e}", "danger")
+        flash(f"Не удалось удалить тест {test_title}", "danger")
 
     return redirect(url_for("admin.dashboard"))
 
