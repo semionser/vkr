@@ -42,7 +42,6 @@
     .feature-grid > .feature-card:nth-child(1) { animation-delay: .30s; }
     .feature-grid > .feature-card:nth-child(2) { animation-delay: .40s; }
     .feature-grid > .feature-card:nth-child(3) { animation-delay: .50s; }
-    .how-card { animation: riseIn .6s .6s cubic-bezier(.22, 1, .36, 1) both; }
 
     /* Значок документа над ноутбуком слегка покачивается */
     @keyframes badgeBob {
@@ -525,15 +524,6 @@
         /* ---------------------------------------------------------
            HOW IT WORKS
         --------------------------------------------------------- */
-        .how-card {
-            padding: 2rem;
-
-            background: #fff;
-            border-radius: 18px;
-
-            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
-        }
-
         .how-header {
             display: flex;
             align-items: center;
@@ -578,18 +568,6 @@
             font-size: 0.92rem;
         }
 
-        .how-steps {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr auto 1fr;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .step {
-            display: flex;
-            gap: 0.9rem;
-        }
-
         .step__num {
             display: grid;
             place-items: center;
@@ -608,56 +586,20 @@
             font-weight: 800;
         }
 
-        .step__body h4 {
-            margin: 0 0 0.25rem;
-
-            font-size: 1rem;
-            font-weight: 750;
-        }
-
-        .step__body p {
-            margin: 0;
-
-            color: var(--muted);
-
-            font-size: 0.88rem;
-            line-height: 1.5;
-        }
-
-        .step__arrow {
-            color: #cbd5e1;
-        }
-
-        .step__arrow svg {
-            width: 22px;
-            height: 22px;
-        }
-
-    /* Номера шагов загораются по очереди */
-    @keyframes stepPulse {
-        0%, 20%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); transform: scale(1); }
-        8%            { box-shadow: 0 0 0 8px rgba(37, 99, 235, .15); transform: scale(1.08); }
-    }
-    .how-steps .step__num { animation: stepPulse 6s infinite; }
-    .how-steps .step:nth-of-type(2) .step__num { animation-delay: 2s; }
-    .how-steps .step:nth-of-type(3) .step__num { animation-delay: 4s; }
-
     @media (max-width: 991.98px) {
         .hero { grid-template-columns: 1fr; gap: 2rem; }
         .hero-illustration { max-width: 440px; margin: 0 auto; }
         .feature-grid { grid-template-columns: 1fr; }
-        .how-steps { grid-template-columns: 1fr; gap: 1.25rem; }
-        .step__arrow { display: none; }
     }
     @media (max-width: 575.98px) {
         .hero h1 { font-size: 1.9rem; }
         .hero p { font-size: 0.95rem; }
         .hero-actions .btn { width: 100%; }
-        .feature-card, .how-card { padding: 1.35rem; }
+        .feature-card { padding: 1.35rem; }
     }
 
         @media (prefers-reduced-motion: reduce) {
-            .hero-text > *, .hero-illustration, .feature-card, .how-card { opacity: 1 !important; transform: none !important; }
+            .hero-text > *, .hero-illustration, .feature-card, .how-live { opacity: 1 !important; transform: none !important; }
             .hero-badge-icon { transform: translate(430px, 60px) !important; }
             *, *::before, *::after {
                 transition: none !important;
@@ -685,6 +627,99 @@
             .progress-fill-1b { width: 78px !important; }
             .progress-fill-2  { width: 108px !important; }
         }
+
+    /* =========================================================
+       «КАК ЭТО РАБОТАЕТ?» — три анимированных экрана
+       ========================================================= */
+    .how-live { padding: 2rem; background: #fff; border-radius: 18px; box-shadow: 0 12px 30px rgba(37, 71, 143, .08); animation: riseIn .6s .6s cubic-bezier(.22, 1, .36, 1) both; }
+    .how-live__grid { display: grid; grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr) 36px minmax(0, 1fr); align-items: start; gap: .5rem; }
+    .how-live__screen { position: relative; }
+    .how-live__screen svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .how-live__cap { display: flex; gap: .8rem; margin-top: 1rem; }
+    .how-live__cap .step__num { flex: none; }
+    .how-live__cap h4 { margin: 0 0 .2rem; font-size: 1rem; font-weight: 750; }
+    .how-live__cap p { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+    .how-live__arrow { align-self: center; margin-top: -3.5rem; color: #cbd5e1; }
+    .how-live__arrow svg { width: 36px; height: 12px; display: block; }
+    .how-live__arrow path:first-child { stroke-dasharray: 4 5; animation: flowDash 1s linear infinite; }
+    @keyframes flowDash { to { stroke-dashoffset: -9; } }
+
+    /* Общий цикл: 6 секунд, у экранов разные задержки */
+    .qz, .qz * { animation-duration: 6s; animation-iteration-count: infinite; animation-timing-function: ease-out; }
+    .qz--2, .qz--2 * { animation-delay: 1.2s; }
+    .qz--3, .qz--3 * { animation-delay: 2.4s; }
+    .qz-fade { animation-name: qzFade; }
+    @keyframes qzFade { 0%, 88% { opacity: 1; } 95% { opacity: 0; } 100% { opacity: 1; } }
+
+    /* --- 1. Создание: печатается текст, добавляются варианты, отмечается верный --- */
+    .qz-type { transform-box: fill-box; transform-origin: left; animation-name: qzType; animation-timing-function: steps(12, end); }
+    @keyframes qzType { 0%, 4% { transform: scaleX(0); } 22%, 100% { transform: scaleX(1); } }
+    .qz-type--2 { animation-name: qzType2; }
+    @keyframes qzType2 { 0%, 18% { transform: scaleX(0); } 30%, 100% { transform: scaleX(1); } }
+    .qz-opt { opacity: 0; animation-name: qzOpt; }
+    @keyframes qzOpt { 0% { opacity: 0; transform: translateX(-12px); } 100% { opacity: 1; transform: none; } }
+    .qz-opt--1 { animation-name: qzOpt1; } @keyframes qzOpt1 { 0%, 30% { opacity: 0; transform: translateX(-12px); } 36%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-opt--2 { animation-name: qzOpt2; } @keyframes qzOpt2 { 0%, 36% { opacity: 0; transform: translateX(-12px); } 42%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-opt--3 { animation-name: qzOpt3; } @keyframes qzOpt3 { 0%, 42% { opacity: 0; transform: translateX(-12px); } 48%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-toggle { transform-box: fill-box; transform-origin: center; animation-name: qzToggle; }
+    @keyframes qzToggle { 0%, 55% { transform: scale(0); } 60% { transform: scale(1.25); } 64%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-publish { animation-name: qzPublish; }
+    @keyframes qzPublish { 0%, 70% { fill: #cbd5e1; } 74%, 90% { fill: #22c55e; } 97%, 100% { fill: #cbd5e1; } }
+    .qz-publish-check { stroke-dasharray: 20; stroke-dashoffset: 20; animation-name: qzPubCheck; }
+    @keyframes qzPubCheck { 0%, 72% { stroke-dashoffset: 20; } 80%, 90% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 20; } }
+    .qz-caret { animation: cursorBlink 1s step-end infinite !important; }
+
+    /* --- 2. Прохождение: курсор отмечает ответы, таймер идёт, прогресс растёт --- */
+    .qz-cursor { animation-name: qzCursor; animation-timing-function: ease-in-out; }
+    @keyframes qzCursor {
+        0%, 12%  { transform: translate(250px, 180px); }
+        26%, 32% { transform: translate(40px, 104px); }
+        46%, 52% { transform: translate(40px, 128px); }
+        70%, 76% { transform: translate(248px, 176px); }
+        100%     { transform: translate(250px, 180px); }
+    }
+    .qz-tick { transform-box: fill-box; transform-origin: center; animation-name: qzTick; }
+    @keyframes qzTick { 0%, 29% { transform: scale(0); } 32% { transform: scale(1.2); } 35%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-tick--2 { animation-name: qzTick2; }
+    @keyframes qzTick2 { 0%, 49% { transform: scale(0); } 52% { transform: scale(1.2); } 55%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-sel { animation-name: qzSel; } @keyframes qzSel { 0%, 29% { fill: #f1f5f9; } 33%, 90% { fill: #dbeafe; } 97%, 100% { fill: #f1f5f9; } }
+    .qz-sel--2 { animation-name: qzSel2; } @keyframes qzSel2 { 0%, 49% { fill: #f1f5f9; } 53%, 90% { fill: #dbeafe; } 97%, 100% { fill: #f1f5f9; } }
+    .qz-next { animation-name: qzNext; } @keyframes qzNext { 0%, 72% { fill: #2563eb; } 75% { fill: #1e3a8a; } 80%, 100% { fill: #2563eb; } }
+    .qz-timer { stroke-dasharray: 100; animation-name: qzTimer; animation-timing-function: linear; }
+    @keyframes qzTimer { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 32; } }
+    .qz-progress { transform-box: fill-box; transform-origin: left; animation-name: qzProg; animation-timing-function: ease-in-out; }
+    @keyframes qzProg { 0%, 74% { transform: scaleX(.4); } 82%, 92% { transform: scaleX(.6); } 100% { transform: scaleX(.4); } }
+
+    /* --- 3. Результат: галочка, оценка, строки разбора --- */
+    .qz-circle { transform-box: fill-box; transform-origin: center; animation-name: qzCircle; }
+    @keyframes qzCircle { 0%, 4% { transform: scale(0); } 14% { transform: scale(1.1); } 18%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-bigcheck { stroke-dasharray: 60; stroke-dashoffset: 60; animation-name: qzBig; }
+    @keyframes qzBig { 0%, 16% { stroke-dashoffset: 60; } 28%, 90% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 60; } }
+    .qz-grade { transform-box: fill-box; transform-origin: center; animation-name: qzGrade; }
+    @keyframes qzGrade { 0%, 28% { transform: scale(0) rotate(-20deg); } 34% { transform: scale(1.2) rotate(6deg); } 38%, 90% { transform: scale(1) rotate(0); } 97%, 100% { transform: scale(0); } }
+    .qz-row { opacity: 0; }
+    .qz-row--1 { animation-name: qzRow1; } @keyframes qzRow1 { 0%, 40% { opacity: 0; transform: translateY(6px); } 45%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-row--2 { animation-name: qzRow2; } @keyframes qzRow2 { 0%, 48% { opacity: 0; transform: translateY(6px); } 53%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-row--3 { animation-name: qzRow3; } @keyframes qzRow3 { 0%, 56% { opacity: 0; transform: translateY(6px); } 61%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-row--4 { animation-name: qzRow4; } @keyframes qzRow4 { 0%, 64% { opacity: 0; transform: translateY(6px); } 69%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-score { transform-box: fill-box; transform-origin: left; animation-name: qzScore; animation-timing-function: ease-in-out; }
+    @keyframes qzScore { 0%, 30% { transform: scaleX(0); } 55%, 90% { transform: scaleX(1); } 97%, 100% { transform: scaleX(0); } }
+
+    .how-live__screen:hover .qz-frame { filter: drop-shadow(0 14px 22px rgba(37, 99, 235, .25)); }
+    .qz-frame { transition: filter .3s ease; }
+
+    @media (max-width: 991.98px) {
+        .how-live__grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+        .how-live__arrow { display: none; }
+        .how-live__screen { max-width: 420px; margin: 0 auto; width: 100%; }
+    }
+    @media (max-width: 575.98px) { .how-live { padding: 1.35rem; } }
+    @media (prefers-reduced-motion: reduce) {
+        .how-live, .how-live * { animation: none !important; }
+        .qz-opt, .qz-row { opacity: 1; }
+        .qz-publish-check, .qz-bigcheck { stroke-dashoffset: 0; }
+        .qz-cursor { transform: translate(248px, 176px); }
+    }
 </style>
 {% endblock %}
 
@@ -921,7 +956,15 @@
 
 </section>
 
-<section class="how-card">
+{# Рамка экрана — как у ноутбука на первом экране #}
+{% macro frame() -%}
+    <g class="qz-frame">
+        <rect x="0" y="0" width="320" height="214" rx="14" fill="#1e40af"/>
+        <rect x="9" y="9" width="302" height="196" rx="9" fill="#fff"/>
+    </g>
+{%- endmacro %}
+
+<section class="how-live">
     <div class="how-header">
         <div class="how-icon">{{ icon('info') }}</div>
         <div>
@@ -930,34 +973,141 @@
         </div>
     </div>
 
-    <div class="how-steps">
-        <div class="step">
-            <span class="step__num">1</span>
-            <div class="step__body">
-                <h4>Создание</h4>
-                <p>Методист составляет тест по нормативной базе и назначает его группам сотрудников.</p>
+    <div class="how-live__grid">
+
+        {# ---------- 1. Создание ---------- #}
+        <div class="how-live__screen">
+            <svg viewBox="0 0 320 214" aria-hidden="true">
+                {{ frame() }}
+                <g class="qz qz--1">
+                    <text x="26" y="36" font-size="11" font-weight="800" fill="#2563eb" font-family="system-ui, sans-serif">НОВЫЙ ВОПРОС</text>
+                    <rect x="26" y="46" width="268" height="34" rx="7" fill="#f8fafc" stroke="#e2e8f0"/>
+                    <rect class="qz-type" x="36" y="55" width="200" height="7" rx="3.5" fill="#94a3b8"/>
+                    <rect class="qz-type qz-type--2" x="36" y="67" width="120" height="7" rx="3.5" fill="#94a3b8"/>
+                    <rect class="qz-caret" x="160" y="65" width="2" height="11" fill="#2563eb"/>
+
+                    {% for i in range(3) %}
+                        <g class="qz-opt qz-opt--{{ i + 1 }}">
+                            <rect x="26" y="{{ 92 + i * 26 }}" width="220" height="20" rx="6" fill="#f1f5f9"/>
+                            <rect x="36" y="{{ 99 + i * 26 }}" width="{{ [110, 150, 90][i] }}" height="6" rx="3" fill="#cbd5e1"/>
+                            <rect x="256" y="{{ 94 + i * 26 }}" width="30" height="16" rx="8" fill="#e2e8f0"/>
+                            {% if i == 1 %}
+                                <g class="qz-toggle">
+                                    <rect x="256" y="{{ 94 + i * 26 }}" width="30" height="16" rx="8" fill="#22c55e"/>
+                                    <circle cx="278" cy="{{ 102 + i * 26 }}" r="6" fill="#fff"/>
+                                </g>
+                            {% else %}
+                                <circle cx="264" cy="{{ 102 + i * 26 }}" r="6" fill="#fff"/>
+                            {% endif %}
+                        </g>
+                    {% endfor %}
+
+                    <rect class="qz-publish" x="170" y="172" width="124" height="24" rx="7" fill="#cbd5e1"/>
+                    <path class="qz-publish-check" d="M181 184l3.5 3.5 7-7" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <text x="240" y="188" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="system-ui, sans-serif">Опубликовать</text>
+                </g>
+            </svg>
+            <div class="how-live__cap">
+                <span class="step__num">1</span>
+                <div>
+                    <h4>Создание</h4>
+                    <p>Методист составляет вопросы по нормативной базе, отмечает верные ответы и публикует тест для группы.</p>
+                </div>
             </div>
         </div>
 
-        <span class="step__arrow" aria-hidden="true">{{ icon('arrow-right') }}</span>
+        <div class="how-live__arrow" aria-hidden="true"><svg viewBox="0 0 36 12"><path d="M0 6h30" stroke="currentColor" stroke-width="2" fill="none"/><path d="M28 1l6 5-6 5" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
 
-        <div class="step">
-            <span class="step__num">2</span>
-            <div class="step__body">
-                <h4>Прохождение</h4>
-                <p>Сотрудник открывает назначенный тест и отвечает на вопросы в отведённое время.</p>
+        {# ---------- 2. Прохождение ---------- #}
+        <div class="how-live__screen">
+            <svg viewBox="0 0 320 214" aria-hidden="true">
+                {{ frame() }}
+                <g class="qz qz--2">
+                    <rect x="26" y="24" width="24" height="24" rx="7" fill="#dbeafe"/>
+                    <text x="38" y="41" text-anchor="middle" font-size="12" font-weight="800" fill="#2563eb" font-family="system-ui, sans-serif">3</text>
+                    <rect x="58" y="27" width="150" height="7" rx="3.5" fill="#cbd5e1"/>
+                    <rect x="58" y="39" width="100" height="7" rx="3.5" fill="#cbd5e1"/>
+
+                    {# таймер #}
+                    <circle cx="276" cy="36" r="14" fill="none" stroke="#eef2f7" stroke-width="4"/>
+                    <circle class="qz-timer" cx="276" cy="36" r="14" fill="none" stroke="#f59e0b" stroke-width="4" pathLength="100"
+                            stroke-linecap="round" transform="rotate(-90 276 36)"/>
+                    <path d="M276 29v7l4 3" stroke="#b45309" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+                    {% for i in range(4) %}
+                        <rect class="{% if i == 1 %}qz-sel{% elif i == 2 %}qz-sel qz-sel--2{% endif %}" x="26" y="{{ 62 + i * 25 }}" width="268" height="20" rx="6" fill="#f1f5f9"/>
+                        <rect x="34" y="{{ 66 + i * 25 }}" width="12" height="12" rx="3.5" fill="#fff" stroke="#cbd5e1" stroke-width="1.8"/>
+                        {% if i in [1, 2] %}
+                            <g class="qz-tick {% if i == 2 %}qz-tick--2{% endif %}">
+                                <rect x="34" y="{{ 66 + i * 25 }}" width="12" height="12" rx="3.5" fill="#2563eb"/>
+                                <path d="M37 {{ 72 + i * 25 }}l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </g>
+                        {% endif %}
+                        <rect x="54" y="{{ 69 + i * 25 }}" width="{{ [120, 170, 140, 100][i] }}" height="6" rx="3" fill="#cbd5e1"/>
+                    {% endfor %}
+
+                    <rect x="26" y="180" width="140" height="6" rx="3" fill="#e2e8f0"/>
+                    <rect class="qz-progress" x="26" y="180" width="140" height="6" rx="3" fill="#2563eb"/>
+                    <rect class="qz-next" x="226" y="170" width="68" height="24" rx="7" fill="#2563eb"/>
+                    <text x="260" y="186" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="system-ui, sans-serif">Далее →</text>
+
+                    {# курсор мыши #}
+                    <g class="qz-cursor">
+                        <path d="M0 0 L0 16 L4.5 12 L7.5 19 L10 18 L7 11 L13 11 Z" fill="#172033" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+                    </g>
+                </g>
+            </svg>
+            <div class="how-live__cap">
+                <span class="step__num">2</span>
+                <div>
+                    <h4>Прохождение</h4>
+                    <p>Сотрудник отвечает на вопросы в браузере. Таймер и прогресс всегда перед глазами.</p>
+                </div>
             </div>
         </div>
 
-        <span class="step__arrow" aria-hidden="true">{{ icon('arrow-right') }}</span>
+        <div class="how-live__arrow" aria-hidden="true"><svg viewBox="0 0 36 12"><path d="M0 6h30" stroke="currentColor" stroke-width="2" fill="none"/><path d="M28 1l6 5-6 5" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
 
-        <div class="step">
-            <span class="step__num">3</span>
-            <div class="step__body">
-                <h4>Результат</h4>
-                <p>Система проверяет ответы, выставляет оценку и показывает разбор ошибок.</p>
+        {# ---------- 3. Результат ---------- #}
+        <div class="how-live__screen">
+            <svg viewBox="0 0 320 214" aria-hidden="true">
+                {{ frame() }}
+                <g class="qz qz--3">
+                    <circle class="qz-circle" cx="64" cy="62" r="30" fill="#22c55e"/>
+                    <path class="qz-bigcheck" d="M51 62l9 9 17-17" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+                    <text x="112" y="52" font-size="11" font-weight="700" fill="#687386" font-family="system-ui, sans-serif">Тест сдан</text>
+                    <rect x="112" y="62" width="120" height="8" rx="4" fill="#eef2f7"/>
+                    <rect class="qz-score" x="112" y="62" width="110" height="8" rx="4" fill="#22c55e"/>
+                    <text x="112" y="88" font-size="11" font-weight="800" fill="#172033" font-family="system-ui, sans-serif">92% · 11 из 12 баллов</text>
+
+                    <g class="qz-grade">
+                        <rect x="252" y="36" width="44" height="44" rx="12" fill="#dcfce7"/>
+                        <text x="274" y="67" text-anchor="middle" font-size="24" font-weight="800" fill="#15803d" font-family="system-ui, sans-serif">5</text>
+                    </g>
+
+                    {% for ok in [true, true, false, true] %}
+                        <g class="qz-row qz-row--{{ loop.index }}">
+                            <rect x="26" y="{{ 106 + loop.index0 * 23 }}" width="268" height="18" rx="5" fill="{{ '#f0fdf4' if ok else '#fef2f2' }}"/>
+                            {% if ok %}
+                                <path d="M34 {{ 115 + loop.index0 * 23 }}l3 3 6-6" stroke="#16a34a" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            {% else %}
+                                <path d="M35 {{ 111 + loop.index0 * 23 }}l7 7M42 {{ 111 + loop.index0 * 23 }}l-7 7" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/>
+                            {% endif %}
+                            <rect x="52" y="{{ 112 + loop.index0 * 23 }}" width="{{ [150, 120, 170, 110][loop.index0] }}" height="6" rx="3" fill="{{ '#bbf7d0' if ok else '#fecaca' }}"/>
+                        </g>
+                    {% endfor %}
+                </g>
+            </svg>
+            <div class="how-live__cap">
+                <span class="step__num">3</span>
+                <div>
+                    <h4>Результат</h4>
+                    <p>Система сразу проверяет ответы, выставляет оценку и показывает разбор ошибок.</p>
+                </div>
             </div>
         </div>
+
     </div>
 </section>
 
