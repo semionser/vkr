@@ -66,6 +66,3 @@ def icon(name, cls=""):
         f'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" '
         f'aria-hidden="true">{body}</svg>'
     )
-
-
-ICON_NAMES = sorted(_PATHS)

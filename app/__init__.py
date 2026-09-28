@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -110,12 +110,25 @@ def create_app(config=None):
     init_security(app)
 
     app.jinja_env.filters["num"] = format_number
+
+    # Версия статических файлов: после обновления браузер
+    # загрузит новые style.css и app.js, а не старые из кэша
+    static_dir = Path(app.static_folder)
+    asset_version = int(max(
+        (f.stat().st_mtime for f in static_dir.rglob("*") if f.is_file()),
+        default=0,
+    ))
+
+    def asset(filename):
+        return url_for("static", filename=filename, v=asset_version)
+
     app.jinja_env.globals.update(
         ROLE_LABELS=ROLE_LABELS,
         SITE_NAME=SITE_NAME,
         SITE_FULL_NAME=SITE_FULL_NAME,
         plural=plural,
         icon=icon,
+        asset=asset,
     )
 
     from app.models import User

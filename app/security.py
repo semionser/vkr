@@ -13,7 +13,6 @@ import os
 import secrets
 import time
 from collections import defaultdict, deque
-from functools import wraps
 from pathlib import Path
 
 from flask import abort, current_app, request, session
@@ -102,20 +101,6 @@ def require_role(blueprint, role):
             return current_app.login_manager.unauthorized()
         if current_user.role != role:
             abort(403)
-
-
-def role_required(*roles):
-    """Декоратор для отдельных маршрутов вне ролевых blueprint'ов."""
-    def decorator(view):
-        @wraps(view)
-        def wrapper(*args, **kwargs):
-            if not current_user.is_authenticated:
-                return current_app.login_manager.unauthorized()
-            if current_user.role not in roles:
-                abort(403)
-            return view(*args, **kwargs)
-        return wrapper
-    return decorator
 
 
 # =========================================================
