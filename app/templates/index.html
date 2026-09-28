@@ -43,13 +43,6 @@
     .feature-grid > .feature-card:nth-child(2) { animation-delay: .40s; }
     .feature-grid > .feature-card:nth-child(3) { animation-delay: .50s; }
 
-    /* Значок документа над ноутбуком слегка покачивается */
-    @keyframes badgeBob {
-        0%, 100% { transform: translate(430px, 60px) rotate(0deg); }
-        50%      { transform: translate(430px, 53px) rotate(-5deg); }
-    }
-    .hero-badge-icon { transform: translate(430px, 60px); animation: badgeBob 5s ease-in-out infinite; }
-
         /* ---------------------------------------------------------
            HERO ILLUSTRATION
         --------------------------------------------------------- */
@@ -76,190 +69,44 @@
             50%      { transform: translateY(-6px); }
         }
 
-        @keyframes lineCycle {
-            0%   { opacity: 0; transform: translateY(-12px); }
-            12%  { opacity: 1; transform: translateY(0); }
-            78%  { opacity: 1; transform: translateY(0); }
-            90%  { opacity: 0; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(0); }
-        }
-
-        @keyframes questionCycle {
-            0%   { opacity: 0; transform: translateY(-25px); }
-            15%  { opacity: 1; transform: translateY(0); }
-            78%  { opacity: 1; transform: translateY(0); }
-            90%  { opacity: 0; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(0); }
-        }
-
-        @keyframes answerCycle {
-            0%   { opacity: 0; transform: translateX(-15px); }
-            15%  { opacity: 1; transform: translateX(0); }
-            78%  { opacity: 1; transform: translateX(0); }
-            90%  { opacity: 0; transform: translateX(0); }
-            100% { opacity: 0; transform: translateX(0); }
-        }
-
-        @keyframes checkboxCycle {
-            0%   { opacity: 0; }
-            10%  { opacity: 1; }
-            78%  { opacity: 1; }
-            90%  { opacity: 0; }
-            100% { opacity: 0; }
-        }
-
-        @keyframes checkDrawCycle {
-            0%   { stroke-dashoffset: 30; }
-            15%  { stroke-dashoffset: 30; }
-            30%  { stroke-dashoffset: 0; }
-            78%  { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 30; }
-        }
-
-        @keyframes resultCircleCycle {
-            0%   { opacity: 0; transform: scale(0.3); }
-            15%  { opacity: 1; transform: scale(1.08); }
-            25%  { opacity: 1; transform: scale(1); }
-            78%  { opacity: 1; transform: scale(1); }
-            90%  { opacity: 0; transform: scale(1); }
-            100% { opacity: 0; transform: scale(1); }
-        }
-
-        @keyframes bigCheckDrawCycle {
-            0%   { stroke-dashoffset: 60; }
-            20%  { stroke-dashoffset: 60; }
-            45%  { stroke-dashoffset: 0; }
-            78%  { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 60; }
-        }
-
-        @keyframes progressCycle {
-            0%   { width: 0; }
-            35%  { width: var(--target-width, 78px); }
-            78%  { width: var(--target-width, 78px); }
-            90%  { width: 0; }
-            100% { width: 0; }
-        }
-
-        @keyframes leafWave {
-            0%, 100% { transform: rotate(-25deg); }
-            50%      { transform: rotate(-18deg); }
-        }
-        @keyframes leafWave2 {
-            0%, 100% { transform: rotate(25deg); }
-            50%      { transform: rotate(18deg); }
-        }
-
         @keyframes cursorBlink {
             0%, 50%   { opacity: 1; }
             51%, 100% { opacity: 0; }
         }
 
-        .screen {
-            opacity: 0;
-            animation: screenCycle 12s infinite;
-        }
-        .screen-1 { animation-delay: 0s; }
-        .screen-2 { animation-delay: 4s; }
-        .screen-3 { animation-delay: 8s; }
 
-        @keyframes screenCycle {
-            0%      { opacity: 0; }
-            2%      { opacity: 1; }
-            31%     { opacity: 1; }
-            33%     { opacity: 0; }
-            100%    { opacity: 0; }
-        }
+    /* =========================================================
+       ИЛЛЮСТРАЦИЯ ПЕРВОГО ЭКРАНА — СЕРТИФИКАТ: на документ ставится печать «Знания подтверждены»
+       ========================================================= */
+    .hv svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .hv text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .hv-float { animation: heroFloat 5s ease-in-out infinite; }
 
-        .hero-laptop {
-            animation: heroFloat 4s ease-in-out infinite;
-        }
+    /* ================= 2. СЕРТИФИКАТ ================= */
+    .c-paper { transform-box: fill-box; transform-origin: center; animation: cShake 6s ease-out infinite; }
+    @keyframes cShake { 0%, 52% { transform: rotate(-4deg); } 54% { transform: rotate(-4deg) translateY(4px); } 57%, 100% { transform: rotate(-4deg); } }
+    .c-row { transform-box: fill-box; transform-origin: left; animation: cRow 6s ease-out infinite; }
+    @keyframes cRow { 0% { transform: scaleX(0); } 12%, 92% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+    .c-name { opacity: 0; animation: cName 6s ease-out infinite; }
+    @keyframes cName { 0%, 18% { opacity: 0; } 26%, 92% { opacity: 1; } 100% { opacity: 0; } }
+    .c-sign { stroke-dasharray: 160; stroke-dashoffset: 160; animation: cSign 6s ease-in-out infinite; }
+    @keyframes cSign { 0%, 26% { stroke-dashoffset: 160; } 42%, 92% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 160; } }
+    .c-stamp { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cStamp 6s cubic-bezier(.3, 1.4, .5, 1) infinite; }
+    @keyframes cStamp {
+        0%, 44% { opacity: 0; transform: scale(2.4) rotate(-40deg); }
+        53%     { opacity: 1; transform: scale(.94) rotate(-14deg); }
+        57%, 92% { opacity: 1; transform: scale(1) rotate(-14deg); }
+        100%    { opacity: 0; transform: scale(1) rotate(-14deg); }
+    }
+    .c-spark { opacity: 0; transform-box: fill-box; transform-origin: center; animation: cSpark 6s ease-out infinite; }
+    @keyframes cSpark { 0%, 53% { opacity: 0; transform: scale(.2); } 58% { opacity: 1; transform: scale(1.2); } 70%, 100% { opacity: 0; transform: scale(1.6); } }
+    .c-medal { animation: cMedal 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top center; }
+    @keyframes cMedal { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+    .c-score { opacity: 0; animation: cName 6s ease-out .3s infinite; }
 
-        .hero-leaf-left {
-            transform-origin: -14px 10px;
-            animation: leafWave 3s ease-in-out infinite;
-        }
-        .hero-leaf-right {
-            transform-origin: 14px 20px;
-            animation: leafWave2 3s ease-in-out 0.4s infinite;
-        }
-
-        .hero-cursor {
-            animation: cursorBlink 1s step-end infinite;
-        }
-
-        .hero-line-1 { animation: lineCycle 4s 0.05s infinite ease-out; }
-        .hero-line-2 { animation: lineCycle 4s 0.30s infinite ease-out; }
-        .hero-line-3 { animation: lineCycle 4s 0.55s infinite ease-out; }
-        .hero-line-4 { animation: lineCycle 4s 0.80s infinite ease-out; }
-
-        .hero-check-1,
-        .hero-check-3 {
-            opacity: 0;
-            animation: checkboxCycle 4s infinite ease-out;
-        }
-        .hero-check-1 { animation-delay: 0.55s; }
-        .hero-check-3 { animation-delay: 1.05s; }
-
-        .hero-check-1 path,
-        .hero-check-3 path {
-            stroke-dasharray: 20;
-            stroke-dashoffset: 20;
-            animation: checkDrawCycle 4s infinite ease-out;
-        }
-        .hero-check-1 path { animation-delay: 0.55s; }
-        .hero-check-3 path { animation-delay: 1.05s; }
-
-        .progress-fill-1 {
-            --target-width: 78px;
-            animation: progressCycle 4s 0.2s infinite ease-out;
-        }
-
-        .q-question { animation: questionCycle 4s 0.05s infinite ease-out; }
-
-        .q-answer-1 { animation: answerCycle 4s 0.55s infinite ease-out; }
-        .q-answer-2 { animation: answerCycle 4s 0.80s infinite ease-out; }
-        .q-answer-3 { animation: answerCycle 4s 1.05s infinite ease-out; }
-        .q-answer-4 { animation: answerCycle 4s 1.30s infinite ease-out; }
-
-        .q-checkbox-2,
-        .q-checkbox-3 {
-            opacity: 0;
-            animation: checkboxCycle 4s infinite ease-out;
-        }
-        .q-checkbox-2 { animation-delay: 1.05s; }
-        .q-checkbox-3 { animation-delay: 1.30s; }
-
-        .q-check,
-        .q-check-2 {
-            stroke-dasharray: 20;
-            stroke-dashoffset: 20;
-            animation: checkDrawCycle 4s infinite ease-out;
-        }
-        .q-check   { animation-delay: 1.05s; }
-        .q-check-2 { animation-delay: 1.30s; }
-
-        .progress-fill-1b {
-            --target-width: 78px;
-            animation: progressCycle 4s 0.2s infinite ease-out;
-        }
-
-        .hero-check-circle {
-            transform-origin: 270px 180px;
-            transform-box: fill-box;
-            animation: resultCircleCycle 4s 0.2s infinite ease-out;
-        }
-
-        .hero-check-mark {
-            stroke-dasharray: 60;
-            stroke-dashoffset: 60;
-            animation: bigCheckDrawCycle 4s 0.3s infinite ease-out;
-        }
-
-        .progress-fill-2 {
-            --target-width: 108px;
-            animation: progressCycle 4s 0.2s infinite ease-out;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .hv *, .hv-float { animation: none !important; }
+    }
 
         /* =========================================================
            FEATURE CARDS — усиленные hover-эффекты
@@ -600,126 +447,11 @@
 
         @media (prefers-reduced-motion: reduce) {
             .hero-text > *, .hero-illustration, .feature-card, .how-live { opacity: 1 !important; transform: none !important; }
-            .hero-badge-icon { transform: translate(430px, 60px) !important; }
             *, *::before, *::after {
                 transition: none !important;
                 animation: none !important;
             }
-
-            .screen { opacity: 1 !important; }
-            .screen-2,
-            .screen-3 { opacity: 0 !important; }
-
-            .hero-check-1,
-            .hero-check-3,
-            .q-checkbox-2,
-            .q-checkbox-3 { opacity: 1 !important; }
-
-            .hero-check-1 path,
-            .hero-check-3 path,
-            .q-check,
-            .q-check-2,
-            .hero-check-mark {
-                stroke-dashoffset: 0 !important;
-            }
-
-            .progress-fill-1,
-            .progress-fill-1b { width: 78px !important; }
-            .progress-fill-2  { width: 108px !important; }
         }
-
-    /* =========================================================
-       «КАК ЭТО РАБОТАЕТ?» — три анимированных экрана
-       ========================================================= */
-    .how-live { padding: 2rem; background: #fff; border-radius: 18px; box-shadow: 0 12px 30px rgba(37, 71, 143, .08); animation: riseIn .6s .6s cubic-bezier(.22, 1, .36, 1) both; }
-    .how-live__grid { display: grid; grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr) 36px minmax(0, 1fr); align-items: start; gap: .5rem; }
-    .how-live__screen { position: relative; }
-    .how-live__screen svg { display: block; width: 100%; height: auto; overflow: visible; }
-    .how-live__cap { display: flex; gap: .8rem; margin-top: 1rem; }
-    .how-live__cap .step__num { flex: none; }
-    .how-live__cap h4 { margin: 0 0 .2rem; font-size: 1rem; font-weight: 750; }
-    .how-live__cap p { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
-    .how-live__arrow { align-self: center; margin-top: -3.5rem; color: #cbd5e1; }
-    .how-live__arrow svg { width: 36px; height: 12px; display: block; }
-    .how-live__arrow path:first-child { stroke-dasharray: 4 5; animation: flowDash 1s linear infinite; }
-    @keyframes flowDash { to { stroke-dashoffset: -9; } }
-
-    /* Общий цикл: 6 секунд, у экранов разные задержки */
-    .qz, .qz * { animation-duration: 6s; animation-iteration-count: infinite; animation-timing-function: ease-out; }
-    .qz--2, .qz--2 * { animation-delay: 1.2s; }
-    .qz--3, .qz--3 * { animation-delay: 2.4s; }
-    .qz-fade { animation-name: qzFade; }
-    @keyframes qzFade { 0%, 88% { opacity: 1; } 95% { opacity: 0; } 100% { opacity: 1; } }
-
-    /* --- 1. Создание: печатается текст, добавляются варианты, отмечается верный --- */
-    .qz-type { transform-box: fill-box; transform-origin: left; animation-name: qzType; animation-timing-function: steps(12, end); }
-    @keyframes qzType { 0%, 4% { transform: scaleX(0); } 22%, 100% { transform: scaleX(1); } }
-    .qz-type--2 { animation-name: qzType2; }
-    @keyframes qzType2 { 0%, 18% { transform: scaleX(0); } 30%, 100% { transform: scaleX(1); } }
-    .qz-opt { opacity: 0; animation-name: qzOpt; }
-    @keyframes qzOpt { 0% { opacity: 0; transform: translateX(-12px); } 100% { opacity: 1; transform: none; } }
-    .qz-opt--1 { animation-name: qzOpt1; } @keyframes qzOpt1 { 0%, 30% { opacity: 0; transform: translateX(-12px); } 36%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-opt--2 { animation-name: qzOpt2; } @keyframes qzOpt2 { 0%, 36% { opacity: 0; transform: translateX(-12px); } 42%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-opt--3 { animation-name: qzOpt3; } @keyframes qzOpt3 { 0%, 42% { opacity: 0; transform: translateX(-12px); } 48%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-toggle { transform-box: fill-box; transform-origin: center; animation-name: qzToggle; }
-    @keyframes qzToggle { 0%, 55% { transform: scale(0); } 60% { transform: scale(1.25); } 64%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
-    .qz-publish { animation-name: qzPublish; }
-    @keyframes qzPublish { 0%, 70% { fill: #cbd5e1; } 74%, 90% { fill: #22c55e; } 97%, 100% { fill: #cbd5e1; } }
-    .qz-publish-check { stroke-dasharray: 20; stroke-dashoffset: 20; animation-name: qzPubCheck; }
-    @keyframes qzPubCheck { 0%, 72% { stroke-dashoffset: 20; } 80%, 90% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 20; } }
-    .qz-caret { animation: cursorBlink 1s step-end infinite !important; }
-
-    /* --- 2. Прохождение: курсор отмечает ответы, таймер идёт, прогресс растёт --- */
-    .qz-cursor { animation-name: qzCursor; animation-timing-function: ease-in-out; }
-    @keyframes qzCursor {
-        0%, 12%  { transform: translate(250px, 180px); }
-        26%, 32% { transform: translate(40px, 104px); }
-        46%, 52% { transform: translate(40px, 128px); }
-        70%, 76% { transform: translate(248px, 176px); }
-        100%     { transform: translate(250px, 180px); }
-    }
-    .qz-tick { transform-box: fill-box; transform-origin: center; animation-name: qzTick; }
-    @keyframes qzTick { 0%, 29% { transform: scale(0); } 32% { transform: scale(1.2); } 35%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
-    .qz-tick--2 { animation-name: qzTick2; }
-    @keyframes qzTick2 { 0%, 49% { transform: scale(0); } 52% { transform: scale(1.2); } 55%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
-    .qz-sel { animation-name: qzSel; } @keyframes qzSel { 0%, 29% { fill: #f1f5f9; } 33%, 90% { fill: #dbeafe; } 97%, 100% { fill: #f1f5f9; } }
-    .qz-sel--2 { animation-name: qzSel2; } @keyframes qzSel2 { 0%, 49% { fill: #f1f5f9; } 53%, 90% { fill: #dbeafe; } 97%, 100% { fill: #f1f5f9; } }
-    .qz-next { animation-name: qzNext; } @keyframes qzNext { 0%, 72% { fill: #2563eb; } 75% { fill: #1e3a8a; } 80%, 100% { fill: #2563eb; } }
-    .qz-timer { stroke-dasharray: 100; animation-name: qzTimer; animation-timing-function: linear; }
-    @keyframes qzTimer { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 32; } }
-    .qz-progress { transform-box: fill-box; transform-origin: left; animation-name: qzProg; animation-timing-function: ease-in-out; }
-    @keyframes qzProg { 0%, 74% { transform: scaleX(.4); } 82%, 92% { transform: scaleX(.6); } 100% { transform: scaleX(.4); } }
-
-    /* --- 3. Результат: галочка, оценка, строки разбора --- */
-    .qz-circle { transform-box: fill-box; transform-origin: center; animation-name: qzCircle; }
-    @keyframes qzCircle { 0%, 4% { transform: scale(0); } 14% { transform: scale(1.1); } 18%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
-    .qz-bigcheck { stroke-dasharray: 60; stroke-dashoffset: 60; animation-name: qzBig; }
-    @keyframes qzBig { 0%, 16% { stroke-dashoffset: 60; } 28%, 90% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 60; } }
-    .qz-grade { transform-box: fill-box; transform-origin: center; animation-name: qzGrade; }
-    @keyframes qzGrade { 0%, 28% { transform: scale(0) rotate(-20deg); } 34% { transform: scale(1.2) rotate(6deg); } 38%, 90% { transform: scale(1) rotate(0); } 97%, 100% { transform: scale(0); } }
-    .qz-row { opacity: 0; }
-    .qz-row--1 { animation-name: qzRow1; } @keyframes qzRow1 { 0%, 40% { opacity: 0; transform: translateY(6px); } 45%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-row--2 { animation-name: qzRow2; } @keyframes qzRow2 { 0%, 48% { opacity: 0; transform: translateY(6px); } 53%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-row--3 { animation-name: qzRow3; } @keyframes qzRow3 { 0%, 56% { opacity: 0; transform: translateY(6px); } 61%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-row--4 { animation-name: qzRow4; } @keyframes qzRow4 { 0%, 64% { opacity: 0; transform: translateY(6px); } 69%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
-    .qz-score { transform-box: fill-box; transform-origin: left; animation-name: qzScore; animation-timing-function: ease-in-out; }
-    @keyframes qzScore { 0%, 30% { transform: scaleX(0); } 55%, 90% { transform: scaleX(1); } 97%, 100% { transform: scaleX(0); } }
-
-    .how-live__screen:hover .qz-frame { filter: drop-shadow(0 14px 22px rgba(37, 99, 235, .25)); }
-    .qz-frame { transition: filter .3s ease; }
-
-    @media (max-width: 991.98px) {
-        .how-live__grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
-        .how-live__arrow { display: none; }
-        .how-live__screen { max-width: 420px; margin: 0 auto; width: 100%; }
-    }
-    @media (max-width: 575.98px) { .how-live { padding: 1.35rem; } }
-    @media (prefers-reduced-motion: reduce) {
-        .how-live, .how-live * { animation: none !important; }
-        .qz-opt, .qz-row { opacity: 1; }
-        .qz-publish-check, .qz-bigcheck { stroke-dashoffset: 0; }
-        .qz-cursor { transform: translate(248px, 176px); }
-    }
 </style>
 {% endblock %}
 
@@ -743,173 +475,67 @@
     </div>
 
     <!-- Иллюстрация: три экрана сменяют друг друга — ответы, вопрос, результат -->
-    <div class="hero-illustration" aria-hidden="true">
-            <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+    <div class="hero-illustration hv" aria-hidden="true">
+    {# ================= 2. СЕРТИФИКАТ ================= #}
+    <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="130" cy="110" r="85" fill="#dbe5fb" opacity=".55"/>
+        <circle cx="450" cy="310" r="75" fill="#e0e7ff" opacity=".55"/>
+        <circle cx="470" cy="90" r="40" fill="#fef3c7" opacity=".7"/>
 
-                <circle cx="120" cy="110" r="80" fill="#dbe5fb" opacity="0.55"/>
-                <circle cx="470" cy="90"  r="55" fill="#e0e7ff" opacity="0.55"/>
-                <circle cx="440" cy="320" r="70" fill="#d1fae5" opacity="0.45"/>
+        <g class="hv-float">
+            {# второй лист сзади #}
+            <rect x="170" y="52" width="250" height="310" rx="12" fill="#e8eefb" transform="rotate(5 295 207)"/>
 
-                <g class="hero-laptop">
+            <g class="c-paper">
+                <rect x="150" y="45" width="250" height="310" rx="12" fill="#fff" style="filter: drop-shadow(0 18px 30px rgba(30,64,175,.16))"/>
+                <rect x="162" y="57" width="226" height="286" rx="8" fill="none" stroke="#c7d2fe" stroke-width="2"/>
+                <rect x="167" y="62" width="216" height="276" rx="6" fill="none" stroke="#e0e7ff" stroke-width="1"/>
 
-                    <rect x="90" y="90" width="380" height="230" rx="16" fill="#1e40af"/>
-                    <rect x="105" y="105" width="350" height="200" rx="10" fill="#ffffff"/>
+                <text x="275" y="98" text-anchor="middle" font-size="18" font-weight="800" fill="#1e40af" letter-spacing="2">СЕРТИФИКАТ</text>
+                <text x="275" y="116" text-anchor="middle" font-size="9.5" font-weight="700" fill="#687386">о проверке знаний</text>
 
-                    <defs>
-                        <clipPath id="screen-clip">
-                            <rect x="105" y="105" width="350" height="200" rx="10"/>
-                        </clipPath>
+                <text class="c-name" x="275" y="150" text-anchor="middle" font-size="15" font-weight="800" fill="#172033">Соколов Пётр</text>
+                <line x1="200" y1="158" x2="350" y2="158" stroke="#cbd5e1" stroke-width="1.5"/>
 
-                        <clipPath id="progress-clip-1">
-                            <rect x="130" y="270" width="120" height="6" rx="3"/>
-                        </clipPath>
+                {% for w in [180, 150, 170] %}
+                    <rect class="c-row" x="{{ 275 - w / 2 }}" y="{{ 176 + loop.index0 * 14 }}" width="{{ w }}" height="6" rx="3" fill="#e2e8f0"
+                          style="animation-delay: {{ 0.2 + loop.index0 * 0.2 }}s"/>
+                {% endfor %}
 
-                        <clipPath id="progress-clip-2">
-                            <rect x="130" y="276" width="120" height="6" rx="3"/>
-                        </clipPath>
-
-                        <clipPath id="progress-clip-3">
-                            <rect x="130" y="276" width="120" height="6" rx="3"/>
-                        </clipPath>
-                    </defs>
-
-                    <g clip-path="url(#screen-clip)">
-
-                        <g class="screen screen-1">
-                            <rect x="130" y="125" width="130" height="12" rx="6" fill="#c7d2fe"/>
-
-                            <g class="hero-line-1">
-                                <rect x="130" y="155" width="18" height="18" rx="4" fill="#2563eb"/>
-                                <g class="hero-check-1">
-                                    <path d="M134 164l4 4 7-7" stroke="#fff" stroke-width="2"
-                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                                </g>
-                                <rect x="158" y="158" width="140" height="10" rx="5" fill="#e2e8f0"/>
-                            </g>
-
-                            <g class="hero-line-2">
-                                <rect x="130" y="185" width="18" height="18" rx="4"
-                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
-                                <rect x="158" y="188" width="170" height="10" rx="5" fill="#e2e8f0"/>
-                            </g>
-
-                            <g class="hero-line-3">
-                                <rect x="130" y="215" width="18" height="18" rx="4" fill="#2563eb"/>
-                                <g class="hero-check-3">
-                                    <path d="M134 224l4 4 7-7" stroke="#fff" stroke-width="2"
-                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                                </g>
-                                <rect x="158" y="218" width="130" height="10" rx="5" fill="#e2e8f0"/>
-                            </g>
-
-                            <g class="hero-line-4">
-                                <rect x="130" y="245" width="18" height="18" rx="4"
-                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
-                                <rect x="158" y="248" width="110" height="10" rx="5" fill="#e2e8f0"/>
-                                <rect class="hero-cursor" x="272" y="245" width="2" height="18" fill="#2563eb"/>
-                            </g>
-
-                            <rect x="130" y="270" width="120" height="6" rx="3" fill="#e2e8f0"/>
-                            <g clip-path="url(#progress-clip-1)">
-                                <rect class="progress-fill-1" x="130" y="270" width="0" height="6" rx="3" fill="#22c55e"/>
-                            </g>
-                        </g>
-
-
-                        <g class="screen screen-2">
-                            <g class="q-question">
-                                <rect x="130" y="128" width="26" height="26" rx="8" fill="#dbeafe"/>
-                                <text x="143" y="146"
-                                      font-family="system-ui, sans-serif"
-                                      font-size="13" font-weight="800"
-                                      fill="#2563eb" text-anchor="middle">1</text>
-
-                                <rect x="166" y="132" width="180" height="8" rx="4" fill="#cbd5e1"/>
-                                <rect x="166" y="146" width="120" height="8" rx="4" fill="#cbd5e1"/>
-                            </g>
-
-                            <g class="q-answer-1">
-                                <rect x="130" y="176" width="14" height="14" rx="4"
-                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
-                                <rect x="154" y="178" width="140" height="10" rx="5" fill="#e2e8f0"/>
-                            </g>
-
-                            <g class="q-answer-2">
-                                <g class="q-checkbox-2">
-                                    <rect x="130" y="201" width="14" height="14" rx="4"
-                                          fill="#2563eb" stroke="#2563eb" stroke-width="2"/>
-                                    <path class="q-check" d="M133 208l3 3 5-5"
-                                          stroke="#fff" stroke-width="2"
-                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                                </g>
-                                <rect x="154" y="203" width="160" height="10" rx="5" fill="#c7d2fe"/>
-                            </g>
-
-                            <g class="q-answer-3">
-                                <g class="q-checkbox-3">
-                                    <rect x="130" y="229" width="14" height="14" rx="4"
-                                          fill="#2563eb" stroke="#2563eb" stroke-width="2"/>
-                                    <path class="q-check-2" d="M133 236l3 3 5-5"
-                                          stroke="#fff" stroke-width="2"
-                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                                </g>
-                                <rect x="154" y="231" width="120" height="10" rx="5" fill="#c7d2fe"/>
-                            </g>
-
-                            <g class="q-answer-4">
-                                <rect x="130" y="257" width="14" height="14" rx="4"
-                                      fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
-                                <rect x="154" y="259" width="150" height="10" rx="5" fill="#e2e8f0"/>
-                            </g>
-
-                            <rect x="130" y="276" width="120" height="6" rx="3" fill="#e2e8f0"/>
-                            <g clip-path="url(#progress-clip-2)">
-                                <rect class="progress-fill-1b" x="130" y="276" width="0" height="6" rx="3" fill="#2563eb"/>
-                            </g>
-                        </g>
-
-
-                        <g class="screen screen-3">
-                            <g class="hero-check-circle">
-                                <circle cx="270" cy="180" r="35" fill="#22c55e"/>
-                            </g>
-                            <path class="hero-check-mark" d="M255 180l11 11 21-21"
-                                  stroke="#fff" stroke-width="4" fill="none"
-                                  stroke-linecap="round" stroke-linejoin="round"/>
-
-                            <rect x="205" y="235" width="130" height="12" rx="6" fill="#dcfce7"/>
-                            <rect x="225" y="252" width="90"  height="8"  rx="4" fill="#e2e8f0"/>
-                        </g>
-
-                    </g>
-
+                <g class="c-score">
+                    <rect x="222" y="224" width="106" height="30" rx="9" fill="#dcfce7"/>
+                    <text x="275" y="244" text-anchor="middle" font-size="13" font-weight="800" fill="#15803d">92% · оценка 5</text>
                 </g>
 
-                <rect x="80" y="320" width="400" height="14" rx="7" fill="#0f172a"/>
+                {# подпись #}
+                <path class="c-sign" d="M184 306 c10 -18 18 -18 20 -4 s6 12 14 -6 s10 -10 12 4 s8 6 18 -8" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round"/>
+                <line x1="180" y1="314" x2="262" y2="314" stroke="#cbd5e1" stroke-width="1.5"/>
+                <text x="180" y="327" font-size="8.5" font-weight="600" fill="#94a3b8">Методист</text>
+            </g>
 
-                <g class="hero-badge-icon">
-                    <rect x="-40" y="-40" width="80" height="80" rx="16" fill="#2563eb"/>
-                    <path d="M-14 -24h18l12 12v34a4 4 0 0 1-4 4h-26a4 4 0 0 1-4-4v-42a4 4 0 0 1 4-4z" fill="#fff"/>
-                    <path d="M4 -24v12h12" fill="#c7d2fe"/>
-                    <path d="M-10 6l7 7 13-14" stroke="#2563eb" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            {# печать #}
+            <g class="c-stamp">
+                <circle cx="342" cy="292" r="44" fill="rgba(37,99,235,.06)" stroke="#2563eb" stroke-width="3.5"/>
+                <circle cx="342" cy="292" r="35" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <text x="342" y="288" text-anchor="middle" font-size="11" font-weight="900" fill="#2563eb" letter-spacing="1">ЗНАНИЯ</text>
+                <text x="342" y="302" text-anchor="middle" font-size="7.6" font-weight="800" fill="#2563eb">ПОДТВЕРЖДЕНЫ</text>
+                <path d="M330 312l6 5 12-11" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            {% for x, y, c in [(288, 244, '#fbbf24'), (400, 250, '#60a5fa'), (392, 342, '#34d399'), (296, 346, '#f472b6')] %}
+                <g class="c-spark" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                    <path d="M{{ x }} {{ y - 7 }}v14M{{ x - 7 }} {{ y }}h14" stroke="{{ c }}" stroke-width="3" stroke-linecap="round"/>
                 </g>
+            {% endfor %}
+        </g>
 
-                <g transform="translate(480 240)">
-                    <path d="M0 60v-40" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
-
-                    <ellipse class="hero-leaf-left"
-                             cx="-14" cy="10" rx="14" ry="22"
-                             fill="#14b8a6" opacity="0.85"
-                             transform="rotate(-25 -14 10)"/>
-
-                    <ellipse class="hero-leaf-right"
-                             cx="14" cy="20" rx="14" ry="22"
-                             fill="#14b8a6" opacity="0.7"
-                             transform="rotate(25 14 20)"/>
-
-                    <path d="M-20 60h40l-6 26h-28z" fill="#c7d2fe"/>
-                </g>
-            </svg>
+        {# медаль #}
+        <g transform="translate(452 70)"><g class="c-medal">
+            <path d="M-14 0 L-22 34 L-8 28 L0 40 L8 28 L22 34 L14 0Z" fill="#93c5fd"/>
+            <circle cx="0" cy="52" r="24" fill="#fbbf24"/>
+            <circle cx="0" cy="52" r="17" fill="#fcd34d"/>
+            <path d="M0 42l3 7 7 .6-5.3 4.6 1.6 7L0 57.5 -6.3 61.2l1.6-7L-10 49.6l7-.6z" fill="#d97706"/>
+        </g></g>
+    </svg>
     </div>
 </section>
 
