@@ -1,0 +1,69 @@
+{# =====================================================================
+   Общие фрагменты интерфейса.
+   Подключение: {% import "_macros.html" as ui %}
+   ===================================================================== #}
+
+{# Всплывающие сообщения flash() #}
+{% macro flashes() -%}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-stack" role="status">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ icon('check-circle' if category == 'success' else ('alert' if category in ['danger', 'error', 'warning'] else 'info')) }}
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+{%- endmacro %}
+
+{# Оценка в цветном квадрате #}
+{% macro grade(value, size='') -%}
+    {%- if value is not none -%}
+        <span class="grade grade--{{ value|int }} {% if size %}grade--{{ size }}{% endif %}">{{ value|num }}</span>
+    {%- else -%}
+        <span class="grade {% if size %}grade--{{ size }}{% endif %}">—</span>
+    {%- endif -%}
+{%- endmacro %}
+
+{# Статус теста #}
+{% macro test_status(status) -%}
+    {%- if status == 'published' -%}
+        <span class="badge badge--green">Опубликован</span>
+    {%- elif status == 'draft' -%}
+        <span class="badge badge--amber">Черновик</span>
+    {%- else -%}
+        <span class="badge">{{ status }}</span>
+    {%- endif -%}
+{%- endmacro %}
+
+{# Роль пользователя #}
+{% macro role_badge(role) -%}
+    {%- set colors = {'student': 'blue', 'teacher': 'amber', 'admin': 'violet'} -%}
+    <span class="badge badge--{{ colors.get(role, 'blue') }}">{{ ROLE_LABELS.get(role, role) }}</span>
+{%- endmacro %}
+
+{# Цвет полоски прогресса по проценту #}
+{% macro bar(percent, size='') -%}
+    {%- set p = percent or 0 -%}
+    <div class="progress {% if size %}progress--{{ size }}{% endif %} {% if p >= 75 %}progress--green{% elif p >= 50 %}{% elif p >= 30 %}progress--amber{% else %}progress--red{% endif %}">
+        <i style="width: {{ [[p, 0]|max, 100]|min }}%"></i>
+    </div>
+{%- endmacro %}
+
+{# Пустое состояние #}
+{% macro empty(icon_name, title, text='') -%}
+    <div class="empty">
+        <div class="empty__icon">{{ icon(icon_name) }}</div>
+        <div class="empty__title">{{ title }}</div>
+        {% if text %}<div class="small">{{ text }}</div>{% endif %}
+        {{ caller() if caller }}
+    </div>
+{%- endmacro %}
+
+{# Инициалы для аватара #}
+{% macro initials(user) -%}
+    {{- ((user.first_name or '?')[0] ~ (user.last_name or '')[:1])|upper -}}
+{%- endmacro %}

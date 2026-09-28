@@ -163,7 +163,7 @@ def create_test():
         if not title or not subject_id:
 
             flash(
-                "Название и дисциплина обязательны.",
+                "Название и направление обязательны.",
                 "danger"
             )
 
@@ -795,22 +795,22 @@ def create_subject():
     description = request.form.get("description", "").strip()
 
     if not name:
-        flash("Название дисциплины не может быть пустым.", "danger")
+        flash("Название направления не может быть пустым.", "danger")
         return redirect(url_for("teacher.dashboard"))
 
     existing = Subject.query.filter_by(name=name).first()
     if existing:
-        flash(f"Дисциплина «{name}» уже существует.", "danger")
+        flash(f"Направление «{name}» уже существует.", "danger")
         return redirect(url_for("teacher.dashboard"))
 
     try:
         db.session.add(Subject(name=name, description=description))
         db.session.commit()
-        flash(f"Дисциплина «{name}» добавлена.", "success")
+        flash(f"Направление «{name}» добавлено.", "success")
     except Exception as e:
         db.session.rollback()
         print("CREATE SUBJECT ERROR:", e)
-        flash(f"Не удалось добавить дисциплину", "danger")
+        flash(f"Не удалось добавить направление", "danger")
 
     return redirect(url_for("teacher.dashboard"))
 
@@ -827,7 +827,7 @@ def edit_subject(subject_id):
     description = request.form.get("description", "").strip()
 
     if not name:
-        flash("Название дисциплины не может быть пустым.", "danger")
+        flash("Название направления не может быть пустым.", "danger")
         return redirect(url_for("teacher.dashboard"))
 
     # Проверяем, что новое имя не занято другой дисциплиной
@@ -837,18 +837,18 @@ def edit_subject(subject_id):
     ).first()
 
     if duplicate:
-        flash(f"Дисциплина «{name}» уже существует.", "danger")
+        flash(f"Направление «{name}» уже существует.", "danger")
         return redirect(url_for("teacher.dashboard"))
 
     try:
         subject.name = name
         subject.description = description
         db.session.commit()
-        flash(f"Дисциплина «{name}» обновлена.", "success")
+        flash(f"Направление «{name}» обновлено.", "success")
     except Exception as e:
         db.session.rollback()
         print("EDIT SUBJECT ERROR:", e)
-        flash(f"Не удалось изменить дисциплину", "danger")
+        flash(f"Не удалось изменить направление", "danger")
 
     return redirect(url_for("teacher.dashboard"))
 
@@ -869,7 +869,7 @@ def delete_subject(subject_id):
     ).first()
 
     if not own_test:
-        flash("Нельзя удалить дисциплину, в которой нет ваших тестов.", "warning")
+        flash("Нельзя удалить направление, в котором нет ваших тестов.", "warning")
         return redirect(url_for("teacher.dashboard"))
 
     subject_name = subject.name
@@ -877,10 +877,10 @@ def delete_subject(subject_id):
     try:
         db.session.delete(subject)
         db.session.commit()
-        flash(f"Дисциплина «{subject_name}» удалена.", "success")
+        flash(f"Направление «{subject_name}» удалено.", "success")
     except Exception as e:
         db.session.rollback()
         print("DELETE SUBJECT ERROR:", e)
-        flash(f"Не удалось удалить дисциплину", "danger")
+        flash(f"Не удалось удалить направление", "danger")
 
     return redirect(url_for("teacher.dashboard"))

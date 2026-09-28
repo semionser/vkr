@@ -292,25 +292,25 @@ def create_subject():
     description = request.form.get("description", "").strip()
 
     if not name:
-        flash("Название дисциплины не может быть пустым.", "danger")
+        flash("Название направления не может быть пустым.", "danger")
         return redirect(url_for("admin.dashboard"))
 
     existing = Subject.query.filter_by(name=name).first()
 
     if existing:
-        flash(f"Дисциплина «{name}» уже существует.", "danger")
+        flash(f"Направление «{name}» уже существует.", "danger")
         return redirect(url_for("admin.dashboard"))
 
     try:
         db.session.add(Subject(name=name, description=description))
         db.session.commit()
 
-        flash(f"Дисциплина «{name}» добавлена.", "success")
+        flash(f"Направление «{name}» добавлено.", "success")
     except Exception as e:
         db.session.rollback()
         print("CREATE SUBJECT ERROR:", e)
 
-        flash(f"Не удалось добавить дисциплину", "danger")
+        flash(f"Не удалось добавить направление", "danger")
 
     return redirect(url_for("admin.dashboard"))
 
@@ -333,13 +333,13 @@ def delete_subject(subject_id):
         db.session.delete(subject)
         db.session.commit()
 
-        flash(f"Дисциплина «{subject_name}» удалена.", "success")
+        flash(f"Направление «{subject_name}» удалено.", "success")
     except Exception as e:
         db.session.rollback()
         print("DELETE SUBJECT ERROR:", e)
 
         flash(
-            f"Не удалось удалить дисциплину {subject_name}",
+            f"Не удалось удалить направление {subject_name}",
             "danger"
         )
 
@@ -442,7 +442,7 @@ def delete_group(group_id):
     db.session.delete(group)
     db.session.commit()
 
-    flash(f"Группа «{name}» удалена. Студенты из неё остались без группы.", "success")
+    flash(f"Группа «{name}» удалена. Сотрудники из неё остались без группы.", "success")
     return redirect(url_for("admin.dashboard") + "#groups")
 
 

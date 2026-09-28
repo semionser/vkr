@@ -173,6 +173,17 @@ def set_security_headers(response):
     response.headers.setdefault(
         "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
     )
+    # Все ресурсы (стили, скрипты) загружаются только с нашего сервера
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'",
+    )
     if current_app.config.get("SESSION_COOKIE_SECURE"):
         response.headers.setdefault(
             "Strict-Transport-Security", "max-age=31536000; includeSubDomains"

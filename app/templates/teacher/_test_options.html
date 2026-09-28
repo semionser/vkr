@@ -1,240 +1,115 @@
 {#
     Дополнительные параметры теста: защита от списывания, оценивание,
-    разбор ошибок, учебные группы.
+    разбор ошибок, группы.
+    Подключается внутри <form> на страницах создания и редактирования теста.
     Ожидает: test (или None при создании), groups, scoring_modes, review_modes.
 #}
 
 <style>
-    .to-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px 18px;
+    /* Блок дополнительных параметров теста (teacher/_test_options.html) */
+    .opts { display: grid; gap: 22px; }
+    .opts__section { display: grid; gap: 10px; }
+    .opts__title {
+        display: flex; align-items: center; gap: 8px;
+        padding-bottom: 8px; border-bottom: 1px solid var(--border);
+        font-size: 14px; font-weight: 750;
     }
-
-    .to-field { display: block; margin: 0; }
-
-    .to-label {
-        display: block;
-        margin-bottom: 6px;
-        color: var(--t-text);
-        font-size: 13px;
-        font-weight: 650;
-    }
-
-    .to-hint {
-        display: block;
-        margin-top: 5px;
-        color: var(--t-muted);
-        font-size: 12px;
-        line-height: 1.4;
-    }
-
-    .to-input,
-    .to-select {
-        width: 100%;
-        min-height: 42px;
-        padding: 8px 12px;
-        border: 1px solid var(--t-border);
-        border-radius: 10px;
-        background: #fff;
-        color: var(--t-text);
-        font-size: 14px;
-    }
-
-    .to-input:focus,
-    .to-select:focus {
-        outline: none;
-        border-color: var(--t-primary);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    .to-switch {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 11px 13px;
-        border: 1px solid var(--t-border);
-        border-radius: 12px;
-        background: #f8fafc;
-        cursor: pointer;
-    }
-
-    .to-switch input {
-        width: 18px;
-        height: 18px;
-        margin-top: 1px;
-        flex: 0 0 auto;
-        accent-color: var(--t-primary);
-    }
-
-    .to-switch b {
-        display: block;
-        font-size: 13.5px;
-        font-weight: 650;
-    }
-
-    .to-switch small {
-        display: block;
-        color: var(--t-muted);
-        font-size: 12px;
-        line-height: 1.35;
-    }
-
-    .to-groups {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .to-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 7px 12px;
-        border: 1px solid var(--t-border);
-        border-radius: 999px;
-        background: #fff;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .to-chip input { accent-color: var(--t-primary); }
-
-    .to-chip:has(input:checked) {
-        border-color: var(--t-primary);
-        background: var(--t-primary-soft);
-        color: #1e3a8a;
-    }
-
-    .to-divider {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 22px 0 14px;
-        color: var(--t-text);
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .to-divider hr {
-        flex: 1;
-        margin: 0;
-        border-color: var(--t-border);
-        opacity: 1;
-    }
-
-    @media (max-width: 767.98px) {
-        .to-grid { grid-template-columns: 1fr; }
-    }
+    .opts__title svg { width: 16px; height: 16px; color: var(--primary); }
+    .opts .check-card .strong { display: block; font-size: 14px; }
+    .opts .check-card .field__hint { display: block; margin-top: 1px; }
+    .opts__groups { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .opts__groups .check-card { align-items: center; padding: 9px 12px; font-size: 14px; font-weight: 600; }
+    .opts__groups .check-card input { margin: 0; }
 </style>
 
+<div class="opts">
 
-<div class="to-divider">
-    <span>Защита от списывания</span>
-    <hr>
-</div>
+    <div class="opts__section">
+        <div class="opts__title">{{ icon('shuffle') }} Защита от списывания</div>
 
-<div class="to-grid">
+        <label class="check-card">
+            <input type="checkbox" name="shuffle_questions" value="1"
+                   {% if test and test.shuffle_questions %}checked{% endif %}>
+            <span>
+                <span class="strong">Перемешивать вопросы</span>
+                <span class="field__hint">У каждого сотрудника свой порядок вопросов</span>
+            </span>
+        </label>
 
-    <label class="to-switch">
-        <input type="checkbox" name="shuffle_questions" value="1"
-               {% if test and test.shuffle_questions %}checked{% endif %}>
-        <span>
-            <b>Перемешивать вопросы</b>
-            <small>У каждого студента свой порядок вопросов</small>
-        </span>
-    </label>
+        <label class="check-card">
+            <input type="checkbox" name="shuffle_answers" value="1"
+                   {% if test and test.shuffle_answers %}checked{% endif %}>
+            <span>
+                <span class="strong">Перемешивать варианты ответов</span>
+                <span class="field__hint">Порядок вариантов внутри вопроса случайный</span>
+            </span>
+        </label>
 
-    <label class="to-switch">
-        <input type="checkbox" name="shuffle_answers" value="1"
-               {% if test and test.shuffle_answers %}checked{% endif %}>
-        <span>
-            <b>Перемешивать варианты ответов</b>
-            <small>Порядок вариантов внутри вопроса случайный</small>
-        </span>
-    </label>
-
-    <label class="to-field">
-        <span class="to-label">Вопросов в одной попытке</span>
-        <input class="to-input" type="number" name="questions_per_attempt" min="1"
-               placeholder="Все вопросы"
-               value="{{ test.questions_per_attempt if test and test.questions_per_attempt else '' }}">
-        <small class="to-hint">
-            Пусто — все вопросы. Если указать меньше, чем в банке,
-            каждому студенту достанется случайный набор.
-            {% if test %}Сейчас в банке: {{ test.questions|length }}.{% endif %}
-        </small>
-    </label>
-
-</div>
-
-
-<div class="to-divider">
-    <span>Оценивание и разбор</span>
-    <hr>
-</div>
-
-<div class="to-grid">
-
-    <label class="to-field">
-        <span class="to-label">Начисление баллов</span>
-        <select class="to-select" name="scoring_mode">
-            {% for key, label in scoring_modes.items() %}
-                <option value="{{ key }}"
-                        {% if (test.scoring_mode if test else 'strict') == key %}selected{% endif %}>
-                    {{ label }}
-                </option>
-            {% endfor %}
-        </select>
-        <small class="to-hint">
-            Частичные баллы: (верно отмеченные − ошибочно отмеченные) / число правильных.
-            Отметить всё подряд не выйдет — лишние отметки снижают балл.
-        </small>
-    </label>
-
-    <label class="to-field">
-        <span class="to-label">Разбор ошибок для студента</span>
-        <select class="to-select" name="review_mode">
-            {% for key, label in review_modes.items() %}
-                <option value="{{ key }}"
-                        {% if (test.review_mode if test else 'after_all') == key %}selected{% endif %}>
-                    {{ label }}
-                </option>
-            {% endfor %}
-        </select>
-        <small class="to-hint">
-            «После последней попытки» при неограниченных попытках
-            правильные ответы не покажет никогда — только отметки верно/неверно.
-        </small>
-    </label>
-
-</div>
-
-
-<div class="to-divider">
-    <span>Доступ для групп</span>
-    <hr>
-</div>
-
-{% if groups %}
-    {% set selected_ids = test.groups|map(attribute='id')|list if test else [] %}
-    <div class="to-groups">
-        {% for g in groups %}
-            <label class="to-chip">
-                <input type="checkbox" name="group_ids" value="{{ g.id }}"
-                       {% if g.id in selected_ids %}checked{% endif %}>
-                {{ g.name }}
-            </label>
-        {% endfor %}
+        <label class="field">
+            <span class="field__label">Вопросов в одной попытке</span>
+            <input class="input" type="number" name="questions_per_attempt" min="1"
+                   placeholder="Все вопросы"
+                   value="{{ test.questions_per_attempt if test and test.questions_per_attempt else '' }}">
+            <span class="field__hint">
+                Пусто — все вопросы. Если указать меньше, каждому достанется случайный набор.
+                {% if test %}Сейчас в банке: {{ test.questions|length }}.{% endif %}
+            </span>
+        </label>
     </div>
-    <small class="to-hint">
-        Если не выбрана ни одна группа, тест видят все студенты.
-    </small>
-{% else %}
-    <small class="to-hint">
-        Учебные группы ещё не созданы — тест будет доступен всем студентам.
-        Группы добавляет администратор.
-    </small>
-{% endif %}
+
+    <div class="opts__section">
+        <div class="opts__title">{{ icon('scale') }} Оценивание и разбор</div>
+
+        <label class="field">
+            <span class="field__label">Начисление баллов</span>
+            <select class="select" name="scoring_mode">
+                {% for key, label in scoring_modes.items() %}
+                    <option value="{{ key }}"
+                            {% if (test.scoring_mode if test else 'strict') == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <span class="field__hint">
+                Частичные баллы: (верно отмеченные − ошибочно отмеченные) / число правильных.
+                Лишние отметки снижают балл.
+            </span>
+        </label>
+
+        <label class="field">
+            <span class="field__label">Разбор ошибок для сотрудника</span>
+            <select class="select" name="review_mode">
+                {% for key, label in review_modes.items() %}
+                    <option value="{{ key }}"
+                            {% if (test.review_mode if test else 'after_all') == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <span class="field__hint">
+                При неограниченных попытках режим «после последней попытки»
+                покажет только отметки верно/неверно.
+            </span>
+        </label>
+    </div>
+
+    <div class="opts__section">
+        <div class="opts__title">{{ icon('users') }} Доступ для групп</div>
+
+        {% if groups %}
+            {% set selected_ids = test.groups|map(attribute='id')|list if test else [] %}
+            <div class="opts__groups">
+                {% for g in groups %}
+                    <label class="check-card">
+                        <input type="checkbox" name="group_ids" value="{{ g.id }}"
+                               {% if g.id in selected_ids %}checked{% endif %}>
+                        <span>{{ g.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+            <span class="field__hint">Если не выбрана ни одна группа, тест видят все сотрудники.</span>
+        {% else %}
+            <span class="field__hint">
+                Группы ещё не созданы — тест будет доступен всем сотрудникам.
+                Группы добавляет администратор.
+            </span>
+        {% endif %}
+    </div>
+
+</div>

@@ -1,2232 +1,706 @@
 {% extends "base.html" %}
+{% import "_macros.html" as ui %}
 
-{% block title %}Панель администратора{% endblock %}
+{% block title %}Панель управления{% endblock %}
+
+{% block head %}
+<style>
+    /* Панель администратора: то, чего нет в общей таблице стилей */
+    .adm-clock { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+    .adm-clock .stat__icon { width: 34px; height: 34px; border-radius: 9px; }
+    .adm-clock__date { font-weight: 700; font-size: 14px; line-height: 1.2; }
+    .adm-clock__time { color: var(--muted); font-size: 12px; }
+
+    .adm-bars { display: grid; gap: 14px; }
+    .adm-bar__top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .adm-bar__top .grade { width: 28px; height: 28px; font-size: 13px; border-radius: 8px; }
+    .adm-bar__label { flex: 1; font-weight: 600; font-size: 14px; }
+    .adm-bar__value { font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    .adm-rank { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-size: 13px; font-weight: 800; }
+    .adm-rank--1 { background: var(--amber-soft); color: var(--amber-dark); }
+    .adm-rank--2 { background: #eef1f5; color: #475569; }
+    .adm-rank--3 { background: #fbeee4; color: #9a5b2c; }
+
+    .adm-avatar { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--primary-soft); color: var(--primary-dark); font-size: 12.5px; font-weight: 800; }
+    .adm-avatar--teacher { background: var(--amber-soft); color: var(--amber-dark); }
+    .adm-avatar--admin { background: var(--violet-soft); color: var(--violet); }
+    .adm-user { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+    .adm-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--primary); }
+    .adm-dot--teacher { background: var(--amber); }
+    .adm-dot--admin { background: var(--violet); }
+
+    #users .table td, #users .table th, #groups .table td, #groups .table th { padding-left: 12px; padding-right: 12px; }
+    #users .table td:first-child, #users .table th:first-child,
+    #groups .table td:first-child, #groups .table th:first-child { padding-left: 22px; }
+    #users .table td:last-child, #users .table th:last-child,
+    #groups .table td:last-child, #groups .table th:last-child { padding-right: 22px; }
+    #users .select--sm { width: auto; min-width: 150px; }
+    .adm-group-create { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+    .adm-group-edit { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.6fr); gap: 8px; }
+
+    .adm-test { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .adm-test:last-child { border-bottom: 0; }
+    [id] { scroll-margin-top: 84px; }
+
+    @media (max-width: 820px) {
+        .adm-group-create { grid-template-columns: minmax(0, 1fr); padding: 14px 16px; }
+        .adm-test { flex-wrap: wrap; }
+    }
+    @media (max-width: 560px) {
+        .adm-activity-stats .stat:last-child { grid-column: 1 / -1; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<style>
-    :root {
-        --adm-bg: #eef2f9;
-        --adm-card: #ffffff;
-        --adm-text: #172033;
-        --adm-muted: #687386;
-        --adm-border: #e4e9f0;
-
-        --adm-primary: #2563eb;
-        --adm-primary-dark: #1d4ed8;
-        --adm-primary-soft: #dbeafe;
-
-        --adm-green: #22c55e;
-        --adm-green-soft: #dcfce7;
-
-        --adm-orange: #f59e0b;
-        --adm-orange-soft: #fef3c7;
-
-        --adm-purple: #7c3aed;
-        --adm-purple-soft: #ede9fe;
-
-        --adm-red: #dc2626;
-        --adm-red-soft: #fee2e2;
-
-        --adm-radius: 18px;
-        --adm-shadow: 0 10px 30px rgba(37, 71, 143, 0.06);
-    }
-
-    * { box-sizing: border-box; }
-
-    /* =========================================================
-       BODY / BACKGROUND
-    ========================================================= */
-    body {
-        background:
-            radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.07), transparent 28rem),
-            radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.05), transparent 25rem),
-            var(--adm-bg);
-
-        position: relative;
-        overflow-x: hidden;
-    }
-
-    body::before,
-    body::after {
-        content: "";
-        position: fixed;
-        border-radius: 50%;
-        background: #dbe5fb;
-        opacity: 0.55;
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    body::before { top: -180px; left: -180px; width: 520px; height: 520px; }
-    body::after  { bottom: -140px; right: -140px; width: 420px; height: 420px; }
-
-    .adm-page {
-        position: relative;
-        z-index: 1;
-
-        max-width: 1360px;
-        margin: 0 auto;
-        padding: 24px 24px 48px;
-
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-            BlinkMacSystemFont, "Segoe UI", sans-serif;
-        color: var(--adm-text);
-    }
-
-    /* =========================================================
-       HEAD
-    ========================================================= */
-    .adm-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 24px;
-        flex-wrap: wrap;
-        margin-bottom: 24px;
-    }
-
-    .adm-title {
-        margin: 0 0 6px;
-        font-size: clamp(24px, 3vw, 30px);
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--adm-text);
-    }
-
-    .adm-sub { margin: 0; color: var(--adm-muted); font-size: 14px; }
-
-    .adm-clock {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-
-        padding: 12px 16px;
-
-        background: #fff;
-        border: 1px solid var(--adm-border);
-        border-radius: 14px;
-        box-shadow: var(--adm-shadow);
-        white-space: nowrap;
-    }
-
-    .adm-clock__icon {
-        display: grid;
-        place-items: center;
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: var(--adm-primary-soft);
-        color: var(--adm-primary);
-    }
-    .adm-clock__icon svg { width: 20px; height: 20px; }
-
-    .adm-clock__body { display: flex; flex-direction: column; line-height: 1.2; }
-    .adm-clock__label { color: var(--adm-muted); font-size: 11px; font-weight: 650; }
-    .adm-clock__value { color: var(--adm-text); font-size: 14px; font-weight: 800; }
-    .adm-clock__sub { color: var(--adm-muted); font-size: 11px; margin-top: 2px; }
-
-    /* =========================================================
-       STATS
-    ========================================================= */
-    .adm-stats {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .adm-stat {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 20px;
-        background: #fff;
-        border: 1px solid var(--adm-border);
-        border-radius: var(--adm-radius);
-        box-shadow: var(--adm-shadow);
-    }
-
-    .adm-stat__icon {
-        display: grid;
-        place-items: center;
-        flex: 0 0 48px;
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-    }
-    .adm-stat__icon svg { width: 22px; height: 22px; }
-
-    .adm-stat__icon--blue   { background: var(--adm-primary-soft); color: var(--adm-primary); }
-    .adm-stat__icon--green  { background: var(--adm-green-soft);   color: #16a34a; }
-    .adm-stat__icon--purple { background: var(--adm-purple-soft);  color: var(--adm-purple); }
-    .adm-stat__icon--red    { background: var(--adm-red-soft);     color: var(--adm-red); }
-
-    .adm-stat__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .adm-stat__label { color: var(--adm-muted); font-size: 12px; font-weight: 650; }
-    .adm-stat__value { color: var(--adm-text); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
-
-    .adm-stat__trend {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        margin-top: 2px;
-        color: #16a34a;
-        font-size: 11px;
-        font-weight: 650;
-    }
-    .adm-stat__trend--muted { color: var(--adm-muted); }
-    .adm-stat__trend svg { width: 12px; height: 12px; }
-
-    /* =========================================================
-       CARD
-    ========================================================= */
-    .adm-card {
-        background: #fff;
-        border: 1px solid var(--adm-border);
-        border-radius: var(--adm-radius);
-        box-shadow: var(--adm-shadow);
-        margin-bottom: 24px;
-        overflow: hidden;
-    }
-
-    .adm-card__head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--adm-border);
-    }
-
-    .adm-card__head-left { display: flex; align-items: center; gap: 14px; }
-
-    .adm-card__head-icon {
-        display: grid;
-        place-items: center;
-        flex: 0 0 44px;
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: #eff3fb;
-        color: var(--adm-primary);
-    }
-    .adm-card__head-icon svg { width: 22px; height: 22px; }
-
-    .adm-card__title { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: var(--adm-text); }
-    .adm-card__sub { margin: 3px 0 0; color: var(--adm-muted); font-size: 12.5px; }
-
-    .adm-card__head-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .adm-card__body { padding: 20px 24px; }
-
-    /* =========================================================
-       SEARCH
-    ========================================================= */
-    .adm-search { position: relative; display: flex; align-items: center; }
-
-    .adm-search svg {
-        position: absolute;
-        left: 12px;
-        width: 16px;
-        height: 16px;
-        color: #94a3b8;
-        pointer-events: none;
-    }
-
-    .adm-search input {
-        width: 240px;
-        min-height: 40px;
-        padding: 8px 14px 8px 36px;
-        border: 1px solid var(--adm-border);
-        border-radius: 10px;
-        background: #fff;
-        color: var(--adm-text);
-        font-size: 13px;
-        font-family: inherit;
-        outline: none;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .adm-search input:focus {
-        border-color: #93c5fd;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    /* =========================================================
-       BUTTONS
-    ========================================================= */
-    .adm-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        min-height: 40px;
-        padding: 8px 16px;
-        border: 1px solid var(--adm-border);
-        border-radius: 10px;
-        background: #fff;
-        color: var(--adm-text);
-        font-size: 13px;
-        font-weight: 650;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        white-space: nowrap;
-        transition: background 0.15s ease, border-color 0.15s ease,
-            color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .adm-btn svg { width: 14px; height: 14px; }
-    .adm-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
-
-    .adm-btn--primary {
-        background: var(--adm-primary);
-        border-color: var(--adm-primary);
-        color: #fff;
-    }
-    .adm-btn--primary:hover {
-        background: var(--adm-primary-dark);
-        border-color: var(--adm-primary-dark);
-        color: #fff;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
-    }
-
-    .adm-btn--danger { color: var(--adm-red); }
-    .adm-btn--danger:hover { background: #fef2f2; border-color: #fecaca; }
-
-    .adm-icon-btn {
-        display: inline-grid;
-        place-items: center;
-        width: 34px;
-        height: 34px;
-        border: 1px solid var(--adm-border);
-        border-radius: 8px;
-        background: #fff;
-        color: var(--adm-muted);
-        cursor: pointer;
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-    .adm-icon-btn svg { width: 15px; height: 15px; }
-    .adm-icon-btn:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--adm-text); }
-    .adm-icon-btn--danger { color: var(--adm-red); }
-    .adm-icon-btn--danger:hover { background: #fef2f2; border-color: #fecaca; color: var(--adm-red); }
-
-    /* =========================================================
-       TABLE
-    ========================================================= */
-    .adm-table-wrap { width: 100%; overflow-x: auto; }
-
-    .adm-table {
-        width: 100%;
-        min-width: 900px;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    .adm-table th {
-        padding: 12px 20px;
-        background: #f8fafc;
-        color: #64748b;
-        font-size: 11px;
-        font-weight: 750;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        text-align: left;
-        white-space: nowrap;
-        border-bottom: 1px solid var(--adm-border);
-    }
-
-    .adm-table td {
-        padding: 14px 20px;
-        font-size: 13.5px;
-        border-bottom: 1px solid #f1f4f9;
-        vertical-align: middle;
-    }
-
-    .adm-table tbody tr:last-child td { border-bottom: 0; }
-    .adm-table tbody tr:hover { background: #fafbff; }
-
-    .adm-user { display: flex; align-items: center; gap: 12px; }
-
-    .adm-user__avatar {
-        display: grid;
-        place-items: center;
-        flex: 0 0 38px;
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        color: #fff;
-        font-weight: 800;
-        font-size: 14px;
-    }
-
-    .av-admin   { background: linear-gradient(135deg, #7c3aed, #6366f1); }
-    .av-teacher { background: linear-gradient(135deg, #f59e0b, #ea580c); }
-    .av-student { background: linear-gradient(135deg, #2563eb, #4f46e5); }
-
-    .adm-user__body { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
-    .adm-user__name { font-weight: 700; color: var(--adm-text); }
-    .adm-user__id   { color: var(--adm-muted); font-size: 11px; }
-
-    /* =========================================================
-       BADGES
-    ========================================================= */
-    .adm-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 12px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .adm-badge--admin   { background: var(--adm-purple-soft); color: #6d28d9; }
-    .adm-badge--teacher { background: var(--adm-orange-soft); color: #c2410c; }
-    .adm-badge--student { background: var(--adm-primary-soft); color: #1d4ed8; }
-    .adm-badge--active  { background: var(--adm-green-soft); color: #15803d; }
-    .adm-badge--blocked { background: var(--adm-red-soft); color: #b91c1c; }
-
-    /* =========================================================
-       ACTIONS
-    ========================================================= */
-    .adm-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-
-    .adm-select {
-        min-height: 34px;
-        padding: 5px 26px 5px 10px;
-        border: 1px solid var(--adm-border);
-        border-radius: 8px;
-        background: #fff;
-        color: var(--adm-text);
-        font-size: 12px;
-        font-weight: 650;
-        font-family: inherit;
-        cursor: pointer;
-    }
-    .adm-select:focus {
-        outline: none;
-        border-color: #93c5fd;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    /* =========================================================
-       ANALYTICS
-    ========================================================= */
-    .adm-analytics {
-        display: grid;
-        grid-template-columns: 1.4fr 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    /* --- распределение оценок --- */
-    .adm-grade-bars { display: flex; flex-direction: column; gap: 14px; }
-
-    .adm-grade-bar__top {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 6px;
-    }
-
-    .adm-grade-bar__badge {
-        display: inline-grid;
-        place-items: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
-        font-weight: 800;
-        font-size: 13px;
-    }
-
-    .adm-grade-bar__badge--green  { background: var(--adm-green-soft); color: #15803d; }
-    .adm-grade-bar__badge--blue   { background: var(--adm-primary-soft); color: #1d4ed8; }
-    .adm-grade-bar__badge--orange { background: var(--adm-orange-soft); color: #b45309; }
-    .adm-grade-bar__badge--red    { background: var(--adm-red-soft); color: #b91c1c; }
-
-    .adm-grade-bar__label {
-        flex: 1;
-        color: var(--adm-text);
-        font-size: 13px;
-        font-weight: 650;
-    }
-    .adm-grade-bar__count { color: var(--adm-text); font-size: 14px; font-weight: 800; }
-
-    .adm-grade-bar__track {
-        position: relative;
-        height: 8px;
-        border-radius: 999px;
-        background: #eef2f8;
-        overflow: hidden;
-    }
-
-    .adm-grade-bar__fill {
-        position: absolute;
-        inset: 0 auto 0 0;
-        border-radius: 999px;
-        transition: width 0.6s ease;
-    }
-    .adm-grade-bar__fill--green  { background: linear-gradient(90deg, #22c55e, #16a34a); }
-    .adm-grade-bar__fill--blue   { background: linear-gradient(90deg, #2563eb, #1d4ed8); }
-    .adm-grade-bar__fill--orange { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .adm-grade-bar__fill--red    { background: linear-gradient(90deg, #ef4444, #b91c1c); }
-
-    /* --- топ студентов --- */
-    .adm-top-list { display: flex; flex-direction: column; gap: 8px; }
-
-    .adm-top-row {
-        display: grid;
-        grid-template-columns: 30px 36px 1fr auto auto;
-        gap: 10px;
-        align-items: center;
-        padding: 10px 12px;
-        border: 1px solid var(--adm-border);
-        border-radius: 12px;
-        background: #fbfcff;
-        transition: border-color 0.15s ease, background 0.15s ease;
-    }
-    .adm-top-row:hover { border-color: #c7d7fb; background: #f1f5ff; }
-
-    .adm-top-row__rank {
-        display: grid;
-        place-items: center;
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 800;
-    }
-    .adm-top-row__rank--1 { background: #fef3c7; color: #b45309; }
-    .adm-top-row__rank--2 { background: #e2e8f0; color: #475569; }
-    .adm-top-row__rank--3 { background: #fee2e2; color: #b45309; }
-    .adm-top-row__rank--default { background: #f1f5f9; color: #64748b; }
-
-    .adm-top-row__avatar {
-        display: grid;
-        place-items: center;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #2563eb, #4f46e5);
-        color: #fff;
-        font-weight: 800;
-        font-size: 13px;
-    }
-
-    .adm-top-row__body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-    .adm-top-row__name {
-        color: var(--adm-text);
-        font-weight: 700;
-        font-size: 13.5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .adm-top-row__sub { color: var(--adm-muted); font-size: 11px; }
-
-    .adm-top-row__stat {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 1px;
-        min-width: 60px;
-    }
-    .adm-top-row__stat b { color: var(--adm-text); font-size: 14px; font-weight: 800; }
-    .adm-top-row__stat span { color: var(--adm-muted); font-size: 10.5px; font-weight: 650; }
-    .adm-top-row__stat--pct b { color: #16a34a; }
-
-    /* --- статистика по дисциплинам --- */
-    .adm-subject-stats {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-    }
-
-    .adm-subject-stat {
-        padding: 14px 16px;
-        border: 1px solid var(--adm-border);
-        border-radius: 12px;
-        background: #fbfcff;
-    }
-
-    .adm-subject-stat__head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 8px;
-    }
-
-    .adm-subject-stat__name {
-        color: var(--adm-text);
-        font-size: 13.5px;
-        font-weight: 750;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .adm-subject-stat__pct {
-        color: var(--adm-text);
-        font-size: 15px;
-        font-weight: 800;
-        flex-shrink: 0;
-    }
-
-    .adm-subject-stat__track {
-        position: relative;
-        height: 8px;
-        border-radius: 999px;
-        background: #eef2f8;
-        overflow: hidden;
-    }
-
-    .adm-subject-stat__fill {
-        position: absolute;
-        inset: 0 auto 0 0;
-        border-radius: 999px;
-        transition: width 0.6s ease;
-    }
-    .adm-subject-stat__fill--green  { background: linear-gradient(90deg, #22c55e, #16a34a); }
-    .adm-subject-stat__fill--blue   { background: linear-gradient(90deg, #2563eb, #1d4ed8); }
-    .adm-subject-stat__fill--orange { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .adm-subject-stat__fill--red    { background: linear-gradient(90deg, #ef4444, #b91c1c); }
-
-    .adm-subject-stat__foot {
-        margin-top: 8px;
-        color: var(--adm-muted);
-        font-size: 11.5px;
-        font-weight: 650;
-    }
-
-    /* --- пользователи по ролям --- */
-    .adm-role-list { display: flex; flex-direction: column; gap: 10px; }
-
-    .adm-role-row {
-        display: grid;
-        grid-template-columns: 12px 1fr auto auto;
-        gap: 10px;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px dashed var(--adm-border);
-    }
-    .adm-role-row:last-child { border-bottom: 0; }
-
-    .adm-role-row__dot { width: 10px; height: 10px; border-radius: 50%; }
-    .adm-role-row__dot--blue   { background: var(--adm-primary); }
-    .adm-role-row__dot--orange { background: #f59e0b; }
-    .adm-role-row__dot--purple { background: #7c3aed; }
-
-    .adm-role-row__label { color: var(--adm-text); font-size: 13px; font-weight: 650; }
-    .adm-role-row__value { color: var(--adm-text); font-size: 15px; font-weight: 800; }
-    .adm-role-row__pct   { color: var(--adm-muted); font-size: 12px; font-weight: 650; min-width: 36px; text-align: right; }
-
-    /* --- лента активности --- */
-    .adm-activity { display: flex; flex-direction: column; gap: 8px; }
-
-    .adm-activity-row {
-        display: grid;
-        grid-template-columns: 32px 1fr auto;
-        gap: 10px;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px dashed var(--adm-border);
-    }
-    .adm-activity-row:last-child { border-bottom: 0; }
-
-    .adm-activity-row__grade {
-        display: grid;
-        place-items: center;
-        width: 30px;
-        height: 30px;
-        border-radius: 10px;
-        font-size: 12px;
-        font-weight: 800;
-    }
-    .adm-activity-row__grade--5 { background: var(--adm-green-soft); color: #15803d; }
-    .adm-activity-row__grade--4 { background: var(--adm-primary-soft); color: #1d4ed8; }
-    .adm-activity-row__grade--3 { background: var(--adm-orange-soft); color: #b45309; }
-    .adm-activity-row__grade--2 { background: var(--adm-red-soft); color: #b91c1c; }
-
-    .adm-activity-row__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .adm-activity-row__title {
-        color: var(--adm-text);
-        font-size: 13px;
-        font-weight: 700;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .adm-activity-row__sub { color: var(--adm-muted); font-size: 11.5px; }
-
-    .adm-activity-row__time {
-        color: var(--adm-muted);
-        font-size: 11.5px;
-        font-weight: 650;
-        white-space: nowrap;
-    }
-
-    /* =========================================================
-       SUBJECTS
-    ========================================================= */
-    .adm-subject-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-        padding: 20px 24px 24px;
-    }
-
-    .adm-summary {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 18px 22px;
-        background: linear-gradient(135deg, #eff3fb, #f6f9ff);
-        border: 1px solid var(--adm-border);
-        border-radius: 14px;
-    }
-
-    .adm-summary__icon {
-        display: grid;
-        place-items: center;
-        flex: 0 0 52px;
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
-        background: var(--adm-primary);
-        color: #fff;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
-    }
-    .adm-summary__icon svg { width: 26px; height: 26px; }
-
-    .adm-summary__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .adm-summary__label { color: var(--adm-muted); font-size: 12.5px; font-weight: 650; }
-    .adm-summary__value { color: var(--adm-text); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
-
-    .adm-summary__stats { display: flex; gap: 24px; margin-left: auto; }
-    .adm-summary__stat { display: flex; flex-direction: column; gap: 2px; text-align: right; }
-    .adm-summary__stat b { color: var(--adm-text); font-size: 18px; font-weight: 800; }
-    .adm-summary__stat span { color: var(--adm-muted); font-size: 11.5px; font-weight: 650; }
-
-    .adm-subject {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        border: 1px solid var(--adm-border);
-        border-radius: 16px;
-        background: #fff;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-    }
-    .adm-subject:hover {
-        border-color: #c7d7fb;
-        box-shadow: 0 14px 30px rgba(37, 71, 143, 0.10);
-        transform: translateY(-3px);
-    }
-
-    .adm-subject__top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-
-    .adm-subject__icon {
-        display: grid;
-        place-items: center;
-        flex: 0 0 48px;
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        color: #fff;
-        box-shadow: 0 8px 18px rgba(37, 71, 143, 0.14);
-    }
-    .adm-subject__icon svg { width: 24px; height: 24px; }
-    .adm-subject__icon--code    { background: linear-gradient(135deg, #6366f1, #2563eb); }
-    .adm-subject__icon--math    { background: linear-gradient(135deg, #7c3aed, #c026d3); }
-    .adm-subject__icon--phys    { background: linear-gradient(135deg, #2563eb, #0891b2); }
-    .adm-subject__icon--default { background: linear-gradient(135deg, #64748b, #475569); }
-
-    .adm-subject__name { font-size: 16px; font-weight: 800; color: var(--adm-text); line-height: 1.3; letter-spacing: -0.01em; }
-
-    .adm-subject__desc {
-        color: var(--adm-muted);
-        font-size: 12.5px;
-        line-height: 1.55;
-        margin-bottom: 16px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 2.6em;
-    }
-
-    .adm-subject__meta {
-        display: flex;
-        gap: 10px;
-        margin-top: auto;
-        padding: 12px 0 0;
-        border-top: 1px dashed var(--adm-border);
-        color: var(--adm-muted);
-        font-size: 11.5px;
-        font-weight: 650;
-    }
-
-    .adm-subject__meta-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 9px;
-        border-radius: 7px;
-        background: #f8fafc;
-    }
-    .adm-subject__meta-item svg { width: 13px; height: 13px; color: #94a3b8; }
-    .adm-subject__meta-item b { color: var(--adm-text); font-weight: 750; }
-
-    .adm-subject__actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid var(--adm-border);
-    }
-
-    .adm-subject__btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        flex: 1;
-        min-height: 36px;
-        padding: 6px 12px;
-        border: 1px solid var(--adm-border);
-        border-radius: 9px;
-        background: #fff;
-        color: var(--adm-text);
-        font-size: 12.5px;
-        font-weight: 650;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background 0.15s ease, border-color 0.15s ease,
-            color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .adm-subject__btn svg { width: 14px; height: 14px; }
-
-    .adm-subject__btn--primary {
-        background: var(--adm-primary);
-        border-color: var(--adm-primary);
-        color: #fff;
-    }
-    .adm-subject__btn--primary:hover {
-        background: var(--adm-primary-dark);
-        border-color: var(--adm-primary-dark);
-        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
-    }
-
-    .adm-subject__btn--danger { color: var(--adm-red); }
-    .adm-subject__btn--danger:hover { background: #fef2f2; border-color: #fecaca; }
-
-    .adm-empty {
-        grid-column: 1 / -1;
-        padding: 40px 20px;
-        text-align: center;
-        color: var(--adm-muted);
-        font-size: 14px;
-    }
-
-    /* =========================================================
-       MODAL
-    ========================================================= */
-    .adm-modal-bg {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        background: rgba(15, 23, 42, 0.55);
-        backdrop-filter: blur(4px);
-    }
-    .adm-modal-bg.open { display: flex; }
-
-    .adm-modal {
-        width: 100%;
-        max-width: 500px;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.30);
-        overflow: hidden;
-        animation: admModalIn 0.18s ease;
-    }
-    .adm-modal--wide { max-width: 720px; }
-
-    @keyframes admModalIn {
-        from { opacity: 0; transform: translateY(8px) scale(0.98); }
-        to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .adm-modal__head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--adm-border);
-    }
-    .adm-modal__title { margin: 0 0 4px; font-size: 17px; font-weight: 800; color: var(--adm-text); }
-    .adm-modal__sub { color: var(--adm-muted); font-size: 13px; }
-
-    .adm-modal__close {
-        display: grid;
-        place-items: center;
-        width: 32px;
-        height: 32px;
-        border: 0;
-        border-radius: 8px;
-        background: transparent;
-        color: #64748b;
-        font-size: 17px;
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-    .adm-modal__close:hover { background: #f1f5f9; color: #0f172a; }
-
-    .adm-modal__body { padding: 20px 24px; max-height: 65vh; overflow-y: auto; }
-
-    .adm-modal__foot {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        padding: 16px 24px;
-        border-top: 1px solid var(--adm-border);
-        background: #fbfcff;
-    }
-
-    .adm-field { display: block; margin-bottom: 14px; }
-    .adm-field span { display: block; margin-bottom: 6px; color: var(--adm-text); font-size: 13px; font-weight: 650; }
-
-    .adm-input,
-    .adm-textarea {
-        width: 100%;
-        min-height: 42px;
-        padding: 10px 12px;
-        border: 1px solid var(--adm-border);
-        border-radius: 10px;
-        background: #fff;
-        color: var(--adm-text);
-        font-size: 14px;
-        font-family: inherit;
-        outline: none;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .adm-textarea { min-height: 90px; resize: vertical; }
-
-    .adm-group-create {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
-        gap: 10px;
-        padding: 16px 22px;
-        border-bottom: 1px solid var(--adm-border);
-    }
-
-    .adm-group-edit {
-        display: grid;
-        grid-template-columns: minmax(120px, 0.8fr) minmax(160px, 1.2fr);
-        gap: 8px;
-        min-width: 320px;
-    }
-
-    .adm-group-edit .adm-input { min-height: 36px; padding: 6px 10px; }
-
-    @media (max-width: 767.98px) {
-        .adm-group-create { grid-template-columns: 1fr; padding: 14px 16px; }
-    }
-    .adm-input:focus,
-    .adm-textarea:focus {
-        border-color: #93c5fd;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    .adm-test-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        border: 1px solid var(--adm-border);
-        border-radius: 12px;
-        background: #fbfcff;
-        margin-bottom: 10px;
-    }
-    .adm-test-item:last-child { margin-bottom: 0; }
-    .adm-test-item h4 { margin: 0 0 6px; font-size: 14px; font-weight: 750; color: var(--adm-text); }
-    .adm-test-item__meta { display: flex; flex-wrap: wrap; gap: 12px; color: var(--adm-muted); font-size: 12px; }
-    .adm-test-item__meta b { color: var(--adm-text); font-weight: 750; }
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-    @media (max-width: 1100px) {
-        .adm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .adm-subject-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .adm-analytics { grid-template-columns: 1fr; }
-        .adm-subject-stats { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 767.98px) {
-        .adm-page { padding: 16px 16px 32px; }
-        .adm-head { flex-direction: column; align-items: stretch; }
-        .adm-clock { align-self: flex-start; }
-        .adm-search input { width: 100%; }
-        .adm-search { flex: 1; }
-        .adm-card__head-tools { width: 100%; }
-
-        .adm-summary { flex-wrap: wrap; }
-        .adm-summary__stats { margin-left: 0; width: 100%; justify-content: flex-start; }
-
-        .adm-top-row { grid-template-columns: 26px 1fr auto; gap: 8px; }
-        .adm-top-row__avatar { display: none; }
-        .adm-top-row__stat--pct { display: none; }
-    }
-
-    @media (max-width: 575.98px) {
-        .adm-stats { grid-template-columns: 1fr; }
-        .adm-subject-grid { grid-template-columns: 1fr; padding: 16px; }
-        .adm-card__head { padding: 16px; }
-        .adm-table th,
-        .adm-table td { padding: 12px 14px; }
-
-        body::before,
-        body::after { display: none; }
-    }
-
-    :focus-visible {
-        outline: 3px solid rgba(37, 99, 235, 0.35);
-        outline-offset: 2px;
-    }
-</style>
-
-
-<div class="adm-page">
-
-    <!-- HEAD -->
-    <div class="adm-head">
-        <div>
-            <h1 class="adm-title">Панель администратора</h1>
-            <p class="adm-sub">Управление пользователями, дисциплинами и тестами</p>
-        </div>
-
+{% set total_tests = namespace(v=0, q=0) %}
+{% for s in subjects %}
+    {% set total_tests.v = total_tests.v + (s.tests|length) %}
+    {% for t in s.tests %}{% set total_tests.q = total_tests.q + (t.questions|length) %}{% endfor %}
+{% endfor %}
+{% set blocked = users|rejectattr("is_active_user")|list|length %}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">{{ icon('shield') }} Администрирование</span>
+        <h1>Панель управления</h1>
+        <p>Пользователи, группы, направления и тесты, общая статистика обучения.</p>
+    </div>
+    <div class="page-head__actions">
         <div class="adm-clock">
-            <span class="adm-clock__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="5" width="18" height="16" rx="3"/>
-                    <path d="M8 3v4"/>
-                    <path d="M16 3v4"/>
-                    <path d="M3 11h18"/>
-                </svg>
-            </span>
-            <div class="adm-clock__body">
-                <span class="adm-clock__label">Сегодня</span>
-                <span class="adm-clock__value" id="adm-clock-date">—</span>
-                <span class="adm-clock__sub" id="adm-clock-time">—</span>
+            <div class="stat__icon">{{ icon('calendar') }}</div>
+            <div>
+                <div class="adm-clock__date" id="adm-clock-date">—</div>
+                <div class="adm-clock__time" id="adm-clock-time">—</div>
             </div>
+        </div>
+        <a href="{{ url_for('auth.register') }}" class="btn btn--primary">{{ icon('user-plus') }} Новый сотрудник</a>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat">
+        <div class="stat__icon">{{ icon('users') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Пользователей</div>
+            <div class="stat__value">{{ users|length }}</div>
+            <div class="stat__hint"><a href="#users">Управление</a></div>
         </div>
     </div>
-
-
-    <!-- STATS -->
-    <div class="adm-stats">
-
-        <div class="adm-stat">
-            <div class="adm-stat__icon adm-stat__icon--blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="8" r="3"/>
-                    <path d="M3 20a6 6 0 0 1 12 0"/>
-                    <path d="M16 11a3 3 0 1 0 0-6"/>
-                    <path d="M21 20a5 5 0 0 0-5-5"/>
-                </svg>
-            </div>
-            <div class="adm-stat__body">
-                <span class="adm-stat__label">Всего пользователей</span>
-                <span class="adm-stat__value">{{ users|length }}</span>
-                <span class="adm-stat__trend">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12l5-5 5 5 5-5"/>
-                    </svg>
-                    активны в системе
-                </span>
-            </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--green">{{ icon('book') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Направлений</div>
+            <div class="stat__value">{{ subjects|length }}</div>
+            <div class="stat__hint"><a href="#subjects">Список направлений</a></div>
         </div>
-
-        <div class="adm-stat">
-            <div class="adm-stat__icon adm-stat__icon--green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
-                    <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
-                </svg>
-            </div>
-            <div class="adm-stat__body">
-                <span class="adm-stat__label">Дисциплины</span>
-                <span class="adm-stat__value">{{ subjects|length }}</span>
-                <span class="adm-stat__trend">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12l5-5 5 5 5-5"/>
-                    </svg>
-                    активны
-                </span>
-            </div>
-        </div>
-
-        <div class="adm-stat">
-            <div class="adm-stat__icon adm-stat__icon--purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                    <path d="M14 3v6h6"/>
-                    <path d="M8 13h8"/>
-                    <path d="M8 17h5"/>
-                </svg>
-            </div>
-            <div class="adm-stat__body">
-                <span class="adm-stat__label">Всего тестов</span>
-                <span class="adm-stat__value">
-                    {% set tt = namespace(v=0) %}
-                    {% for s in subjects %}{% set tt.v = tt.v + (s.tests|length) %}{% endfor %}
-                    {{ tt.v }}
-                </span>
-                <span class="adm-stat__trend">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12l5-5 5 5 5-5"/>
-                    </svg>
-                    по всем дисциплинам
-                </span>
-            </div>
-        </div>
-
-        <div class="adm-stat">
-            <div class="adm-stat__icon adm-stat__icon--red">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"/>
-                    <path d="M9 9l6 6"/>
-                    <path d="M15 9l-6 6"/>
-                </svg>
-            </div>
-            <div class="adm-stat__body">
-                <span class="adm-stat__label">Заблокировано</span>
-                <span class="adm-stat__value">
-                    {{ users|rejectattr("is_active_user")|list|length }}
-                </span>
-                <span class="adm-stat__trend adm-stat__trend--muted">
-                    без активных сессий
-                </span>
-            </div>
-        </div>
-
     </div>
-
-
-    <!-- =========================================================
-         ANALYTICS — 2 колонки
-    ========================================================= -->
-    <div class="adm-analytics">
-
-        <!-- Распределение оценок -->
-        <section class="adm-card" style="margin-bottom:0;">
-
-            <div class="adm-card__head">
-                <div class="adm-card__head-left">
-                    <span class="adm-card__head-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 20V10"/>
-                            <path d="M10 20V4"/>
-                            <path d="M16 20v-8"/>
-                            <path d="M22 20H2"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 class="adm-card__title">Распределение оценок</h2>
-                        <p class="adm-card__sub">
-                            По лучшей попытке в каждом тесте: {{ total_completed }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="adm-card__body">
-
-                {% set grades = [
-                    (5, 'Отлично',    'green'),
-                    (4, 'Хорошо',     'blue'),
-                    (3, 'Удовлетв.',  'orange'),
-                    (2, 'Неудовл.',   'red')
-                ] %}
-
-                <div class="adm-grade-bars">
-
-                    {% for grade, label, color in grades %}
-                        {% set count = grade_distribution[grade] %}
-                        {% set pct = (count * 100 / total_completed) if total_completed else 0 %}
-
-                        <div class="adm-grade-bar">
-                            <div class="adm-grade-bar__top">
-                                <span class="adm-grade-bar__badge adm-grade-bar__badge--{{ color }}">
-                                    {{ grade }}
-                                </span>
-                                <span class="adm-grade-bar__label">{{ label }}</span>
-                                <span class="adm-grade-bar__count">{{ count }}</span>
-                            </div>
-                            <div class="adm-grade-bar__track">
-                                <div class="adm-grade-bar__fill adm-grade-bar__fill--{{ color }}"
-                                     style="width: {{ pct }}%;"></div>
-                            </div>
-                        </div>
-                    {% endfor %}
-
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- Топ студентов -->
-        <section class="adm-card" style="margin-bottom:0;">
-
-            <div class="adm-card__head">
-                <div class="adm-card__head-left">
-                    <span class="adm-card__head-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 3l2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8L6.6 19.6l1-6L3.3 9.4l6-.9z"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 class="adm-card__title">Топ студентов</h2>
-                        <p class="adm-card__sub">По среднему лучшему результату</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="adm-card__body">
-
-                {% if top_students %}
-
-                    <div class="adm-top-list">
-
-                        {% for item in top_students %}
-                            {% set rank = loop.index %}
-                            {% set av = item.user.first_name[0]|upper if item.user.first_name else 'U' %}
-
-                            <div class="adm-top-row">
-                                <span class="adm-top-row__rank adm-top-row__rank--{{ rank if rank <= 3 else 'default' }}">
-                                    {{ rank }}
-                                </span>
-
-                                <span class="adm-top-row__avatar">{{ av }}</span>
-
-                                <div class="adm-top-row__body">
-                                    <span class="adm-top-row__name">
-                                        {{ item.user.last_name }} {{ item.user.first_name }}
-                                    </span>
-                                    <span class="adm-top-row__sub">{{ item.user.username }}</span>
-                                </div>
-
-                                <div class="adm-top-row__stat">
-                                    <b>{{ item.attempts }}</b>
-                                    <span>тестов</span>
-                                </div>
-
-                                <div class="adm-top-row__stat adm-top-row__stat--pct">
-                                    <b>{{ item.avg_percentage }}%</b>
-                                    <span>средний</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-
-                    </div>
-
-                {% else %}
-
-                    <div style="padding:20px 0; color: var(--adm-muted); font-size: 14px;">
-                        Пока нет завершённых попыток
-                    </div>
-
-                {% endif %}
-
-            </div>
-        </section>
-
+    <div class="stat">
+        <div class="stat__icon stat__icon--violet">{{ icon('file') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Тестов</div>
+            <div class="stat__value">{{ total_tests.v }}</div>
+            <div class="stat__hint">{{ total_tests.q }} {{ plural(total_tests.q, 'вопрос', 'вопроса', 'вопросов') }}</div>
+        </div>
     </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--red">{{ icon('lock') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Заблокировано</div>
+            <div class="stat__value">{{ blocked }}</div>
+            <div class="stat__hint">учётных записей</div>
+        </div>
+    </div>
+</div>
 
+<div class="stats stats--3 adm-activity-stats">
+    <div class="stat">
+        <div class="stat__icon stat__icon--teal">{{ icon('target') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Средний результат</div>
+            <div class="stat__value">{% if total_completed %}{{ avg_percentage|num }}<small>%</small>{% else %}—{% endif %}</div>
+            <div class="stat__hint">по лучшим попыткам</div>
+        </div>
+    </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--amber">{{ icon('clock') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Попыток за 7 дней</div>
+            <div class="stat__value">{{ attempts_week }}</div>
+            <div class="stat__hint">завершённых</div>
+        </div>
+    </div>
+    <div class="stat">
+        <div class="stat__icon">{{ icon('calendar') }}</div>
+        <div class="stat__body">
+            <div class="stat__label">Попыток за 30 дней</div>
+            <div class="stat__value">{{ attempts_month }}</div>
+            <div class="stat__hint">завершённых</div>
+        </div>
+    </div>
+</div>
 
-    <!-- =========================================================
-         СТАТИСТИКА ПО ДИСЦИПЛИНАМ
-    ========================================================= -->
-    <section class="adm-card">
+<div class="grid-2">
 
-        <div class="adm-card__head">
-            <div class="adm-card__head-left">
-                <span class="adm-card__head-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
-                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </span>
+    <section class="panel">
+        <div class="panel__head">
+            <div class="panel__title">
+                <div class="stat__icon">{{ icon('chart') }}</div>
                 <div>
-                    <h2 class="adm-card__title">Статистика по дисциплинам</h2>
-                    <p class="adm-card__sub">
-                        Средний лучший результат и число сданных тестов
-                    </p>
+                    <h2>Распределение оценок</h2>
+                    <p>По лучшей попытке в каждом тесте: {{ total_completed }}</p>
                 </div>
             </div>
         </div>
-
-        <div class="adm-card__body">
-
-            {% if subject_stats %}
-
-                <div class="adm-subject-stats">
-
-                    {% for item in subject_stats %}
-
-                        {% if item.avg_percentage >= 85 %}
-                            {% set bar = 'green' %}
-                        {% elif item.avg_percentage >= 60 %}
-                            {% set bar = 'blue' %}
-                        {% elif item.avg_percentage >= 40 %}
-                            {% set bar = 'orange' %}
-                        {% else %}
-                            {% set bar = 'red' %}
-                        {% endif %}
-
-                        <div class="adm-subject-stat">
-
-                            <div class="adm-subject-stat__head">
-                                <span class="adm-subject-stat__name">
-                                    {{ item.subject.name }}
-                                </span>
-                                <span class="adm-subject-stat__pct">
-                                    {{ item.avg_percentage }}%
-                                </span>
-                            </div>
-
-                            <div class="adm-subject-stat__track">
-                                <div class="adm-subject-stat__fill adm-subject-stat__fill--{{ bar }}"
-                                     style="width: {{ item.avg_percentage }}%;"></div>
-                            </div>
-
-                            <div class="adm-subject-stat__foot">
-                                <span>сдано тестов: {{ item.attempts }}</span>
-                            </div>
-
+        <div class="panel__body">
+            <div class="adm-bars">
+                {% for grade, label, bar in [(5, 'Отлично', 'green'), (4, 'Хорошо', ''), (3, 'Удовлетворительно', 'amber'), (2, 'Неудовлетворительно', 'red')] %}
+                    {% set count = grade_distribution[grade] %}
+                    {% set pct = (count * 100 / total_completed) if total_completed else 0 %}
+                    <div>
+                        <div class="adm-bar__top">
+                            {{ ui.grade(grade) }}
+                            <span class="adm-bar__label">{{ label }}</span>
+                            <span class="small muted">{{ pct|round|int }}%</span>
+                            <span class="adm-bar__value">{{ count }}</span>
                         </div>
-
-                    {% endfor %}
-
-                </div>
-
-            {% else %}
-
-                <div style="padding:20px 0; color: var(--adm-muted); font-size: 14px;">
-                    Пока нет завершённых попыток по дисциплинам
-                </div>
-
-            {% endif %}
-
+                        <div class="progress {% if bar %}progress--{{ bar }}{% endif %}"><i style="width: {{ pct }}%"></i></div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-
     </section>
 
-
-    <!-- =========================================================
-         ПОЛЬЗОВАТЕЛИ ПО РОЛЯМ + ЛЕНТА АКТИВНОСТИ
-    ========================================================= -->
-    <div class="adm-analytics">
-
-        <!-- Пользователи по ролям -->
-        <section class="adm-card" style="margin-bottom:0;">
-
-            <div class="adm-card__head">
-                <div class="adm-card__head-left">
-                    <span class="adm-card__head-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="9" cy="8" r="3"/>
-                            <path d="M3 20a6 6 0 0 1 12 0"/>
-                            <path d="M16 11a3 3 0 1 0 0-6"/>
-                            <path d="M21 20a5 5 0 0 0-5-5"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 class="adm-card__title">Пользователи по ролям</h2>
-                        <p class="adm-card__sub">Распределение аккаунтов</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="adm-card__body">
-
-                {% set total_users = role_stats.students + role_stats.teachers + role_stats.admins %}
-
-                <div class="adm-role-list">
-
-                    {% set roles = [
-                        ('Студенты',       role_stats.students, 'blue'),
-                        ('Преподаватели',  role_stats.teachers, 'orange'),
-                        ('Администраторы', role_stats.admins,   'purple')
-                    ] %}
-
-                    {% for label, count, color in roles %}
-
-                        {% set pct = (count * 100 / total_users) if total_users else 0 %}
-
-                        <div class="adm-role-row">
-                            <span class="adm-role-row__dot adm-role-row__dot--{{ color }}"></span>
-                            <span class="adm-role-row__label">{{ label }}</span>
-                            <span class="adm-role-row__value">{{ count }}</span>
-                            <span class="adm-role-row__pct">{{ pct|round(0)|int }}%</span>
-                        </div>
-
-                    {% endfor %}
-
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- Лента активности -->
-        <section class="adm-card" style="margin-bottom:0;">
-
-            <div class="adm-card__head">
-                <div class="adm-card__head-left">
-                    <span class="adm-card__head-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="9"/>
-                            <path d="M12 7v5l3 2"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 class="adm-card__title">Последняя активность</h2>
-                        <p class="adm-card__sub">Свежие завершённые попытки</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="adm-card__body">
-
-                {% if recent_attempts %}
-
-                    <div class="adm-activity">
-
-                        {% for a in recent_attempts %}
-
-                            {% set g = a.grade if a.grade else 2 %}
-
-                            <div class="adm-activity-row">
-                                <span class="adm-activity-row__grade adm-activity-row__grade--{{ g }}">
-                                    {{ g }}
-                                </span>
-
-                                <div class="adm-activity-row__body">
-                                    <span class="adm-activity-row__title">
-                                        {{ a.test.title }}
-                                    </span>
-                                    <span class="adm-activity-row__sub">
-                                        {{ a.student.last_name }} {{ a.student.first_name }}
-                                        · {{ a.percentage }}%
-                                    </span>
-                                </div>
-
-                                <span class="adm-activity-row__time">
-                                    {{ a.completed_at.strftime('%d.%m %H:%M') }}
-                                </span>
-                            </div>
-
-                        {% endfor %}
-
-                    </div>
-
-                {% else %}
-
-                    <div style="padding:20px 0; color: var(--adm-muted); font-size:14px;">
-                        Нет недавних событий
-                    </div>
-
-                {% endif %}
-
-            </div>
-        </section>
-
-    </div>
-
-
-    <!-- USERS -->
-    <div class="adm-card">
-
-        <div class="adm-card__head">
-            <div class="adm-card__head-left">
-                <span class="adm-card__head-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9" cy="8" r="3"/>
-                        <path d="M3 20a6 6 0 0 1 12 0"/>
-                        <path d="M16 11a3 3 0 1 0 0-6"/>
-                        <path d="M21 20a5 5 0 0 0-5-5"/>
-                    </svg>
-                </span>
+    <section class="panel">
+        <div class="panel__head">
+            <div class="panel__title">
+                <div class="stat__icon stat__icon--amber">{{ icon('award') }}</div>
                 <div>
-                    <h2 class="adm-card__title">Пользователи</h2>
-                    <p class="adm-card__sub">Управление пользователями системы</p>
+                    <h2>Лучшие сотрудники</h2>
+                    <p>По среднему лучшему результату</p>
                 </div>
-            </div>
-
-            <div class="adm-card__head-tools">
-                <label class="adm-search">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="7"/>
-                        <path d="M21 21l-4.3-4.3"/>
-                    </svg>
-                    <input type="text" id="adm-user-search" placeholder="Поиск по имени, email…">
-                </label>
-
-                <a href="{{ url_for('auth.register') }}" class="adm-btn adm-btn--primary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 5v14"/>
-                        <path d="M5 12h14"/>
-                    </svg>
-                    Добавить пользователя
-                </a>
             </div>
         </div>
+        {% if top_students %}
+            <ul class="list">
+                {% for item in top_students %}
+                    <li class="list-item">
+                        <span class="adm-rank {% if loop.index <= 3 %}adm-rank--{{ loop.index }}{% endif %}">{{ loop.index }}</span>
+                        <div class="list-item__main">
+                            <div class="list-item__title">{{ item.user.last_name }} {{ item.user.first_name }}</div>
+                            <div class="list-item__sub">
+                                {{ item.user.username }}{% if item.user.group %} · {{ item.user.group.name }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="list-item__side">
+                            <div class="list-item__value">{{ item.avg_percentage|num }}%</div>
+                            <div class="list-item__sub">{{ item.attempts }} {{ plural(item.attempts, 'тест', 'теста', 'тестов') }}</div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            {{ ui.empty('award', 'Пока нет завершённых попыток') }}
+        {% endif %}
+    </section>
 
-        <div class="adm-table-wrap">
-            <table class="adm-table" id="adm-users-table">
+</div>
+
+<section class="panel">
+    <div class="panel__head">
+        <div class="panel__title">
+            <div class="stat__icon stat__icon--green">{{ icon('layers') }}</div>
+            <div>
+                <h2>Статистика по направлениям</h2>
+                <p>Средний лучший результат и число сданных тестов</p>
+            </div>
+        </div>
+    </div>
+    {% if subject_stats %}
+        <ul class="list">
+            {% for item in subject_stats %}
+                <li class="list-item">
+                    <div class="list-item__main">
+                        <div class="row row--between mb-1" style="gap:10px;">
+                            <span class="list-item__title">{{ item.subject.name }}</span>
+                            <span class="small muted nowrap">сдано тестов: {{ item.attempts }}</span>
+                        </div>
+                        {{ ui.bar(item.avg_percentage) }}
+                    </div>
+                    <div class="list-item__side" style="min-width:56px;">
+                        <div class="list-item__value">{{ item.avg_percentage|num }}%</div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {{ ui.empty('layers', 'Пока нет завершённых попыток по направлениям') }}
+    {% endif %}
+</section>
+
+<div class="grid-2">
+
+    <section class="panel">
+        <div class="panel__head">
+            <div class="panel__title">
+                <div class="stat__icon stat__icon--violet">{{ icon('users') }}</div>
+                <div>
+                    <h2>Пользователи по ролям</h2>
+                    <p>Распределение учётных записей</p>
+                </div>
+            </div>
+        </div>
+        {% set total_users = role_stats.students + role_stats.teachers + role_stats.admins %}
+        <ul class="list">
+            {% for role, count in [('student', role_stats.students), ('teacher', role_stats.teachers), ('admin', role_stats.admins)] %}
+                {% set pct = (count * 100 / total_users) if total_users else 0 %}
+                <li class="list-item">
+                    <span class="adm-dot adm-dot--{{ role }}"></span>
+                    <div class="list-item__main">
+                        <div class="list-item__title">{{ ROLE_LABELS.get(role, role) }}</div>
+                        <div class="progress mt-1" style="height:5px;">
+                            <i style="width: {{ pct }}%; background: {{ {'student': 'var(--primary)', 'teacher': 'var(--amber)', 'admin': 'var(--violet)'}[role] }};"></i>
+                        </div>
+                    </div>
+                    <div class="list-item__side" style="min-width:64px;">
+                        <div class="list-item__value">{{ count }}</div>
+                        <div class="list-item__sub">{{ pct|round|int }}%</div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="panel">
+        <div class="panel__head">
+            <div class="panel__title">
+                <div class="stat__icon stat__icon--teal">{{ icon('history') }}</div>
+                <div>
+                    <h2>Последняя активность</h2>
+                    <p>Недавно завершённые попытки</p>
+                </div>
+            </div>
+        </div>
+        {% if recent_attempts %}
+            <ul class="list">
+                {% for a in recent_attempts %}
+                    <li class="list-item">
+                        {{ ui.grade(a.grade) }}
+                        <div class="list-item__main">
+                            <div class="list-item__title">{{ a.test.title }}</div>
+                            <div class="list-item__sub">{{ a.student.last_name }} {{ a.student.first_name }} · {{ a.percentage|round|int }}%</div>
+                        </div>
+                        <div class="list-item__side small muted">{{ a.completed_at.strftime('%d.%m %H:%M') }}</div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            {{ ui.empty('history', 'Нет недавних событий') }}
+        {% endif %}
+    </section>
+
+</div>
+
+{# ========================= ПОЛЬЗОВАТЕЛИ ========================= #}
+<section class="panel" id="users">
+    <div class="panel__head">
+        <div class="panel__title">
+            <div class="stat__icon">{{ icon('users') }}</div>
+            <div>
+                <h2>Пользователи</h2>
+                <p>Роли, группы и доступ к системе</p>
+            </div>
+        </div>
+        <div class="panel__actions">
+            <label class="search">
+                {{ icon('search') }}
+                <input type="search" class="input" id="adm-user-search" data-filter="#users-list"
+                       placeholder="Поиск пользователя" aria-label="Поиск пользователей">
+            </label>
+            <a href="{{ url_for('auth.register') }}" class="btn btn--primary">{{ icon('user-plus') }} Добавить</a>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="table" id="adm-users-table">
+            <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Роль</th>
+                    <th>Группа</th>
+                    <th>Статус</th>
+                    <th class="actions">Действия</th>
+                </tr>
+            </thead>
+            <tbody id="users-list">
+                {% for u in users %}
+                    <tr data-search="{{ u.username }} {{ u.email or '' }} {{ u.last_name }} {{ u.first_name }} {{ u.group.name if u.group else '' }}">
+                        <td>
+                            <div class="adm-user">
+                                <span class="adm-avatar adm-avatar--{{ u.role }}">{{ ui.initials(u) }}</span>
+                                <div style="min-width:0;">
+                                    <div class="cell-title">{{ u.last_name }} {{ u.first_name }}</div>
+                                    <div class="cell-sub">{{ u.username }}{% if u.email %} · {{ u.email }}{% endif %}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if u.id != current_user.id %}
+                                <form method="post" action="{{ url_for('admin.change_user_role', user_id=u.id) }}" class="inline">
+                                    {{ csrf_input() }}
+                                    <select name="role" class="select select--sm" onchange="this.form.submit()" aria-label="Роль">
+                                        {% for r in ['student', 'teacher', 'admin'] %}
+                                            <option value="{{ r }}" {% if u.role == r %}selected{% endif %}>{{ ROLE_LABELS.get(r, r) }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            {% else %}
+                                {{ ui.role_badge(u.role) }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.role == 'student' %}
+                                <form method="post" action="{{ url_for('admin.change_user_group', user_id=u.id) }}" class="inline">
+                                    {{ csrf_input() }}
+                                    <select name="group_id" class="select select--sm" onchange="this.form.submit()" aria-label="Группа">
+                                        <option value="">Без группы</option>
+                                        {% for g in groups %}
+                                            <option value="{{ g.id }}" {% if u.group_id == g.id %}selected{% endif %}>{{ g.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            {% else %}
+                                <span class="muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.is_active_user %}
+                                <span class="badge badge--green">Активен</span>
+                            {% else %}
+                                <span class="badge badge--red">Заблокирован</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            {% if u.id != current_user.id %}
+                                <div class="btn-row">
+                                    <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}" class="inline">
+                                        {{ csrf_input() }}
+                                        {% if u.is_active_user %}
+                                            <button type="submit" class="btn btn--sm btn--warn btn--icon" title="Заблокировать" aria-label="Заблокировать">{{ icon('lock') }}</button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn--sm btn--icon" title="Разблокировать" aria-label="Разблокировать">{{ icon('unlock') }}</button>
+                                        {% endif %}
+                                    </form>
+                                    <button type="button" class="btn btn--sm btn--danger btn--icon"
+                                            data-role="user" data-name="{{ u.username }}"
+                                            data-url="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                                            title="Удалить" aria-label="Удалить">{{ icon('trash') }}</button>
+                                </div>
+                            {% else %}
+                                <span class="small muted">Это вы</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="users-list-empty" hidden>{{ ui.empty('search', 'Никого не нашли', 'Измените запрос поиска.') }}</div>
+</section>
+
+{# ========================= ГРУППЫ ========================= #}
+<section class="panel" id="groups">
+    <div class="panel__head">
+        <div class="panel__title">
+            <div class="stat__icon stat__icon--teal">{{ icon('briefcase') }}</div>
+            <div>
+                <h2>Группы</h2>
+                <p>Методист назначает тесты группам. Тест без групп видят все сотрудники.</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{{ url_for('admin.create_group') }}" class="adm-group-create">
+        {{ csrf_input() }}
+        <input type="text" name="name" class="input" placeholder="Название, например «Отдел экспертизы»" required aria-label="Название группы">
+        <input type="text" name="description" class="input" placeholder="Описание (необязательно)" aria-label="Описание группы">
+        <button type="submit" class="btn btn--primary">{{ icon('plus') }} Добавить группу</button>
+    </form>
+
+    {% if groups %}
+        <div class="table-wrap">
+            <table class="table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Пользователь</th>
-                        <th>Email</th>
-                        <th>ФИО</th>
-                        <th>Роль</th>
-                        <th>Группа</th>
-                        <th>Статус</th>
-                        <th>Действия</th>
+                        <th>Название и описание</th>
+                        <th class="num">Сотрудников</th>
+                        <th class="num">Тестов</th>
+                        <th class="actions">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for u in users %}
-                        {% set av = 'av-admin' if u.role == 'admin'
-                                    else ('av-teacher' if u.role == 'teacher' else 'av-student') %}
-
-                        <tr data-username="{{ u.username|lower }}"
-                            data-email="{{ (u.email or '')|lower }}"
-                            data-fio="{{ (u.last_name ~ ' ' ~ u.first_name ~ ' ' ~ (u.group.name if u.group else ''))|lower }}">
-
-                            <td style="color:var(--adm-muted); font-weight:650;">{{ loop.index }}</td>
-
+                    {% for g in groups %}
+                        <tr>
                             <td>
-                                <div class="adm-user">
-                                    <span class="adm-user__avatar {{ av }}">
-                                        {{ (u.first_name or u.username or 'U')[0]|upper }}
-                                    </span>
-                                    <div class="adm-user__body">
-                                        <span class="adm-user__name">{{ u.username }}</span>
-                                        <span class="adm-user__id">ID: {{ u.id }}</span>
-                                    </div>
+                                <form method="post" action="{{ url_for('admin.edit_group', group_id=g.id) }}"
+                                      class="adm-group-edit" id="group-form-{{ g.id }}">
+                                    {{ csrf_input() }}
+                                    <input type="text" name="name" class="input input--sm" value="{{ g.name }}" required aria-label="Название">
+                                    <input type="text" name="description" class="input input--sm" value="{{ g.description or '' }}" placeholder="Описание" aria-label="Описание">
+                                </form>
+                            </td>
+                            <td class="num strong">{{ g.students|length }}</td>
+                            <td class="num strong">{{ g.tests|length }}</td>
+                            <td class="actions">
+                                <div class="btn-row">
+                                    <button type="submit" form="group-form-{{ g.id }}" class="btn btn--sm">{{ icon('check') }} Сохранить</button>
+                                    <button type="button" class="btn btn--sm btn--danger btn--icon"
+                                            data-role="group" data-name="{{ g.name }}"
+                                            data-url="{{ url_for('admin.delete_group', group_id=g.id) }}"
+                                            title="Удалить" aria-label="Удалить">{{ icon('trash') }}</button>
                                 </div>
-                            </td>
-
-                            <td>{{ u.email or '—' }}</td>
-                            <td>{{ u.last_name }} {{ u.first_name }}</td>
-
-                            <td>
-                                {% if u.role == 'admin' %}
-                                    <span class="adm-badge adm-badge--admin">Администратор</span>
-                                {% elif u.role == 'teacher' %}
-                                    <span class="adm-badge adm-badge--teacher">Преподаватель</span>
-                                {% else %}
-                                    <span class="adm-badge adm-badge--student">Студент</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if u.role == 'student' %}
-                                    <form method="post"
-                                          action="{{ url_for('admin.change_user_group', user_id=u.id) }}"
-                                          style="display:inline;">
-{{ csrf_input() }}
-                                        <select name="group_id" class="adm-select"
-                                                onchange="this.form.submit()">
-                                            <option value="">Без группы</option>
-                                            {% for g in groups %}
-                                                <option value="{{ g.id }}" {% if u.group_id == g.id %}selected{% endif %}>
-                                                    {{ g.name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </form>
-                                {% else %}
-                                    <span style="color:var(--adm-muted);">—</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if u.is_active_user %}
-                                    <span class="adm-badge adm-badge--active">Активен</span>
-                                {% else %}
-                                    <span class="adm-badge adm-badge--blocked">Заблокирован</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if u.id != current_user.id %}
-                                    <div class="adm-actions">
-
-                                        <form method="post"
-                                              action="{{ url_for('admin.change_user_role', user_id=u.id) }}"
-                                              style="display:inline;">
-{{ csrf_input() }}
-                                            <select name="role"
-                                                    class="adm-select"
-                                                    onchange="this.form.submit()">
-                                                <option value="student" {% if u.role == 'student' %}selected{% endif %}>Студент</option>
-                                                <option value="teacher" {% if u.role == 'teacher' %}selected{% endif %}>Преподаватель</option>
-                                                <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Администратор</option>
-                                            </select>
-                                        </form>
-
-                                        <form method="post"
-                                              action="{{ url_for('admin.toggle_user', user_id=u.id) }}"
-                                              style="display:inline;">
-{{ csrf_input() }}
-                                            <button type="submit"
-                                                    class="adm-btn {% if u.is_active_user %}adm-btn--danger{% endif %}"
-                                                    style="min-height:34px; padding: 5px 12px; font-size:12px;">
-                                                {% if u.is_active_user %}Заблокировать{% else %}Активировать{% endif %}
-                                            </button>
-                                        </form>
-
-                                        <button type="button"
-                                                class="adm-icon-btn adm-icon-btn--danger"
-                                                data-role="user"
-                                                data-name="{{ u.username|e }}"
-                                                data-url="{{ url_for('admin.delete_user', user_id=u.id) }}"
-                                                title="Удалить">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M3 6h18"/>
-                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-                                            </svg>
-                                        </button>
-
-                                    </div>
-                                {% else %}
-                                    <span style="color:var(--adm-muted); font-size:12px;">
-                                        Текущий аккаунт
-                                    </span>
-                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    {% else %}
+        {{ ui.empty('briefcase', 'Групп пока нет', 'Пока групп нет, все опубликованные тесты видят все сотрудники.') }}
+    {% endif %}
+</section>
 
-    </div>
-
-
-    <!-- GROUPS -->
-    <div class="adm-card" id="groups">
-
-        <div class="adm-card__head">
-            <div class="adm-card__head-left">
-                <span class="adm-card__head-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 10L12 5 2 10l10 5 10-5z"/>
-                        <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
-                    </svg>
-                </span>
-                <div>
-                    <h2 class="adm-card__title">Учебные группы</h2>
-                    <p class="adm-card__sub">
-                        Преподаватель назначает тесты группам. Тест без групп видят все студенты.
-                    </p>
-                </div>
+{# ========================= НАПРАВЛЕНИЯ ========================= #}
+<section class="panel" id="subjects">
+    <div class="panel__head">
+        <div class="panel__title">
+            <div class="stat__icon stat__icon--green">{{ icon('book') }}</div>
+            <div>
+                <h2>Направления</h2>
+                <p>
+                    {{ subjects|length }} {{ plural(subjects|length, 'направление', 'направления', 'направлений') }} ·
+                    {{ total_tests.v }} {{ plural(total_tests.v, 'тест', 'теста', 'тестов') }} ·
+                    {{ total_tests.q }} {{ plural(total_tests.q, 'вопрос', 'вопроса', 'вопросов') }}
+                </p>
             </div>
         </div>
-
-        <form method="post" action="{{ url_for('admin.create_group') }}" class="adm-group-create">
-{{ csrf_input() }}
-            <input type="text" name="name" class="adm-input" placeholder="Название, например ИВТ-21" required>
-            <input type="text" name="description" class="adm-input" placeholder="Описание (необязательно)">
-            <button type="submit" class="adm-btn adm-btn--primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5v14"/>
-                    <path d="M5 12h14"/>
-                </svg>
-                Добавить группу
-            </button>
-        </form>
-
-        {% if groups %}
-            <div class="adm-table-wrap">
-                <table class="adm-table">
-                    <thead>
-                        <tr>
-                            <th>Группа</th>
-                            <th>Студентов</th>
-                            <th>Назначено тестов</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for g in groups %}
-                            <tr>
-                                <td>
-                                    <form method="post"
-                                          action="{{ url_for('admin.edit_group', group_id=g.id) }}"
-                                          class="adm-group-edit" id="group-form-{{ g.id }}">
-{{ csrf_input() }}
-                                        <input type="text" name="name" class="adm-input"
-                                               value="{{ g.name }}" required>
-                                        <input type="text" name="description" class="adm-input"
-                                               value="{{ g.description or '' }}" placeholder="Описание">
-                                    </form>
-                                </td>
-                                <td><b>{{ g.students|length }}</b></td>
-                                <td><b>{{ g.tests|length }}</b></td>
-                                <td>
-                                    <div class="adm-actions">
-                                        <button type="submit" form="group-form-{{ g.id }}" class="adm-btn"
-                                                style="min-height:34px; padding:5px 12px; font-size:12px;">
-                                            Сохранить
-                                        </button>
-                                        <button type="button"
-                                                class="adm-icon-btn adm-icon-btn--danger"
-                                                data-role="group"
-                                                data-name="{{ g.name|e }}"
-                                                data-url="{{ url_for('admin.delete_group', group_id=g.id) }}"
-                                                title="Удалить">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M3 6h18"/>
-                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div style="padding: 18px 22px; color: var(--adm-muted);">
-                Групп пока нет. Пока их нет, все опубликованные тесты видят все студенты.
-            </div>
-        {% endif %}
-
+        <button type="button" class="btn btn--primary" id="btn-add-subject" data-open="modal-create">{{ icon('plus') }} Новое направление</button>
     </div>
 
-
-    <!-- SUBJECTS -->
-    <div class="adm-card">
-
-        <div class="adm-card__head">
-            <div class="adm-card__head-left">
-                <span class="adm-card__head-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
-                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </span>
-                <div>
-                    <h2 class="adm-card__title">Дисциплины</h2>
-                    <p class="adm-card__sub">
-                        Добавление, просмотр и управление учебными дисциплинами
-                    </p>
-                </div>
-            </div>
-
-            <button type="button" class="adm-btn adm-btn--primary" id="btn-add-subject">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5v14"/>
-                    <path d="M5 12h14"/>
-                </svg>
-                Добавить дисциплину
-            </button>
-        </div>
-
-
-        <div class="adm-subject-grid">
-
-            {% set total_q = namespace(v=0) %}
-            {% for s in subjects %}
-                {% for t in s.tests %}
-                    {% set total_q.v = total_q.v + (t.questions|length) %}
-                {% endfor %}
-            {% endfor %}
-
-            <div class="adm-summary">
-
-                <div class="adm-summary__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
-                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </div>
-
-                <div class="adm-summary__body">
-                    <div class="adm-summary__label">Всего дисциплин</div>
-                    <div class="adm-summary__value">{{ subjects|length }}</div>
-                </div>
-
-                <div class="adm-summary__stats">
-
-                    {% set total_tests = namespace(v=0) %}
-                    {% for s in subjects %}
-                        {% set total_tests.v = total_tests.v + (s.tests|length) %}
-                    {% endfor %}
-
-                    <div class="adm-summary__stat">
-                        <b>{{ total_tests.v }}</b>
-                        <span>тестов</span>
-                    </div>
-
-                    <div class="adm-summary__stat">
-                        <b>{{ total_q.v }}</b>
-                        <span>вопросов</span>
-                    </div>
-                </div>
-
-            </div>
-
-
-            {% if subjects %}
-
+    {% if subjects %}
+        <div class="panel__body">
+            <div class="grid-3">
                 {% for s in subjects %}
-                    {% set icon_class =
-                        'adm-subject__icon--code' if 'програм' in s.name|lower
-                        else ('adm-subject__icon--math' if 'матем' in s.name|lower
-                        else ('adm-subject__icon--phys' if 'физ' in s.name|lower
-                        else 'adm-subject__icon--default')) %}
-
                     {% set qc = namespace(v=0) %}
                     {% for t in s.tests %}{% set qc.v = qc.v + (t.questions|length) %}{% endfor %}
-
-                    <div class="adm-subject">
-
-                        <div class="adm-subject__top">
-                            <span class="adm-subject__icon {{ icon_class }}">
-                                {% if 'програм' in s.name|lower %}
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M8 8l-4 4 4 4"/>
-                                        <path d="M16 8l4 4-4 4"/>
-                                        <path d="M14 4l-4 16"/>
-                                    </svg>
-                                {% elif 'матем' in s.name|lower %}
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="9"/>
-                                        <path d="M8 16l8-8"/>
-                                        <path d="M8 8h.01"/>
-                                        <path d="M16 16h.01"/>
-                                    </svg>
-                                {% elif 'физ' in s.name|lower %}
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="2"/>
-                                        <ellipse cx="12" cy="12" rx="10" ry="4"/>
-                                        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/>
-                                        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>
-                                    </svg>
-                                {% else %}
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M4 6a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/>
-                                        <path d="M20 6a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/>
-                                    </svg>
-                                {% endif %}
-                            </span>
-
-                            <div>
-                                <div class="adm-subject__name">{{ s.name }}</div>
-                            </div>
+                    <div class="tile">
+                        <div class="tile__head">
+                            <div class="stat__icon" style="width:36px;height:36px;border-radius:10px;">{{ icon('book') }}</div>
+                            <div class="tile__title">{{ s.name }}</div>
                         </div>
-
-                        <div class="adm-subject__desc">
-                            {% if s.description %}{{ s.description }}{% else %}&nbsp;{% endif %}
+                        {% if s.description %}<div class="tile__text">{{ s.description }}</div>{% endif %}
+                        <div class="tile__meta">
+                            <span>{{ s.tests|length }} {{ plural(s.tests|length, 'тест', 'теста', 'тестов') }}</span>
+                            <span>{{ qc.v }} {{ plural(qc.v, 'вопрос', 'вопроса', 'вопросов') }}</span>
                         </div>
-
-                        <div class="adm-subject__meta">
-                            <span class="adm-subject__meta-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-                                    <path d="M14 3v6h6"/>
-                                </svg>
-                                <b>{{ s.tests|length }}</b> тестов
-                            </span>
-
-                            <span class="adm-subject__meta-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="9"/>
-                                    <path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3"/>
-                                    <path d="M12 17h.01"/>
-                                </svg>
-                                <b>{{ qc.v }}</b> вопросов
-                            </span>
-                        </div>
-
-                        <div class="adm-subject__actions">
-
-                            <button type="button"
-                                    class="adm-subject__btn adm-subject__btn--primary"
-                                    data-role="show-tests"
-                                    data-name="{{ s.name|e }}"
-                                    data-json-id="json-{{ s.id }}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Тесты
+                        <div class="tile__actions">
+                            <button type="button" class="btn btn--sm"
+                                    data-role="show-tests" data-name="{{ s.name }}" data-json-id="json-{{ s.id }}">
+                                {{ icon('eye') }} Тесты
                             </button>
-
-                            <button type="button"
-                                    class="adm-subject__btn adm-subject__btn--danger"
-                                    data-role="subject"
-                                    data-name="{{ s.name|e }}"
+                            <button type="button" class="btn btn--sm btn--danger"
+                                    data-role="subject" data-name="{{ s.name }}"
                                     data-url="{{ url_for('admin.delete_subject', subject_id=s.id) }}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18"/>
-                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                    <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
-                                </svg>
-                                Удалить
+                                {{ icon('trash') }} Удалить
                             </button>
-
                         </div>
-
+                        <script type="application/json" id="json-{{ s.id }}">
+                        [
+                            {% for t in s.tests %}
+                            {
+                                "title": {{ t.title|tojson }},
+                                "questions": {{ t.questions|length }},
+                                "time_limit": {{ t.time_limit }},
+                                "max_attempts": {{ t.max_attempts|tojson }},
+                                "status": {{ t.status|tojson }},
+                                "delete_url": {{ url_for('admin.delete_test', test_id=t.id)|tojson }}
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        ]
+                        </script>
                     </div>
-
-                    <script type="application/json" id="json-{{ s.id }}">
-                    [
-                        {% for t in s.tests %}
-                        {
-                            "title": {{ t.title|tojson }},
-                            "questions": {{ t.questions|length }},
-                            "time_limit": {{ t.time_limit }},
-                            "max_attempts": {{ t.max_attempts|tojson }},
-                            "status": {{ t.status|tojson }},
-                            "delete_url": {{ url_for('admin.delete_test', test_id=t.id)|tojson }}
-                        }{% if not loop.last %},{% endif %}
-                        {% endfor %}
-                    ]
-                    </script>
-
                 {% endfor %}
-
-            {% else %}
-
-                <div class="adm-empty">
-                    Дисциплины пока не добавлены
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- DELETE MODAL -->
-<div class="adm-modal-bg" id="modal-delete">
-    <div class="adm-modal">
-        <div class="adm-modal__head">
-            <div>
-                <h3 class="adm-modal__title" id="del-title">Удалить?</h3>
-                <div class="adm-modal__sub" id="del-sub">Это действие нельзя отменить.</div>
             </div>
-            <button type="button" class="adm-modal__close" data-close="modal-delete">✕</button>
         </div>
-
-        <div class="adm-modal__body">
-            <p style="margin:0; line-height:1.6; color: var(--adm-muted);">
-                Вы действительно хотите удалить
-                <b id="del-name" style="color: var(--adm-text);"></b>?
-            </p>
-        </div>
-
-        <form id="form-delete" method="post" class="adm-modal__foot">
-{{ csrf_input() }}
-            <button type="button" class="adm-btn" data-close="modal-delete">Отмена</button>
-            <button type="submit" class="adm-btn adm-btn--danger">Удалить</button>
-        </form>
-    </div>
-</div>
+    {% else %}
+        {{ ui.empty('book', 'Направления пока не добавлены') }}
+    {% endif %}
+</section>
 
 
-<!-- CREATE SUBJECT MODAL -->
-<div class="adm-modal-bg" id="modal-create">
-    <div class="adm-modal">
-        <div class="adm-modal__head">
-            <div>
-                <h3 class="adm-modal__title">Новая дисциплина</h3>
-                <div class="adm-modal__sub">Введите название и описание</div>
-            </div>
-            <button type="button" class="adm-modal__close" data-close="modal-create">✕</button>
-        </div>
-
+{# ========================= МОДАЛЬНЫЕ ОКНА ========================= #}
+<div class="modal" id="modal-create">
+    <div class="modal__box">
         <form method="post" action="{{ url_for('admin.create_subject') }}">
-{{ csrf_input() }}
-            <div class="adm-modal__body">
-                <label class="adm-field">
-                    <span>Название</span>
-                    <input type="text" name="name" class="adm-input"
-                           placeholder="Например: Веб-разработка" required>
+            {{ csrf_input() }}
+            <div class="modal__head">
+                <div>
+                    <h3>Новое направление</h3>
+                    <p>Введите название и описание</p>
+                </div>
+                <button type="button" class="btn btn--ghost btn--sm btn--icon" data-close aria-label="Закрыть">{{ icon('x') }}</button>
+            </div>
+            <div class="modal__body form">
+                <label class="field">
+                    <span class="field__label">Название</span>
+                    <input type="text" name="name" class="input" placeholder="Например: Таможенное регулирование" required>
                 </label>
-                <label class="adm-field" style="margin-bottom:0;">
-                    <span>Описание</span>
-                    <textarea name="description" class="adm-textarea"
-                              placeholder="Краткое описание дисциплины"></textarea>
+                <label class="field">
+                    <span class="field__label">Описание</span>
+                    <textarea name="description" class="textarea" placeholder="Краткое описание направления"></textarea>
                 </label>
             </div>
-            <div class="adm-modal__foot">
-                <button type="button" class="adm-btn" data-close="modal-create">Отмена</button>
-                <button type="submit" class="adm-btn adm-btn--primary">Добавить</button>
+            <div class="modal__foot">
+                <button type="button" class="btn" data-close>Отмена</button>
+                <button type="submit" class="btn btn--primary">Добавить</button>
             </div>
         </form>
     </div>
 </div>
 
-
-<!-- TESTS MODAL -->
-<div class="adm-modal-bg" id="modal-tests">
-    <div class="adm-modal adm-modal--wide">
-        <div class="adm-modal__head">
+<div class="modal" id="modal-tests">
+    <div class="modal__box modal__box--wide">
+        <div class="modal__head">
             <div>
-                <h3 class="adm-modal__title" id="tests-title">Тесты дисциплины</h3>
-                <div class="adm-modal__sub" id="tests-sub"></div>
+                <h3 id="tests-title">Тесты направления</h3>
+                <p id="tests-sub"></p>
             </div>
-            <button type="button" class="adm-modal__close" data-close="modal-tests">✕</button>
+            <button type="button" class="btn btn--ghost btn--sm btn--icon" data-close aria-label="Закрыть">{{ icon('x') }}</button>
         </div>
-
-        <div class="adm-modal__body" id="tests-body"></div>
-
-        <div class="adm-modal__foot">
-            <button type="button" class="adm-btn" data-close="modal-tests">Закрыть</button>
+        <div class="modal__body" id="tests-body"></div>
+        <div class="modal__foot">
+            <button type="button" class="btn" data-close>Закрыть</button>
         </div>
     </div>
 </div>
 
+<div class="modal" id="modal-delete">
+    <div class="modal__box">
+        <div class="modal__head">
+            <div>
+                <h3 id="del-title">Удалить?</h3>
+                <p id="del-sub">Это действие нельзя отменить.</p>
+            </div>
+            <button type="button" class="btn btn--ghost btn--sm btn--icon" data-close aria-label="Закрыть">{{ icon('x') }}</button>
+        </div>
+        <div class="modal__body">
+            <p class="muted">Вы действительно хотите удалить <b class="strong" id="del-name" style="color:var(--text);"></b>?</p>
+        </div>
+        <form id="form-delete" method="post" class="modal__foot">
+            {{ csrf_input() }}
+            <button type="button" class="btn" data-close>Отмена</button>
+            <button type="submit" class="btn btn--danger-solid">{{ icon('trash') }} Удалить</button>
+        </form>
+    </div>
+</div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
 (function () {
     'use strict';
 
-    console.log('[admin] script loaded');
-
-    function open(id) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        el.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function close(id) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        el.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    function closeAll() {
-        document.querySelectorAll('.adm-modal-bg.open').forEach(function (m) {
-            m.classList.remove('open');
-        });
-        document.body.style.overflow = '';
-    }
-
-    (function () {
-        var dateEl = document.getElementById('adm-clock-date');
-        var timeEl = document.getElementById('adm-clock-time');
-        if (!dateEl || !timeEl) return;
-
-        var months = ['января','февраля','марта','апреля','мая','июня',
-                      'июля','августа','сентября','октября','ноября','декабря'];
-        var days = ['Воскресенье','Понедельник','Вторник','Среда',
-                    'Четверг','Пятница','Суббота'];
-
-        function tick() {
+    // Часы в шапке
+    var dateEl = document.getElementById('adm-clock-date');
+    var timeEl = document.getElementById('adm-clock-time');
+    if (dateEl && timeEl) {
+        var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+        var days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+        var tick = function () {
             var now = new Date();
-            var hh = String(now.getHours()).padStart(2, '0');
-            var mm = String(now.getMinutes()).padStart(2, '0');
-
-            dateEl.textContent = String(now.getDate()).padStart(2, '0') + ' '
-                + months[now.getMonth()] + ' ' + now.getFullYear();
-            timeEl.textContent = days[now.getDay()] + ', ' + hh + ':' + mm;
-        }
-
+            dateEl.textContent = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+            timeEl.textContent = days[now.getDay()] + ', ' +
+                String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        };
         tick();
         setInterval(tick, 15000);
-    })();
+    }
 
-    (function () {
-        var input = document.getElementById('adm-user-search');
-        if (!input) return;
-
-        var rows = document.querySelectorAll('#adm-users-table tbody tr');
-
-        input.addEventListener('input', function () {
-            var q = input.value.trim().toLowerCase();
-
-            rows.forEach(function (row) {
-                if (!row.dataset.username) return;
-                var hay = (row.dataset.username || '') + ' '
-                        + (row.dataset.email    || '') + ' '
-                        + (row.dataset.fio      || '');
-                row.style.display = (!q || hay.includes(q)) ? '' : 'none';
-            });
+    // Экранирование: название теста вводит методист, вставлять его в HTML как есть нельзя
+    function esc(v) {
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
         });
-    })();
+    }
+
+    var deleteTexts = {
+        user:    ['Удалить пользователя?', 'Все связанные данные также будут удалены.'],
+        subject: ['Удалить направление?', 'Вместе с ним удалятся все его тесты и вопросы.'],
+        test:    ['Удалить тест?', 'Вместе с ним удалятся все вопросы и ответы.'],
+        group:   ['Удалить группу?', 'Сотрудники останутся в системе без группы, результаты сохранятся.']
+    };
+
+    var statuses = {
+        published: '<span class="badge badge--green">Опубликован</span>',
+        draft: '<span class="badge badge--amber">Черновик</span>'
+    };
 
     document.addEventListener('click', function (e) {
-
-        var closer = e.target.closest('[data-close]');
-        if (closer) {
-            e.preventDefault();
-            close(closer.getAttribute('data-close'));
-            return;
-        }
-
-        if (e.target.classList && e.target.classList.contains('adm-modal-bg')) {
-            closeAll();
-            return;
-        }
-
-        if (e.target.closest('#btn-add-subject')) {
-            e.preventDefault();
-            open('modal-create');
-            return;
-        }
-
+        // Удаление: пользователь, группа, направление, тест
         var delBtn = e.target.closest('[data-role="user"], [data-role="subject"], [data-role="test"], [data-role="group"]');
         if (delBtn) {
             e.preventDefault();
-
-            var role = delBtn.getAttribute('data-role');
-            var name = delBtn.getAttribute('data-name');
-            var url  = delBtn.getAttribute('data-url');
-
-            var titles = {
-                user:    ['Удалить пользователя?',  'Все связанные данные также будут удалены.'],
-                subject: ['Удалить дисциплину?',    'Вместе с ней удалятся все её тесты и вопросы.'],
-                test:    ['Удалить тест?',          'Вместе с ним удалятся все вопросы и ответы.'],
-                group:   ['Удалить группу?',        'Студенты останутся в системе без группы, результаты сохранятся.']
-            };
-
-            var t = titles[role] || ['Удалить?', ''];
-
+            var t = deleteTexts[delBtn.getAttribute('data-role')] || ['Удалить?', ''];
             document.getElementById('del-title').textContent = t[0];
-            document.getElementById('del-sub').textContent   = t[1];
-            document.getElementById('del-name').textContent  = name;
-            document.getElementById('form-delete').action    = url;
-
-            open('modal-delete');
+            document.getElementById('del-sub').textContent = t[1];
+            document.getElementById('del-name').textContent = delBtn.getAttribute('data-name');
+            document.getElementById('form-delete').action = delBtn.getAttribute('data-url');
+            App.openModal('modal-delete');
             return;
         }
 
+        // Список тестов направления
         var testsBtn = e.target.closest('[data-role="show-tests"]');
-        if (testsBtn) {
-            e.preventDefault();
+        if (!testsBtn) return;
+        e.preventDefault();
 
-            var name    = testsBtn.getAttribute('data-name');
-            var jsonId  = testsBtn.getAttribute('data-json-id');
-            var holder  = document.getElementById(jsonId);
-
-            var tests = [];
-            if (holder) {
-                try { tests = JSON.parse(holder.textContent || '[]'); }
-                catch (err) { console.error('bad json', err); }
-            }
-
-            document.getElementById('tests-title').textContent = name;
-            document.getElementById('tests-sub').textContent =
-                tests.length ? ('Всего тестов: ' + tests.length) : 'Тестов пока нет';
-
-            var body = document.getElementById('tests-body');
-
-            if (!tests.length) {
-                body.innerHTML = '<div style="padding:12px 0;color:var(--adm-muted);">' +
-                                 'В этой дисциплине пока нет тестов.</div>';
-            } else {
-                // Экранирование: название теста вводит преподаватель,
-                // поэтому вставлять его в HTML как есть нельзя (XSS)
-                var esc = function (v) {
-                    return String(v).replace(/[&<>"']/g, function (c) {
-                        return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
-                    });
-                };
-
-                body.innerHTML = tests.map(function (t) {
-                    var att = (t.max_attempts === null || t.max_attempts === undefined)
-                        ? '∞' : t.max_attempts;
-
-                    return '' +
-                        '<div class="adm-test-item">' +
-                            '<div>' +
-                                '<h4>' + esc(t.title) + '</h4>' +
-                                '<div class="adm-test-item__meta">' +
-                                    '<span>Вопросов: <b>' + t.questions + '</b></span>' +
-                                    '<span>Время: <b>' + t.time_limit + ' мин</b></span>' +
-                                    '<span>Попытки: <b>' + att + '</b></span>' +
-                                    '<span>Статус: <b>' + esc(t.status) + '</b></span>' +
-                                '</div>' +
-                            '</div>' +
-                            '<button type="button" class="adm-btn adm-btn--danger"' +
-                                ' data-role="test"' +
-                                ' data-name="' + esc(t.title) + '"' +
-                                ' data-url="' + esc(t.delete_url) + '"' +
-                                ' style="min-height:34px; padding:6px 14px; font-size:12px;">' +
-                                'Удалить' +
-                            '</button>' +
-                        '</div>';
-                }).join('');
-            }
-
-            open('modal-tests');
+        var tests = [];
+        var holder = document.getElementById(testsBtn.getAttribute('data-json-id'));
+        if (holder) {
+            try { tests = JSON.parse(holder.textContent || '[]'); }
+            catch (err) { console.error('bad json', err); }
         }
-    });
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeAll();
-    });
+        document.getElementById('tests-title').textContent = testsBtn.getAttribute('data-name');
+        document.getElementById('tests-sub').textContent = tests.length ? ('Всего тестов: ' + tests.length) : 'Тестов пока нет';
 
-    console.log('[admin] handlers ready');
+        var body = document.getElementById('tests-body');
+        if (!tests.length) {
+            body.innerHTML = '<p class="muted">В этом направлении пока нет тестов.</p>';
+        } else {
+            body.innerHTML = tests.map(function (t) {
+                var att = (t.max_attempts === null || t.max_attempts === undefined) ? '∞' : t.max_attempts;
+                return '<div class="adm-test">' +
+                    '<div class="list-item__main">' +
+                        '<div class="list-item__title">' + esc(t.title) + ' ' + (statuses[t.status] || '<span class="badge">' + esc(t.status) + '</span>') + '</div>' +
+                        '<div class="meta mt-1">' +
+                            '<span>Вопросов: <b>' + t.questions + '</b></span>' +
+                            '<span>Время: <b>' + t.time_limit + ' мин</b></span>' +
+                            '<span>Попытки: <b>' + att + '</b></span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn btn--sm btn--danger" data-role="test"' +
+                        ' data-name="' + esc(t.title) + '" data-url="' + esc(t.delete_url) + '">Удалить</button>' +
+                '</div>';
+            }).join('');
+        }
+        App.openModal('modal-tests');
+    });
 })();
 </script>
-
 {% endblock %}

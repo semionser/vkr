@@ -485,7 +485,7 @@ def review(attempt_id):
     can_review, show_correct = review_permissions(attempt, attempts_count)
 
     if not can_review:
-        flash("Преподаватель отключил просмотр разбора для этого теста.", "warning")
+        flash("Методист отключил просмотр разбора для этого теста.", "warning")
         return redirect(url_for("student.result", attempt_id=attempt.id))
 
     # Ответы студента по вопросам

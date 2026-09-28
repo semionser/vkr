@@ -95,7 +95,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         if current_user.is_authenticated:
-            flash(f"Студент {username} зарегистрирован.", "success")
+            flash(f"Сотрудник {username} зарегистрирован.", "success")
             return redirect(url_for("admin.dashboard"))
 
         flash("Регистрация выполнена. Теперь войдите.", "success")

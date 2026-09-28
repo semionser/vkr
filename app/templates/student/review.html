@@ -1,892 +1,102 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Разбор ответов — {{ attempt.test.title }}</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <style>
-        :root {
-            --app-bg: #eef2f9;
-            --app-surface: #ffffff;
-            --app-text: #172033;
-            --app-muted: #687386;
-            --app-border: #e4e9f0;
-            --app-primary: #2563eb;
-            --app-primary-dark: #1d4ed8;
-            --app-primary-soft: #dbe5fb;
-            --app-green: #22c55e;
-        }
-
-        * { box-sizing: border-box; }
-
-        html, body { min-height: 100%; }
-
-        body {
-            margin: 0;
-
-            display: flex;
-            flex-direction: column;
-
-            background: var(--app-bg);
-            color: var(--app-text);
-
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-                BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            border-radius: 50%;
-            background: #dbe5fb;
-            opacity: 0.5;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        body::before {
-            top: -180px;
-            left: -180px;
-            width: 520px;
-            height: 520px;
-        }
-
-        body::after {
-            bottom: -140px;
-            right: -140px;
-            width: 420px;
-            height: 420px;
-        }
-
-        body > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ---------------------------------------------------------
-           NAVBAR
-        --------------------------------------------------------- */
-        .app-navbar {
-            background: #1b2233;
-            min-height: 68px;
-        }
-
-        .app-navbar__inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            min-height: 68px;
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .app-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-
-            color: #fff;
-            text-decoration: none;
-
-            font-size: 1.15rem;
-            font-weight: 700;
-        }
-
-        .app-brand__mark {
-            display: grid;
-            place-items: center;
-
-            width: 40px;
-            height: 40px;
-
-            border-radius: 12px;
-
-            background: #2563eb;
-            color: #fff;
-
-            font-size: 1.15rem;
-            font-weight: 900;
-        }
-
-        .navbar-user {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .user-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 4px 14px 4px 4px;
-
-            border-radius: 999px;
-
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .user-chip__avatar {
-            display: grid;
-            place-items: center;
-
-            width: 36px;
-            height: 36px;
-
-            border-radius: 50%;
-
-            background: #2563eb;
-            color: #fff;
-
-            font-size: 0.85rem;
-            font-weight: 800;
-        }
-
-        .user-chip__name {
-            color: #fff;
-
-            font-size: 0.9rem;
-            font-weight: 600;
-
-            white-space: nowrap;
-
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-chip__caret {
-            color: rgba(255, 255, 255, 0.6);
-
-            width: 14px;
-            height: 14px;
-        }
-
-        .logout-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-
-            min-height: 40px;
-            padding: 6px 16px;
-
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.35);
-
-            background: transparent;
-            color: #fff;
-
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-
-            transition: background 0.15s ease, border-color 0.15s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.55);
-            color: #fff;
-        }
-
-        .logout-btn svg { width: 18px; height: 18px; }
-
-        /* ---------------------------------------------------------
-           PAGE
-        --------------------------------------------------------- */
-        .page-wrap {
-            flex: 1 1 auto;
-
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-
-            padding: 2.5rem 1.5rem 4rem;
-        }
-
-        /* ---------------------------------------------------------
-           RESULT CARD
-        --------------------------------------------------------- */
-        .result-card {
-            padding: 2.5rem 2rem 2rem;
-
-            background: #fff;
-            border-radius: 20px;
-
-            box-shadow: 0 15px 40px rgba(37, 71, 143, 0.10);
-
-            text-align: center;
-        }
-
-        /* Верхняя иконка-иллюстрация */
-        .result-icon {
-            position: relative;
-
-            display: grid;
-            place-items: center;
-
-            width: 90px;
-            height: 90px;
-
-            margin: 0 auto 1.5rem;
-
-            border-radius: 50%;
-
-            background: #eef3fd;
-        }
-
-        .result-icon svg.main {
-            width: 40px;
-            height: 40px;
-            color: #2563eb;
-        }
-
-        .result-icon__badge {
-            position: absolute;
-            right: 4px;
-            bottom: 4px;
-
-            display: grid;
-            place-items: center;
-
-            width: 26px;
-            height: 26px;
-
-            border-radius: 50%;
-
-            background: #22c55e;
-            color: #fff;
-
-            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.35);
-        }
-
-        .result-icon__badge svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        .result-card h1 {
-            margin: 0 0 0.6rem;
-
-            font-size: clamp(1.4rem, 3vw, 1.75rem);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-
-        .result-card .subtitle {
-            margin: 0 auto 2rem;
-
-            max-width: 560px;
-
-            color: var(--app-muted);
-
-            font-size: 0.95rem;
-            line-height: 1.55;
-        }
-
-        /* ---------------------------------------------------------
-           КРУГ С ПРОЦЕНТОМ
-        --------------------------------------------------------- */
-        .percent-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-
-            margin-bottom: 2.5rem;
-        }
-
-        .percent-ring {
-            position: relative;
-
-            width: 180px;
-            height: 180px;
-        }
-
-        .percent-ring svg {
-            width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
-        }
-
-        .percent-ring__track {
-            fill: none;
-            stroke: #e6edf7;
-            stroke-width: 12;
-        }
-
-        .percent-ring__bar {
-            fill: none;
-            stroke: url(#ringGradient);
-            stroke-width: 12;
-            stroke-linecap: round;
-
-            transition: stroke-dashoffset 0.8s ease;
-        }
-
-        .percent-ring__value {
-            position: absolute;
-            inset: 0;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 1.9rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: var(--app-text);
-        }
-
-        .percent-label {
-            margin-top: 0.85rem;
-
-            color: var(--app-muted);
-
-            font-size: 0.88rem;
-        }
-
-        /* ---------------------------------------------------------
-           ПЛИТКИ СО СТАТИСТИКОЙ
-        --------------------------------------------------------- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-
-            gap: 0;
-            margin-bottom: 2rem;
-
-            background: #f7f9fd;
-            border-radius: 16px;
-
-            overflow: hidden;
-        }
-
-        .stat-item {
-            padding: 1.25rem 1rem;
-
-            text-align: center;
-
-            border-right: 1px solid #eaeff8;
-        }
-
-        .stat-item:last-child { border-right: 0; }
-
-        .stat-item__icon {
-            display: inline-grid;
-            place-items: center;
-
-            width: 38px;
-            height: 38px;
-
-            margin-bottom: 0.6rem;
-
-            border-radius: 50%;
-        }
-
-        .stat-item__icon svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        .stat-item__icon--green { background: #dcfce7; color: #16a34a; }
-        .stat-item__icon--blue  { background: #dbeafe; color: #2563eb; }
-        .stat-item__icon--purple{ background: #ede9fe; color: #7c3aed; }
-
-        .stat-item__label {
-            color: var(--app-muted);
-
-            font-size: 0.78rem;
-            font-weight: 600;
-
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-
-            margin-bottom: 0.35rem;
-        }
-
-        .stat-item__value {
-            font-size: 1rem;
-            font-weight: 750;
-            color: var(--app-text);
-        }
-
-        /* ---------------------------------------------------------
-           КНОПКИ
-        --------------------------------------------------------- */
-        .result-actions {
-            display: flex;
-            justify-content: center;
-            gap: 0.75rem;
-
-            flex-wrap: wrap;
-        }
-
-        .btn-primary-solid {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-
-            min-height: 46px;
-            padding: 0.65rem 1.5rem;
-
-            border: 0;
-            border-radius: 10px;
-
-            background: var(--app-primary);
-            color: #fff;
-
-            font-size: 0.95rem;
-            font-weight: 650;
-            text-decoration: none;
-
-            transition: background 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn-primary-solid:hover {
-            background: var(--app-primary-dark);
-            color: #fff;
-            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
-        }
-
-        .btn-primary-solid svg { width: 18px; height: 18px; }
-
-        .btn-outline-slate {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-
-            min-height: 46px;
-            padding: 0.65rem 1.5rem;
-
-            border: 1px solid var(--app-border);
-            border-radius: 10px;
-
-            background: #fff;
-            color: var(--app-text);
-
-            font-size: 0.95rem;
-            font-weight: 650;
-            text-decoration: none;
-
-            transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn-outline-slate:hover {
-            border-color: #cbd5e1;
-            background: #f8fafc;
-            color: var(--app-text);
-            box-shadow: 0 6px 14px rgba(23, 32, 51, 0.06);
-        }
-
-        .btn-outline-slate svg { width: 18px; height: 18px; }
-
-        /* ---------------------------------------------------------
-           FOOTER
-        --------------------------------------------------------- */
-        .app-footer {
-            border-top: 1px solid var(--app-border);
-            background: rgba(255, 255, 255, 0.75);
-
-            color: var(--app-muted);
-
-            font-size: 0.85rem;
-        }
-
-        .app-footer__inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 1.1rem 1.5rem;
-        }
-
-        /* ---------------------------------------------------------
-           RESPONSIVE
-        --------------------------------------------------------- */
-        @media (max-width: 767.98px) {
-
-            .result-card { padding: 2rem 1.25rem 1.75rem; }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .stat-item:nth-child(2) { border-right: 0; }
-            .stat-item:nth-child(1),
-            .stat-item:nth-child(2) {
-                border-bottom: 1px solid #eaeff8;
-            }
-        }
-
-        @media (max-width: 575.98px) {
-
-            .app-navbar__inner { padding: 0 1rem; }
-            .app-brand { font-size: 1rem; }
-            .app-brand__mark { width: 36px; height: 36px; border-radius: 10px; font-size: 1rem; }
-
-            .user-chip__name { max-width: 100px; }
-
-            .page-wrap { padding: 1.5rem 1rem 2.5rem; }
-
-            .percent-ring { width: 150px; height: 150px; }
-            .percent-ring__value { font-size: 1.6rem; }
-
-            .result-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .app-footer__inner {
-                flex-direction: column;
-                text-align: center;
-                gap: 0.35rem;
-            }
-
-            body::before,
-            body::after { display: none; }
-        }
-
-        :focus-visible {
-            outline: 3px solid rgba(37, 99, 235, 0.35);
-            outline-offset: 2px;
-        }
-
-        /* ---------------------------------------------------------
-           REVIEW
-        --------------------------------------------------------- */
-        .rv-head {
-            margin-bottom: 1.5rem;
-        }
-
-        .rv-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            margin-bottom: 1rem;
-            color: var(--app-muted);
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-        }
-        .rv-back:hover { color: var(--app-primary); }
-        .rv-back svg { width: 16px; height: 16px; }
-
-        .rv-head h1 {
-            margin: 0 0 0.35rem;
-            font-size: 1.7rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-
-        .rv-head__meta {
-            color: var(--app-muted);
-            font-size: 0.95rem;
-        }
-
-        .rv-summary {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin: 1.1rem 0 0;
-        }
-
-        .rv-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.4rem 0.85rem;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            font-weight: 650;
-            background: #fff;
-            border: 1px solid var(--app-border);
-        }
-        .rv-dot { width: 9px; height: 9px; border-radius: 50%; }
-        .rv-dot--correct { background: #16a34a; }
-        .rv-dot--partial { background: #d97706; }
-        .rv-dot--wrong   { background: #dc2626; }
-
-        .rv-notice {
-            display: flex;
-            gap: 0.75rem;
-            align-items: flex-start;
-            margin: 0 0 1.5rem;
-            padding: 0.9rem 1.1rem;
-            border-radius: 14px;
-            background: var(--app-primary-soft);
-            color: #1e3a8a;
-            font-size: 0.9rem;
-            line-height: 1.45;
-        }
-        .rv-notice svg { width: 20px; height: 20px; flex: 0 0 auto; margin-top: 1px; }
-
-        .rv-question {
-            margin-bottom: 1rem;
-            padding: 1.35rem 1.5rem;
-            border-radius: 18px;
-            background: var(--app-surface);
-            border: 1px solid var(--app-border);
-            border-left-width: 5px;
-            box-shadow: 0 10px 25px rgba(37, 71, 143, 0.05);
-        }
-        .rv-question--correct { border-left-color: #16a34a; }
-        .rv-question--partial { border-left-color: #d97706; }
-        .rv-question--wrong   { border-left-color: #dc2626; }
-
-        .rv-question__head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 0.9rem;
-        }
-
-        .rv-question__num {
-            color: var(--app-muted);
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .rv-question__text {
-            margin: 0.2rem 0 0;
-            font-size: 1.05rem;
-            font-weight: 650;
-            line-height: 1.4;
-        }
-
-        .rv-badge {
-            flex: 0 0 auto;
-            padding: 0.3rem 0.7rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .rv-badge--correct { background: #dcfce7; color: #166534; }
-        .rv-badge--partial { background: #fef3c7; color: #92400e; }
-        .rv-badge--wrong   { background: #fee2e2; color: #991b1b; }
-
-        .rv-answers {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: grid;
-            gap: 0.45rem;
-        }
-
-        .rv-answer {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            padding: 0.6rem 0.85rem;
-            border-radius: 11px;
-            border: 1px solid var(--app-border);
-            background: #f8fafc;
-            font-size: 0.95rem;
-        }
-
-        .rv-answer__box {
-            display: grid;
-            place-items: center;
-            width: 22px;
-            height: 22px;
-            flex: 0 0 auto;
-            border-radius: 6px;
-            border: 2px solid #cbd5e1;
-            background: #fff;
-            color: #fff;
-        }
-        .rv-answer__box svg { width: 14px; height: 14px; }
-
-        .rv-answer.is-chosen .rv-answer__box {
-            border-color: var(--app-primary);
-            background: var(--app-primary);
-        }
-
-        .rv-answer__tag {
-            margin-left: auto;
-            font-size: 0.78rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        /* Подсветка правильных — только когда разрешено */
-        .rv-answer.is-right {
-            border-color: #86efac;
-            background: #f0fdf4;
-        }
-        .rv-answer.is-right .rv-answer__tag { color: #166534; }
-
-        .rv-answer.is-chosen.is-bad {
-            border-color: #fca5a5;
-            background: #fef2f2;
-        }
-        .rv-answer.is-chosen.is-bad .rv-answer__box {
-            border-color: #dc2626;
-            background: #dc2626;
-        }
-        .rv-answer.is-bad .rv-answer__tag { color: #991b1b; }
-
-        .rv-empty {
-            margin-top: 0.6rem;
-            color: var(--app-muted);
-            font-size: 0.85rem;
-            font-style: italic;
-        }
-
-        .rv-actions {
-            display: flex;
-            justify-content: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        @media (max-width: 575.98px) {
-            .rv-question { padding: 1.1rem 1rem; }
-            .rv-question__head { flex-direction: column; gap: 0.5rem; }
-            .rv-actions { flex-direction: column; align-items: stretch; }
-        }
-
-    </style>
-</head>
-
-<body>
-
-<!-- =========================================================
-     NAVBAR
-     ========================================================= -->
-<nav class="app-navbar">
-    <div class="app-navbar__inner">
-
-        <a class="app-brand" href="{{ url_for('main.index') }}">
-            <span class="app-brand__mark">S</span>
-            <span>STS</span>
-        </a>
-
-        <div class="navbar-user">
-
-            <div class="user-chip">
-                <span class="user-chip__avatar">
-                    {{ (current_user.first_name[0] ~ current_user.last_name[0])|upper }}
-                </span>
-                <span class="user-chip__name">
-                    {{ current_user.first_name }} {{ current_user.last_name }}
-                </span>
-                <svg class="user-chip__caret" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.4"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-
-            <a class="logout-btn" href="{{ url_for('auth.logout') }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <path d="M16 17l5-5-5-5"/>
-                    <path d="M21 12H9"/>
-                </svg>
-                Выйти
-            </a>
-
-        </div>
-
-    </div>
-</nav>
-
-
-<main class="page-wrap">
-
-    <div class="rv-head">
-
-        <a class="rv-back" href="{{ url_for('student.result', attempt_id=attempt.id) }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 12H5"/>
-                <path d="M12 19l-7-7 7-7"/>
-            </svg>
-            К результату
-        </a>
-
-        <h1>Разбор ответов</h1>
-
-        <div class="rv-head__meta">
-            {{ attempt.test.title }} ·
-            {{ attempt.score|num }} из {{ attempt.max_score }} баллов ({{ attempt.percentage }}%) ·
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}Разбор ответов{% endblock %}
+{% block main_class %}page page--narrow{% endblock %}
+
+{% block head %}
+<style>
+    .rv { border-left: 4px solid var(--border-strong); }
+    .rv--correct { border-left-color: var(--green); }
+    .rv--partial { border-left-color: var(--amber); }
+    .rv--wrong   { border-left-color: var(--red); }
+    .rv__text { font-size: 16.5px; font-weight: 700; line-height: 1.4; }
+    .rv-answers { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .rv-answer {
+        display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+        border: 1px solid var(--border); border-radius: 10px; font-size: 14.5px;
+    }
+    .rv-answer__box {
+        display: grid; place-items: center; flex: none; width: 20px; height: 20px;
+        border: 2px solid var(--border-strong); border-radius: 5px; color: #fff;
+    }
+    .rv-answer__box svg { width: 13px; height: 13px; stroke-width: 3; }
+    .rv-answer__text { flex: 1; min-width: 0; }
+    .rv-answer__tag { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+    .rv-answer.is-chosen { background: #f5f8ff; border-color: #c7d6f7; }
+    .rv-answer.is-chosen .rv-answer__box { background: var(--primary); border-color: var(--primary); }
+    .rv-answer.is-right { background: #f0fdf4; border-color: #bbf7d0; }
+    .rv-answer.is-right .rv-answer__tag { color: var(--green-dark); }
+    .rv-answer.is-right.is-chosen .rv-answer__box { background: var(--green); border-color: var(--green); }
+    .rv-answer.is-bad { background: #fef2f2; border-color: #fecaca; }
+    .rv-answer.is-bad .rv-answer__tag { color: var(--red-dark); }
+    .rv-answer.is-bad .rv-answer__box { background: var(--red); border-color: var(--red); }
+    @media (max-width: 560px) {
+        .stats--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .rv-answer { flex-wrap: wrap; }
+        .rv-answer__tag { flex-basis: 100%; padding-left: 32px; white-space: normal; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<a class="back-link" href="{{ url_for('student.result', attempt_id=attempt.id) }}">{{ icon('arrow-left', 'i--sm') }} К результату</a>
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">{{ icon('eye') }} Разбор ответов</span>
+        <h1>{{ attempt.test.title }}</h1>
+        <p>
+            {{ attempt.score|num }} из {{ attempt.max_score|num }} баллов ({{ attempt.percentage|num }}%) ·
             оценка {{ attempt.grade if attempt.grade else '—' }}
-        </div>
-
-        <div class="rv-summary">
-            <span class="rv-pill"><span class="rv-dot rv-dot--correct"></span> Верно: {{ summary.correct }}</span>
-            {% if summary.partial %}
-                <span class="rv-pill"><span class="rv-dot rv-dot--partial"></span> Частично: {{ summary.partial }}</span>
-            {% endif %}
-            <span class="rv-pill"><span class="rv-dot rv-dot--wrong"></span> Неверно: {{ summary.wrong }}</span>
-        </div>
-
+        </p>
     </div>
+    {{ ui.grade(attempt.grade, 'lg') }}
+</div>
 
-    {% if not show_correct %}
-        <div class="rv-notice">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M12 16v-4"/>
-                <path d="M12 8h.01"/>
-            </svg>
-            <div>
-                {% if attempt.test.review_mode == 'after_all' and attempts_left is none %}
-                    Показаны ваши ответы и отметка «верно / неверно».
-                    Попытки в этом тесте не ограничены, поэтому правильные ответы не раскрываются.
-                {% elif attempt.test.review_mode == 'after_all' %}
-                    Показаны ваши ответы и отметка «верно / неверно».
-                    Правильные ответы откроются, когда вы используете все попытки
-                    (осталось: {{ attempts_left }}).
-                {% else %}
-                    Показаны ваши ответы и отметка «верно / неверно».
-                    Правильные ответы преподаватель не раскрывает.
-                {% endif %}
-            </div>
-        </div>
-    {% endif %}
+<div class="stats stats--3">
+    <div class="stat">
+        <div class="stat__icon stat__icon--green">{{ icon('check-circle') }}</div>
+        <div class="stat__body"><div class="stat__label">Верно</div><div class="stat__value">{{ summary.correct }}</div></div>
+    </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--amber">{{ icon('alert') }}</div>
+        <div class="stat__body"><div class="stat__label">Частично</div><div class="stat__value">{{ summary.partial }}</div></div>
+    </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--red">{{ icon('x-circle') }}</div>
+        <div class="stat__body"><div class="stat__label">Неверно</div><div class="stat__value">{{ summary.wrong }}</div></div>
+    </div>
+</div>
 
-    {% for item in items %}
-        {% set q = item.question %}
+{% if not show_correct %}
+    <div class="alert alert-info mb-3">
+        {{ icon('lock') }}
+        <span>
+            Показаны ваши ответы и отметка «верно / неверно».
+            {% if attempt.test.review_mode == 'after_all' and attempts_left is none %}
+                Попытки в этом тесте не ограничены, поэтому правильные ответы не раскрываются.
+            {% elif attempt.test.review_mode == 'after_all' %}
+                Правильные ответы откроются, когда вы используете все попытки (осталось: {{ attempts_left }}).
+            {% else %}
+                Правильные ответы методист не раскрывает.
+            {% endif %}
+        </span>
+    </div>
+{% endif %}
 
-        <section class="rv-question rv-question--{{ item.status }}">
-
-            <div class="rv-question__head">
-                <div>
-                    <div class="rv-question__num">Вопрос {{ loop.index }}</div>
-                    <h2 class="rv-question__text">{{ q.text }}</h2>
+{% for item in items %}
+    {% set q = item.question %}
+    <section class="panel rv rv--{{ item.status }}">
+        <div class="panel__body stack">
+            <div class="row row--between" style="align-items:flex-start;">
+                <div style="flex:1; min-width:0;">
+                    <div class="small muted strong">Вопрос {{ loop.index }}</div>
+                    <h2 class="rv__text">{{ q.text }}</h2>
                 </div>
-
-                <span class="rv-badge rv-badge--{{ item.status }}">
-                    {% if item.status == 'correct' %}Верно
-                    {% elif item.status == 'partial' %}Частично
-                    {% else %}Неверно{% endif %}
+                <span class="badge {% if item.status == 'correct' %}badge--green{% elif item.status == 'partial' %}badge--amber{% else %}badge--red{% endif %}">
+                    {% if item.status == 'correct' %}Верно{% elif item.status == 'partial' %}Частично{% else %}Неверно{% endif %}
                     · {{ item.points|num }} из {{ q.points }}
                 </span>
             </div>
@@ -898,63 +108,35 @@
                                {% if chosen %}is-chosen{% endif %}
                                {% if show_correct and a.is_correct %}is-right{% endif %}
                                {% if show_correct and chosen and not a.is_correct %}is-bad{% endif %}">
-
                         <span class="rv-answer__box">
-                            {% if chosen %}
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12l5 5L20 7"/>
-                                </svg>
-                            {% endif %}
+                            {% if chosen %}{{ icon('check') }}{% endif %}
                         </span>
-
-                        <span>{{ a.text }}</span>
-
+                        <span class="rv-answer__text">{{ a.text }}</span>
                         {% if show_correct %}
                             {% if a.is_correct and chosen %}
-                                <span class="rv-answer__tag">✓ ваш ответ, верно</span>
+                                <span class="rv-answer__tag">ваш ответ, верно</span>
                             {% elif a.is_correct %}
-                                <span class="rv-answer__tag">✓ правильный ответ</span>
+                                <span class="rv-answer__tag">правильный ответ</span>
                             {% elif chosen %}
-                                <span class="rv-answer__tag">✗ ошибка</span>
+                                <span class="rv-answer__tag">ошибка</span>
                             {% endif %}
                         {% elif chosen %}
-                            <span class="rv-answer__tag" style="color:var(--app-muted);">ваш ответ</span>
+                            <span class="rv-answer__tag muted">ваш ответ</span>
                         {% endif %}
                     </li>
                 {% endfor %}
             </ul>
 
             {% if not item.selected %}
-                <div class="rv-empty">Вы не выбрали ни одного варианта.</div>
+                <div class="small muted">Вы не выбрали ни одного варианта.</div>
             {% endif %}
+        </div>
+    </section>
+{% endfor %}
 
-        </section>
-    {% endfor %}
+<div class="btn-row">
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn--primary">{{ icon('home') }} В кабинет</a>
+    <a href="{{ url_for('student.history') }}" class="btn">{{ icon('history') }} История</a>
+</div>
 
-    <div class="rv-actions">
-        <a href="{{ url_for('student.dashboard') }}" class="btn-primary-solid">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12a9 9 0 1 1-3-6.7"/>
-                <path d="M21 4v5h-5"/>
-            </svg>
-            Вернуться к тестам
-        </a>
-        <a href="{{ url_for('student.history') }}" class="btn-outline-slate">
-            История
-        </a>
-    </div>
-
-</main>
-
-
-<footer class="app-footer">
-    <div class="app-footer__inner">
-        <span>Student Testing System</span>
-        <span>Система тестирования знаний</span>
-    </div>
-</footer>
-
-</body>
-</html>
+{% endblock %}

@@ -23,6 +23,28 @@ def format_number(value):
     return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
+# Названия ролей и сущностей в интерфейсе.
+# В базе данных роли хранятся как student / teacher / admin.
+ROLE_LABELS = {
+    "student": "Сотрудник",
+    "teacher": "Методист",
+    "admin": "Администратор",
+}
+
+SITE_NAME = "Тестирование знаний"
+SITE_FULL_NAME = "Программный комплекс тестирования знаний сотрудников"
+
+
+def plural(n, one, few, many):
+    """plural(3, 'тест', 'теста', 'тестов') -> 'теста'."""
+    n = abs(int(n or 0))
+    if n % 10 == 1 and n % 100 != 11:
+        return one
+    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
+        return few
+    return many
+
+
 def env_flag(name, default=False):
     value = os.environ.get(name)
     if value is None:
@@ -55,6 +77,7 @@ def create_app(config=None):
         instance_path=str(base_dir / "instance"),
     )
 
+    from app.icons import icon
     from app.security import init_security, load_secret_key
 
     app.config.update(
@@ -87,6 +110,13 @@ def create_app(config=None):
     init_security(app)
 
     app.jinja_env.filters["num"] = format_number
+    app.jinja_env.globals.update(
+        ROLE_LABELS=ROLE_LABELS,
+        SITE_NAME=SITE_NAME,
+        SITE_FULL_NAME=SITE_FULL_NAME,
+        plural=plural,
+        icon=icon,
+    )
 
     from app.models import User
     from app.auth.routes import auth_bp

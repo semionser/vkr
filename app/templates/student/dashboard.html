@@ -1,1276 +1,279 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Кабинет студента — Student Testing</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <style>
-        :root {
-            --app-bg: #eef2f9;
-            --app-surface: #ffffff;
-            --app-text: #172033;
-            --app-muted: #687386;
-            --app-border: #e4e9f0;
-            --app-primary: #2563eb;
-            --app-primary-dark: #1d4ed8;
-            --app-primary-soft: #dbe5fb;
-        }
-
-        * { box-sizing: border-box; }
-
-        html, body { min-height: 100%; }
-
-        body {
-            margin: 0;
-
-            display: flex;
-            flex-direction: column;
-
-            background: var(--app-bg);
-            color: var(--app-text);
-
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-                BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            border-radius: 50%;
-            background: #dbe5fb;
-            opacity: 0.5;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        body::before {
-            top: -180px;
-            left: -180px;
-            width: 520px;
-            height: 520px;
-        }
-
-        body::after {
-            bottom: -140px;
-            right: -140px;
-            width: 420px;
-            height: 420px;
-        }
-
-        body > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ---------------------------------------------------------
-           NAVBAR
-        --------------------------------------------------------- */
-        .app-navbar {
-            background: #1b2233;
-            min-height: 68px;
-        }
-
-        .app-navbar__inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            min-height: 68px;
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .app-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-
-            color: #fff;
-            text-decoration: none;
-
-            font-size: 1.15rem;
-            font-weight: 700;
-        }
-
-        .app-brand__mark {
-            display: grid;
-            place-items: center;
-
-            width: 40px;
-            height: 40px;
-
-            border-radius: 12px;
-
-            background: #2563eb;
-            color: #fff;
-
-            font-size: 1.15rem;
-            font-weight: 900;
-        }
-
-        .navbar-user {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .user-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 4px 14px 4px 4px;
-
-            border-radius: 999px;
-
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .user-chip__avatar {
-            display: grid;
-            place-items: center;
-
-            width: 36px;
-            height: 36px;
-
-            border-radius: 50%;
-
-            background: #2563eb;
-            color: #fff;
-
-            font-size: 0.85rem;
-            font-weight: 800;
-        }
-
-        .user-chip__name {
-            color: #fff;
-
-            font-size: 0.9rem;
-            font-weight: 600;
-
-            white-space: nowrap;
-
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-chip__caret {
-            color: rgba(255, 255, 255, 0.6);
-
-            width: 14px;
-            height: 14px;
-        }
-
-        .logout-btn {
-            display: grid;
-            place-items: center;
-
-            width: 40px;
-            height: 40px;
-
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-
-            background: transparent;
-            color: #fff;
-
-            text-decoration: none;
-
-            transition: background 0.15s ease, border-color 0.15s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.35);
-            color: #fff;
-        }
-
-        .logout-btn svg { width: 18px; height: 18px; }
-
-        /* ---------------------------------------------------------
-           PAGE
-        --------------------------------------------------------- */
-        .page-wrap {
-            flex: 1 1 auto;
-
-            width: 100%;
-            max-width: 1180px;
-            margin: 0 auto;
-
-            padding: 2.5rem 1.5rem 4rem;
-        }
-
-        .page-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1.5rem;
-
-            margin-bottom: 2rem;
-        }
-
-        .page-head__badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            margin-bottom: 0.75rem;
-
-            color: #2563eb;
-
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
-
-        .page-head__badge svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .page-head h1 {
-            margin: 0 0 0.5rem;
-
-            font-size: clamp(1.7rem, 3.5vw, 2.2rem);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-
-        .page-head p {
-            margin: 0;
-
-            max-width: 480px;
-
-            color: var(--app-muted);
-
-            font-size: 0.98rem;
-            line-height: 1.55;
-        }
-
-        .btn-history {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-
-            min-height: 44px;
-            padding: 0.6rem 1.2rem;
-
-            border: 1px solid var(--app-primary);
-            border-radius: 10px;
-
-            background: #fff;
-            color: var(--app-primary);
-
-            font-size: 0.92rem;
-            font-weight: 650;
-            text-decoration: none;
-
-            white-space: nowrap;
-
-            transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .btn-history:hover {
-            background: var(--app-primary);
-            color: #fff;
-            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
-        }
-
-        .btn-history svg { width: 18px; height: 18px; }
-
-        /* ---------------------------------------------------------
-           RESULTS PANEL
-        --------------------------------------------------------- */
-        .results-panel {
-            padding: 1.75rem;
-
-            background: #fff;
-            border-radius: 18px;
-
-            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.08);
-        }
-
-        .results-panel__head {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-
-            margin-bottom: 1.5rem;
-        }
-
-        .results-panel__icon {
-            display: grid;
-            place-items: center;
-
-            width: 48px;
-            height: 48px;
-
-            flex-shrink: 0;
-
-            border-radius: 14px;
-
-            background: #eff3fb;
-            color: #2563eb;
-        }
-
-        .results-panel__icon svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .results-panel__head h2 {
-            margin: 0;
-
-            font-size: 1.25rem;
-            font-weight: 800;
-            letter-spacing: -0.01em;
-        }
-
-        .results-panel__head p {
-            margin: 0.15rem 0 0;
-
-            color: var(--app-muted);
-
-            font-size: 0.88rem;
-        }
-
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .results-table thead th {
-            padding: 0.85rem 1rem;
-
-            background: #f8fafc;
-            color: #596579;
-
-            font-size: 0.78rem;
-            font-weight: 750;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-
-            text-align: left;
-
-            white-space: nowrap;
-        }
-
-        .results-table thead th:first-child {
-            border-top-left-radius: 12px;
-            border-bottom-left-radius: 12px;
-        }
-        .results-table thead th:last-child {
-            border-top-right-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-
-        .results-table tbody tr {
-            border-bottom: 1px solid var(--app-border);
-            transition: background 0.15s ease;
-        }
-
-        .results-table tbody tr:last-child { border-bottom: 0; }
-        .results-table tbody tr:hover { background: #f8fafc; }
-
-        .results-table tbody td {
-            padding: 1rem;
-
-            font-size: 0.92rem;
-            vertical-align: middle;
-        }
-
-        .test-cell {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .test-cell__icon {
-            display: grid;
-            place-items: center;
-
-            width: 36px;
-            height: 36px;
-
-            flex-shrink: 0;
-
-            border-radius: 10px;
-
-            background: #eff3fb;
-            color: #2563eb;
-        }
-
-        .test-cell__icon svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        .test-cell__name {
-            display: flex;
-            align-items: center;
-            gap: 0.55rem;
-
-            font-weight: 650;
-        }
-
-        .badge-best {
-            display: inline-flex;
-            align-items: center;
-
-            padding: 0.2rem 0.6rem;
-
-            border-radius: 999px;
-
-            background: #dcfce7;
-            color: #15803d;
-
-            font-size: 0.72rem;
-            font-weight: 700;
-        }
-
-        .grade-pill {
-            display: inline-grid;
-            place-items: center;
-
-            min-width: 42px;
-            height: 30px;
-            padding: 0 0.7rem;
-
-            border-radius: 999px;
-
-            font-size: 0.88rem;
-            font-weight: 750;
-        }
-
-        .grade-pill--2 { background: #fee2e2; color: #b91c1c; }
-        .grade-pill--3 { background: #fef3c7; color: #92400e; }
-        .grade-pill--4 { background: #dbeafe; color: #1e40af; }
-        .grade-pill--5 { background: #dcfce7; color: #15803d; }
-
-        .result-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-
-            padding: 0.45rem 0.9rem;
-
-            border: 1px solid var(--app-primary);
-            border-radius: 8px;
-
-            background: #fff;
-            color: var(--app-primary);
-
-            font-size: 0.85rem;
-            font-weight: 650;
-            text-decoration: none;
-
-            transition: background 0.15s ease, color 0.15s ease;
-        }
-
-        .result-btn:hover {
-            background: var(--app-primary);
-            color: #fff;
-        }
-
-        .result-btn svg { width: 14px; height: 14px; }
-
-        .empty-state {
-            padding: 2.5rem 1.5rem;
-
-            text-align: center;
-
-            color: var(--app-muted);
-
-            font-size: 0.95rem;
-        }
-
-
-        /* ---------------------------------------------------------
-           FOOTER
-        --------------------------------------------------------- */
-        .app-footer {
-            border-top: 1px solid var(--app-border);
-            background: rgba(255, 255, 255, 0.75);
-
-            color: var(--app-muted);
-
-            font-size: 0.85rem;
-        }
-
-        .app-footer__inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 1.1rem 1.5rem;
-        }
-
-
-        /* ---------------------------------------------------------
-           STATS
-        --------------------------------------------------------- */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat {
-            padding: 1.1rem 1.25rem;
-            border-radius: 16px;
-            background: var(--app-surface);
-            box-shadow: 0 10px 25px rgba(37, 71, 143, 0.05);
-        }
-
-        .stat__label {
-            color: var(--app-muted);
-            font-size: 0.82rem;
-            font-weight: 600;
-        }
-
-        .stat__value {
-            margin-top: 0.2rem;
-            font-size: 1.65rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stat__value small {
-            color: var(--app-muted);
-            font-size: 0.95rem;
-            font-weight: 650;
-        }
-
-        .stat__bar {
-            height: 6px;
-            margin-top: 0.7rem;
-            border-radius: 999px;
-            background: #edf1f7;
-            overflow: hidden;
-        }
-
-        .stat__bar i {
-            display: block;
-            height: 100%;
-            border-radius: 999px;
-            background: var(--app-primary);
-        }
-
-        /* ---------------------------------------------------------
-           PANELS (общая оболочка блоков)
-        --------------------------------------------------------- */
-        .panel {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem 1.75rem;
-            border-radius: 20px;
-            background: var(--app-surface);
-            box-shadow: 0 12px 30px rgba(37, 71, 143, 0.06);
-        }
-
-        .panel__head {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .panel__head h2 {
-            margin: 0;
-            font-size: 1.15rem;
-            font-weight: 800;
-        }
-
-        .panel__head span {
-            color: var(--app-muted);
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .panel__link {
-            color: var(--app-primary);
-            font-size: 0.88rem;
-            font-weight: 650;
-            text-decoration: none;
-        }
-
-        .panel__link:hover { text-decoration: underline; }
-
-        /* ---------------------------------------------------------
-           TODO — нужно пройти
-        --------------------------------------------------------- */
-        .todo {
-            display: grid;
-            gap: 0.6rem;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .todo-item {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.9rem 1rem 0.9rem 1.1rem;
-            border: 1px solid var(--app-border);
-            border-radius: 14px;
-            transition: border-color .15s ease, background .15s ease;
-        }
-
-        .todo-item:hover { border-color: #c7d6f5; background: #fafcff; }
-
-        .todo-item--progress {
-            border-color: #fcd34d;
-            background: #fffbeb;
-        }
-
-        .todo-item--progress:hover { border-color: #f59e0b; background: #fff8e1; }
-
-        .todo-item__title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            font-weight: 700;
-        }
-
-        .todo-item__subject {
-            color: var(--app-primary);
-            font-size: 0.78rem;
-            font-weight: 700;
-        }
-
-        .todo-item__meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem 1rem;
-            margin-top: 0.2rem;
-            color: var(--app-muted);
-            font-size: 0.84rem;
-        }
-
-        .tag-progress {
-            padding: 0.1rem 0.55rem;
-            border-radius: 999px;
-            background: #fde68a;
-            color: #92400e;
-            font-size: 0.72rem;
-            font-weight: 800;
-        }
-
-        .btn-act {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            min-height: 40px;
-            padding: 0.45rem 1.1rem;
-            border-radius: 10px;
-            background: var(--app-primary);
-            color: #fff;
-            font-size: 0.9rem;
-            font-weight: 700;
-            text-decoration: none;
-            white-space: nowrap;
-            transition: background .15s ease, box-shadow .15s ease;
-        }
-
-        .btn-act:hover { background: var(--app-primary-dark); color: #fff; box-shadow: 0 8px 18px rgba(37, 99, 235, .25); }
-        .btn-act svg { width: 14px; height: 14px; }
-
-        .btn-act--warn { background: #d97706; }
-        .btn-act--warn:hover { background: #b45309; box-shadow: 0 8px 18px rgba(217, 119, 6, .25); }
-
-        .btn-act--light {
-            background: #fff;
-            border: 1px solid var(--app-border);
-            color: var(--app-text);
-        }
-
-        .btn-act--light:hover { background: #f8fafc; color: var(--app-text); box-shadow: none; border-color: #cbd5e1; }
-
-        .todo-item--extra { display: none; }
-        .todo.is-expanded .todo-item--extra { display: grid; }
-
-        .todo-more {
-            display: block;
-            width: 100%;
-            margin-top: 0.6rem;
-            padding: 0.6rem;
-            border: 1px dashed #c7d6f5;
-            border-radius: 12px;
-            background: transparent;
-            color: var(--app-primary);
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .todo-more:hover { background: #f5f8fd; }
-
-        .done-note {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 1.1rem;
-            border-radius: 14px;
-            background: #f0fdf4;
-            color: #166534;
-            font-weight: 650;
-        }
-
-        .done-note svg { width: 22px; height: 22px; flex: 0 0 auto; }
-
-        /* ---------------------------------------------------------
-           SUBJECTS — строки прогресса
-        --------------------------------------------------------- */
-        .subject {
-            border-top: 1px solid var(--app-border);
-        }
-
-        .subject:first-of-type { border-top: 0; }
-
-        .subject > summary {
-            display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 70px 20px;
-            align-items: center;
-            gap: 1.25rem;
-            padding: 0.95rem 0.25rem;
-            cursor: pointer;
-            list-style: none;
-        }
-
-        .subject > summary::-webkit-details-marker { display: none; }
-
-        .subject__name { font-weight: 700; }
-
-        .subject__sub {
-            color: var(--app-muted);
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .subject__progress {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .subject__bar {
-            flex: 1;
-            height: 8px;
-            border-radius: 999px;
-            background: #edf1f7;
-            overflow: hidden;
-        }
-
-        .subject__bar i {
-            display: block;
-            height: 100%;
-            border-radius: 999px;
-            background: var(--app-primary);
-        }
-
-        .subject__bar i.is-full { background: #16a34a; }
-
-        .subject__count {
-            min-width: 44px;
-            color: var(--app-muted);
-            font-size: 0.82rem;
-            font-weight: 650;
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .subject__avg {
-            font-weight: 750;
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .subject__avg--none { color: #cbd5e1; }
-
-        .subject__chev {
-            width: 18px;
-            height: 18px;
-            color: var(--app-muted);
-            transition: transform .2s ease;
-        }
-
-        .subject[open] .subject__chev { transform: rotate(180deg); }
-
-        .subject__tests {
-            margin: 0 0 1rem;
-            padding: 0;
-            list-style: none;
-            border-radius: 14px;
-            background: #f8fafc;
-        }
-
-        .subject-test {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto auto;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1rem;
-            border-top: 1px solid #edf1f7;
-        }
-
-        .subject-test:first-child { border-top: 0; }
-
-        .subject-test__title { font-weight: 650; font-size: 0.93rem; }
-
-        .subject-test__meta {
-            color: var(--app-muted);
-            font-size: 0.8rem;
-        }
-
-        .subject-test__result {
-            font-size: 0.85rem;
-            font-weight: 700;
-            white-space: nowrap;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .muted { color: var(--app-muted); font-weight: 600; }
-
-        /* ---------------------------------------------------------
-           RECENT RESULTS
-        --------------------------------------------------------- */
-        .recent {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .recent a {
-            display: grid;
-            grid-template-columns: 36px minmax(0, 1fr) auto 18px;
-            align-items: center;
-            gap: 0.9rem;
-            padding: 0.7rem 0.6rem;
-            border-radius: 12px;
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .recent a:hover { background: #f5f8fd; }
-
-        .grade-dot {
-            display: grid;
-            place-items: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-weight: 800;
-        }
-
-        .grade-dot--2 { background: #fee2e2; color: #b91c1c; }
-        .grade-dot--3 { background: #fef3c7; color: #92400e; }
-        .grade-dot--4 { background: #dbeafe; color: #1e40af; }
-        .grade-dot--5 { background: #dcfce7; color: #15803d; }
-
-        .recent__title { font-weight: 650; font-size: 0.93rem; }
-        .recent__date { color: var(--app-muted); font-size: 0.8rem; }
-
-        .recent__pct {
-            font-weight: 750;
-            font-variant-numeric: tabular-nums;
-            text-align: right;
-        }
-
-        .recent__pct small {
-            display: block;
-            color: var(--app-muted);
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .recent__chev { width: 16px; height: 16px; color: #94a3b8; }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        .two-col .panel { margin-bottom: 0; }
-
-        /* ---------------------------------------------------------
-           RESPONSIVE
-        --------------------------------------------------------- */
-        @media (max-width: 991.98px) {
-            .two-col { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 767.98px) {
-            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .subject > summary { grid-template-columns: minmax(0, 1fr) 56px 18px; }
-            .subject__progress { grid-column: 1 / -1; grid-row: 2; }
-            .subject-test { grid-template-columns: minmax(0, 1fr) auto; }
-            .subject-test__result { grid-column: 1; }
-        }
-
-        @media (max-width: 575.98px) {
-            .app-navbar__inner { padding: 0 1rem; }
-            .user-chip__name { display: none; }
-            .page-wrap { padding: 1.5rem 1rem 2.5rem; }
-            .page-head { flex-direction: column; align-items: flex-start; gap: 1rem; }
-            .panel { padding: 1.2rem 1rem; }
-            .todo-item { grid-template-columns: 1fr; }
-            .todo-item .btn-act { justify-content: center; }
-            .app-footer__inner { flex-direction: column; text-align: center; gap: .35rem; }
-            body::before, body::after { display: none; }
-        }
-
-        :focus-visible {
-            outline: 3px solid rgba(37, 99, 235, 0.35);
-            outline-offset: 2px;
-        }
-    </style>
-</head>
-
-<body>
-
-<!-- =========================================================
-     NAVBAR
-     ========================================================= -->
-<nav class="app-navbar">
-    <div class="app-navbar__inner">
-
-        <a class="app-brand" href="{{ url_for('main.index') }}">
-            <span class="app-brand__mark">S</span>
-            <span>STS</span>
-        </a>
-
-        <div class="navbar-user">
-
-            <div class="user-chip">
-                <span class="user-chip__avatar">
-                    {{ (current_user.first_name[0] ~ current_user.last_name[0])|upper }}
-                </span>
-                <span class="user-chip__name">
-                    {{ current_user.first_name }} {{ current_user.last_name }}
-                </span>
-                <svg class="user-chip__caret" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.4"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </div>
-
-            <a class="logout-btn" href="{{ url_for('auth.logout') }}"
-               aria-label="Выйти">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <path d="M16 17l5-5-5-5"/>
-                    <path d="M21 12H9"/>
-                </svg>
-            </a>
-
-        </div>
-
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}Мои тесты{% endblock %}
+
+{% macro qcount(test) -%}
+    {%- set n = test.questions_per_attempt if test.questions_per_attempt and test.questions_per_attempt < test.questions|length else test.questions|length -%}
+    {{ n }} {{ plural(n, 'вопрос', 'вопроса', 'вопросов') }}
+{%- endmacro %}
+
+{% macro attempts_text(test, left) -%}
+    {%- if test.max_attempts is none -%}попытки без ограничений
+    {%- else -%}попыток: {{ left }} из {{ test.max_attempts }}{%- endif -%}
+{%- endmacro %}
+
+{% block head %}
+<style>
+    /* Кабинет сотрудника: раскрывающийся список направлений */
+    .todo-item--extra { display: none; }
+    .todo.is-expanded .todo-item--extra { display: flex; }
+    .todo-item--progress { background: #fffcf3; }
+    .todo-more {
+        display: block; width: 100%; padding: 12px; border: 0;
+        border-top: 1px solid var(--border); background: transparent;
+        color: var(--primary); font-weight: 700; font-size: 13.5px; cursor: pointer;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+    .todo-more:hover { background: var(--surface-2); }
+
+    .subject > summary { display: grid; grid-template-columns: minmax(0, 1fr) 150px 56px 20px; align-items: center; gap: 14px; padding: 14px 22px; border-bottom: 1px solid var(--border); }
+    .subject > summary:hover { background: #fafbfe; }
+    .subject:last-of-type > summary { border-bottom: 0; }
+    .subject[open] > summary { background: var(--surface-2); }
+    .subject__progress { display: flex; align-items: center; gap: 10px; }
+    .subject__progress .progress { flex: 1; }
+    .subject__tests .list-item { padding-left: 34px; background: #fcfdff; }
+    .subject:last-of-type .subject__tests .list-item:last-child { border-bottom: 0; }
+    .subject__tests { border-bottom: 1px solid var(--border); }
+    @media (max-width: 560px) {
+        .subject > summary { grid-template-columns: minmax(0, 1fr) 48px 20px; padding: 14px 16px; }
+        .subject__progress { display: none; }
+        .subject__tests .list-item { padding-left: 16px; flex-wrap: wrap; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">
+            {{ icon('users') }}
+            {% if current_user.group %}Группа «{{ current_user.group.name }}»{% else %}Личный кабинет сотрудника{% endif %}
+        </span>
+        <h1>Здравствуйте, {{ current_user.first_name }}!</h1>
+        <p>
+            {% if todo %}
+                {% set n = todo|length %}
+                Вас {{ plural(n, 'ждёт', 'ждут', 'ждут') }} {{ n }} {{ plural(n, 'тест', 'теста', 'тестов') }}.
+            {% elif stats.available %}
+                Все назначенные тесты начаты или пройдены.
+            {% else %}
+                Пока для вас нет назначенных тестов.
+            {% endif %}
+        </p>
     </div>
-</nav>
-
-<main class="page-wrap">
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" style="border-radius:12px;">{{ message }}</div>
-        {% endfor %}
-    {% endwith %}
-
-    {% macro chevron(cls) -%}
-        <svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    {%- endmacro %}
-
-    {% macro qword(n) -%}
-        {%- if n % 10 == 1 and n % 100 != 11 -%}вопрос
-        {%- elif n % 10 in [2,3,4] and n % 100 not in [12,13,14] -%}вопроса
-        {%- else -%}вопросов{%- endif -%}
-    {%- endmacro %}
-
-    {% macro qcount(test) -%}
-        {%- set n = test.questions_per_attempt if test.questions_per_attempt and test.questions_per_attempt < test.questions|length else test.questions|length -%}
-        {{ n }} {{ qword(n) }}
-    {%- endmacro %}
-
-    <!-- HEAD -->
-    <div class="page-head">
-        <div>
-            <span class="page-head__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="8" r="3.5"/>
-                    <path d="M4.5 19.5a7.5 7.5 0 0 1 15 0"/>
-                </svg>
-                {% if current_user.group %}Группа {{ current_user.group.name }}{% else %}Личный кабинет{% endif %}
-            </span>
-
-            <h1>Здравствуйте, {{ current_user.first_name }}!</h1>
-
-            <p>
-                {% if todo %}
-                    {% set n = todo|length %}
-                    Вас {{ 'ждёт' if n % 10 == 1 and n % 100 != 11 else 'ждут' }} {{ n }}
-                    {% if n % 10 == 1 and n % 100 != 11 %}тест{% elif n % 10 in [2,3,4] and n % 100 not in [12,13,14] %}теста{% else %}тестов{% endif %}.
-                {% elif stats.available %}
-                    Все доступные тесты начаты или пройдены.
-                {% else %}
-                    Пока для вас нет опубликованных тестов.
-                {% endif %}
-            </p>
-        </div>
-
-        <a href="{{ url_for('student.history') }}" class="btn-history">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/>
-            </svg>
-            История результатов
-        </a>
+    <div class="page-head__actions">
+        <a href="{{ url_for('student.history') }}" class="btn">{{ icon('chart') }} История результатов</a>
     </div>
+</div>
 
-
-    <!-- STATS -->
-    <div class="stats">
-        <div class="stat">
+<div class="stats">
+    <div class="stat">
+        <div class="stat__icon stat__icon--green">{{ icon('check-circle') }}</div>
+        <div class="stat__body">
             <div class="stat__label">Пройдено тестов</div>
             <div class="stat__value">{{ stats.passed }} <small>из {{ stats.available }}</small></div>
-            <div class="stat__bar"><i style="width: {{ (stats.passed * 100 / stats.available) if stats.available else 0 }}%"></i></div>
+            {{ ui.bar((stats.passed * 100 / stats.available) if stats.available else 0) }}
         </div>
-        <div class="stat">
+    </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--amber">{{ icon('clock') }}</div>
+        <div class="stat__body">
             <div class="stat__label">Нужно пройти</div>
             <div class="stat__value">{{ todo|length }}</div>
         </div>
-        <div class="stat">
+    </div>
+    <div class="stat">
+        <div class="stat__icon">{{ icon('target') }}</div>
+        <div class="stat__body">
             <div class="stat__label">Средний результат</div>
             <div class="stat__value">
                 {% if stats.avg_percentage is not none %}{{ stats.avg_percentage }}<small>%</small>{% else %}—{% endif %}
             </div>
         </div>
-        <div class="stat">
+    </div>
+    <div class="stat">
+        <div class="stat__icon stat__icon--violet">{{ icon('award') }}</div>
+        <div class="stat__body">
             <div class="stat__label">Средняя оценка</div>
             <div class="stat__value">
                 {% if stats.avg_grade is not none %}{{ stats.avg_grade|num }}{% else %}—{% endif %}
             </div>
         </div>
     </div>
+</div>
 
+<section class="panel">
+    <div class="panel__head">
+        <div class="panel__title">
+            <div class="stat__icon stat__icon--amber">{{ icon('clock') }}</div>
+            <div>
+                <h2>Нужно пройти</h2>
+                <p>Сначала показаны начатые тесты</p>
+            </div>
+        </div>
+    </div>
 
-    <!-- TODO -->
+    {% if todo %}
+        <ul class="list todo" id="todo-list">
+            {% for item in todo %}
+                {% set test = item.test %}
+                {% set in_progress = item.in_progress_attempt %}
+                <li class="list-item {% if in_progress %}todo-item--progress{% endif %} {% if loop.index > 4 %}todo-item--extra{% endif %}">
+                    <div class="list-item__main">
+                        <div class="list-item__kicker">{{ test.subject.name }}</div>
+                        <div class="list-item__title">
+                            {{ test.title }}
+                            {% if in_progress %}<span class="badge badge--amber">начат</span>{% endif %}
+                        </div>
+                        <div class="meta">
+                            <span>{{ icon('list') }}{{ qcount(test) }}</span>
+                            <span>{{ icon('clock') }}{{ test.time_limit }} мин</span>
+                            <span>{{ icon('refresh') }}{{ attempts_text(test, item.attempts_left) }}</span>
+                        </div>
+                    </div>
+                    {% if in_progress %}
+                        <a class="btn btn--warn btn--sm" href="{{ url_for('student.take_test', attempt_id=in_progress.id) }}">
+                            Продолжить {{ icon('chevron-right') }}
+                        </a>
+                    {% else %}
+                        <a class="btn btn--primary btn--sm" href="{{ url_for('student.start_test', test_id=test.id) }}">
+                            Начать {{ icon('chevron-right') }}
+                        </a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if todo|length > 4 %}
+            <button type="button" class="todo-more" id="todo-more"
+                    data-more="Показать все ({{ todo|length }})" data-less="Свернуть">
+                Показать все ({{ todo|length }})
+            </button>
+        {% endif %}
+    {% elif stats.available %}
+        {{ ui.empty('check-circle', 'Новых тестов нет', 'Улучшить результат можно в разделе «Направления» ниже.') }}
+    {% else %}
+        {{ ui.empty('file', 'Тестов пока нет', 'Методисты ещё не назначили тесты вашей группе.') }}
+    {% endif %}
+</section>
+
+<div class="grid-main">
+
     <section class="panel">
         <div class="panel__head">
-            <h2>Нужно пройти</h2>
-            {% if todo %}<span>сначала начатые</span>{% endif %}
+            <div class="panel__title">
+                <div class="stat__icon">{{ icon('book') }}</div>
+                <div>
+                    <h2>Направления</h2>
+                    <p>Пройдено тестов и средний результат</p>
+                </div>
+            </div>
         </div>
 
-        {% if todo %}
-            <ul class="todo" id="todo-list">
-                {% for item in todo %}
-                    {% set test = item.test %}
-                    {% set in_progress = item.in_progress_attempt %}
-                    <li class="todo-item {% if in_progress %}todo-item--progress{% endif %} {% if loop.index > 4 %}todo-item--extra{% endif %}">
-                        <div>
-                            <div class="todo-item__subject">{{ test.subject.name }}</div>
-                            <div class="todo-item__title">
-                                {{ test.title }}
-                                {% if in_progress %}<span class="tag-progress">начат</span>{% endif %}
-                            </div>
-                            <div class="todo-item__meta">
-                                <span>{{ qcount(test) }}</span>
-                                <span>{{ test.time_limit }} мин</span>
-                                <span>
-                                    {% if test.max_attempts is none %}попытки без ограничений
-                                    {% else %}попыток: {{ item.attempts_left }} из {{ test.max_attempts }}{% endif %}
-                                </span>
-                            </div>
+        {% if disciplines %}
+            {% for item in disciplines %}
+                {% set subject = item.subject %}
+                <details class="fold subject">
+                    <summary>
+                        <div style="min-width:0;">
+                            <div class="list-item__title">{{ subject.name }}</div>
+                            <div class="list-item__sub">{{ item.total }} {{ plural(item.total, 'тест', 'теста', 'тестов') }}</div>
                         </div>
+                        <div class="subject__progress">
+                            {{ ui.bar(item.passed * 100 / item.total if item.total else 0) }}
+                            <span class="small muted nowrap">{{ item.passed }}/{{ item.total }}</span>
+                        </div>
+                        <div class="strong text-right {% if item.avg_percentage is none %}muted{% endif %}">
+                            {% if item.avg_percentage is not none %}{{ item.avg_percentage }}%{% else %}—{% endif %}
+                        </div>
+                        {{ icon('chevron-down', 'fold__caret i--sm') }}
+                    </summary>
 
-                        {% if in_progress %}
-                            <a class="btn-act btn-act--warn"
-                               href="{{ url_for('student.take_test', attempt_id=in_progress.id) }}">
-                                Продолжить {{ chevron('') }}
-                            </a>
-                        {% else %}
-                            <a class="btn-act" href="{{ url_for('student.start_test', test_id=test.id) }}">
-                                Начать {{ chevron('') }}
-                            </a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
+                    <ul class="list subject__tests">
+                        {% for t in item.tests %}
+                            {% set test = t.test %}
+                            <li class="list-item">
+                                <div class="list-item__main">
+                                    <div class="list-item__title">{{ test.title }}</div>
+                                    <div class="list-item__sub">
+                                        {{ qcount(test) }} · {{ test.time_limit }} мин ·
+                                        {% if test.max_attempts is none %}попыток ∞{% else %}попыток {{ t.attempts_left }} из {{ test.max_attempts }}{% endif %}
+                                    </div>
+                                </div>
 
-            {% if todo|length > 4 %}
-                <button type="button" class="todo-more" id="todo-more"
-                        data-more="Показать все ({{ todo|length }})" data-less="Свернуть">
-                    Показать все ({{ todo|length }})
-                </button>
-            {% endif %}
-        {% elif stats.available %}
-            <div class="done-note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>
-                </svg>
-                Новых тестов нет. Улучшить результат можно в разделе «Дисциплины».
-            </div>
+                                <div class="row" style="gap:8px;">
+                                    {% if t.best_attempt %}
+                                        <span class="strong">{{ t.best_attempt.percentage|round|int }}%</span>
+                                        {{ ui.grade(t.best_attempt.grade) }}
+                                    {% else %}
+                                        <span class="muted small">не пройден</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if t.in_progress_attempt %}
+                                    <a class="btn btn--warn btn--sm" href="{{ url_for('student.take_test', attempt_id=t.in_progress_attempt.id) }}">Продолжить</a>
+                                {% elif test.max_attempts is none or t.attempts_left > 0 %}
+                                    <a class="btn btn--sm {% if not t.best_attempt %}btn--primary{% endif %}"
+                                       href="{{ url_for('student.start_test', test_id=test.id) }}">
+                                        {% if t.best_attempt %}Ещё раз{% else %}Начать{% endif %}
+                                    </a>
+                                {% else %}
+                                    <span class="muted small">попытки исчерпаны</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            {% endfor %}
         {% else %}
-            <div class="empty-state">Преподаватели ещё не назначили тесты вашей группе.</div>
+            {{ ui.empty('book', 'Направлений с тестами пока нет') }}
         {% endif %}
     </section>
 
-
-    <div class="two-col">
-
-        <!-- SUBJECTS -->
-        <section class="panel">
-            <div class="panel__head">
-                <h2>Дисциплины</h2>
-                <span>пройдено · средний %</span>
+    <section class="panel">
+        <div class="panel__head">
+            <div class="panel__title">
+                <div class="stat__icon stat__icon--green">{{ icon('award') }}</div>
+                <div>
+                    <h2>Лучшие результаты</h2>
+                    <p>По лучшей попытке в каждом тесте</p>
+                </div>
             </div>
+            <a class="small strong" href="{{ url_for('student.history') }}">Вся история</a>
+        </div>
 
-            {% if disciplines %}
-                {% for item in disciplines %}
-                    {% set subject = item.subject %}
-                    <details class="subject">
-                        <summary>
-                            <div>
-                                <div class="subject__name">{{ subject.name }}</div>
-                                <div class="subject__sub">
-                                    {{ item.total }}
-                                    {% if item.total % 10 == 1 and item.total % 100 != 11 %}тест{% elif item.total % 10 in [2,3,4] and item.total % 100 not in [12,13,14] %}теста{% else %}тестов{% endif %}
-                                </div>
+        {% if attempts %}
+            <ul class="list">
+                {% for a in attempts %}
+                    <li>
+                        <a class="list-item" href="{{ url_for('student.result', attempt_id=a.id) }}">
+                            {{ ui.grade(a.grade) }}
+                            <div class="list-item__main">
+                                <div class="list-item__title">{{ a.test.title }}</div>
+                                <div class="list-item__sub">{{ a.completed_at.strftime('%d.%m.%Y, %H:%M') }}</div>
                             </div>
-
-                            <div class="subject__progress">
-                                <div class="subject__bar">
-                                    <i class="{% if item.passed == item.total %}is-full{% endif %}"
-                                       style="width: {{ item.passed * 100 / item.total }}%"></i>
-                                </div>
-                                <span class="subject__count">{{ item.passed }}/{{ item.total }}</span>
+                            <div class="list-item__side">
+                                <div class="list-item__value">{{ a.percentage|round|int }}%</div>
+                                <div class="list-item__sub">{{ a.score|num }} из {{ a.max_score|num }}</div>
                             </div>
-
-                            <div class="subject__avg {% if item.avg_percentage is none %}subject__avg--none{% endif %}">
-                                {% if item.avg_percentage is not none %}{{ item.avg_percentage }}%{% else %}—{% endif %}
-                            </div>
-
-                            <svg class="subject__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </summary>
-
-                        <ul class="subject__tests">
-                            {% for t in item.tests %}
-                                {% set test = t.test %}
-                                <li class="subject-test">
-                                    <div>
-                                        <div class="subject-test__title">{{ test.title }}</div>
-                                        <div class="subject-test__meta">
-                                            {{ qcount(test) }} · {{ test.time_limit }} мин ·
-                                            {% if test.max_attempts is none %}попыток ∞{% else %}попыток {{ t.attempts_left }} из {{ test.max_attempts }}{% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="subject-test__result">
-                                        {% if t.best_attempt %}
-                                            {{ t.best_attempt.percentage|round|int }}%
-                                            <span class="grade-pill grade-pill--{{ t.best_attempt.grade }}" style="margin-left:.35rem;">{{ t.best_attempt.grade }}</span>
-                                        {% else %}
-                                            <span class="muted">не пройден</span>
-                                        {% endif %}
-                                    </div>
-
-                                    <div>
-                                        {% if t.in_progress_attempt %}
-                                            <a class="btn-act btn-act--warn" href="{{ url_for('student.take_test', attempt_id=t.in_progress_attempt.id) }}">Продолжить</a>
-                                        {% elif test.max_attempts is none or t.attempts_left > 0 %}
-                                            <a class="btn-act {% if t.best_attempt %}btn-act--light{% endif %}"
-                                               href="{{ url_for('student.start_test', test_id=test.id) }}">
-                                                {% if t.best_attempt %}Ещё раз{% else %}Начать{% endif %}
-                                            </a>
-                                        {% else %}
-                                            <span class="muted" style="font-size:.82rem;">попытки исчерпаны</span>
-                                        {% endif %}
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </details>
+                            {{ icon('chevron-right', 'i--sm muted') }}
+                        </a>
+                    </li>
                 {% endfor %}
-            {% else %}
-                <div class="empty-state">Дисциплин с тестами пока нет.</div>
-            {% endif %}
-        </section>
+            </ul>
+        {% else %}
+            {{ ui.empty('chart', 'Результатов пока нет', 'Здесь появятся результаты пройденных тестов.') }}
+        {% endif %}
+    </section>
 
+</div>
 
-        <!-- RECENT -->
-        <section class="panel">
-            <div class="panel__head">
-                <h2>Лучшие результаты</h2>
-                <a class="panel__link" href="{{ url_for('student.history') }}">Вся история</a>
-            </div>
+{% endblock %}
 
-            {% if attempts %}
-                <ul class="recent">
-                    {% for a in attempts %}
-                        <li>
-                            <a href="{{ url_for('student.result', attempt_id=a.id) }}">
-                                <span class="grade-dot grade-dot--{{ a.grade or 2 }}">{{ a.grade or '—' }}</span>
-                                <div style="min-width:0;">
-                                    <div class="recent__title">{{ a.test.title }}</div>
-                                    <div class="recent__date">{{ a.completed_at.strftime('%d.%m.%Y, %H:%M') }}</div>
-                                </div>
-                                <div class="recent__pct">
-                                    {{ a.percentage|round|int }}%
-                                    <small>{{ a.score|num }} из {{ a.max_score }}</small>
-                                </div>
-                                {{ chevron('recent__chev') }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state">Здесь появятся результаты пройденных тестов.</div>
-            {% endif %}
-        </section>
-
-    </div>
-
-</main>
-
-
-<footer class="app-footer">
-    <div class="app-footer__inner">
-        <span>Student Testing System</span>
-        <span>Программный комплекс тестирования знаний студентов</span>
-    </div>
-</footer>
-
+{% block scripts %}
 <script>
     (function () {
         var btn = document.getElementById('todo-more');
@@ -1282,6 +285,4 @@
         });
     })();
 </script>
-
-</body>
-</html>
+{% endblock %}
