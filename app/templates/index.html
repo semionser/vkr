@@ -452,6 +452,99 @@
                 animation: none !important;
             }
         }
+
+    /* =========================================================
+       «КАК ЭТО РАБОТАЕТ?» — три анимированных экрана
+       ========================================================= */
+    .how-live { padding: 2rem; background: #fff; border-radius: 18px; box-shadow: 0 12px 30px rgba(37, 71, 143, .08); animation: riseIn .6s .6s cubic-bezier(.22, 1, .36, 1) both; }
+    .how-live__grid { display: grid; grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr) 36px minmax(0, 1fr); align-items: start; gap: .5rem; }
+    .how-live__screen { position: relative; }
+    .how-live__screen svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .how-live__cap { display: flex; gap: .8rem; margin-top: 1rem; }
+    .how-live__cap .step__num { flex: none; }
+    .how-live__cap h4 { margin: 0 0 .2rem; font-size: 1rem; font-weight: 750; }
+    .how-live__cap p { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+    .how-live__arrow { align-self: center; margin-top: -3.5rem; color: #cbd5e1; }
+    .how-live__arrow svg { width: 36px; height: 12px; display: block; }
+    .how-live__arrow path:first-child { stroke-dasharray: 4 5; animation: flowDash 1s linear infinite; }
+    @keyframes flowDash { to { stroke-dashoffset: -9; } }
+
+    /* Общий цикл: 6 секунд, у экранов разные задержки */
+    .qz, .qz * { animation-duration: 6s; animation-iteration-count: infinite; animation-timing-function: ease-out; }
+    .qz--2, .qz--2 * { animation-delay: 1.2s; }
+    .qz--3, .qz--3 * { animation-delay: 2.4s; }
+    .qz-fade { animation-name: qzFade; }
+    @keyframes qzFade { 0%, 88% { opacity: 1; } 95% { opacity: 0; } 100% { opacity: 1; } }
+
+    /* --- 1. Создание: печатается текст, добавляются варианты, отмечается верный --- */
+    .qz-type { transform-box: fill-box; transform-origin: left; animation-name: qzType; animation-timing-function: steps(12, end); }
+    @keyframes qzType { 0%, 4% { transform: scaleX(0); } 22%, 100% { transform: scaleX(1); } }
+    .qz-type--2 { animation-name: qzType2; }
+    @keyframes qzType2 { 0%, 18% { transform: scaleX(0); } 30%, 100% { transform: scaleX(1); } }
+    .qz-opt { opacity: 0; animation-name: qzOpt; }
+    @keyframes qzOpt { 0% { opacity: 0; transform: translateX(-12px); } 100% { opacity: 1; transform: none; } }
+    .qz-opt--1 { animation-name: qzOpt1; } @keyframes qzOpt1 { 0%, 30% { opacity: 0; transform: translateX(-12px); } 36%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-opt--2 { animation-name: qzOpt2; } @keyframes qzOpt2 { 0%, 36% { opacity: 0; transform: translateX(-12px); } 42%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-opt--3 { animation-name: qzOpt3; } @keyframes qzOpt3 { 0%, 42% { opacity: 0; transform: translateX(-12px); } 48%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-toggle { transform-box: fill-box; transform-origin: center; animation-name: qzToggle; }
+    @keyframes qzToggle { 0%, 55% { transform: scale(0); } 60% { transform: scale(1.25); } 64%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-publish { animation-name: qzPublish; }
+    @keyframes qzPublish { 0%, 70% { fill: #cbd5e1; } 74%, 90% { fill: #22c55e; } 97%, 100% { fill: #cbd5e1; } }
+    .qz-publish-check { stroke-dasharray: 20; stroke-dashoffset: 20; animation-name: qzPubCheck; }
+    @keyframes qzPubCheck { 0%, 72% { stroke-dashoffset: 20; } 80%, 90% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 20; } }
+    .qz-caret { animation: cursorBlink 1s step-end infinite !important; }
+
+    /* --- 2. Прохождение: курсор отмечает ответы, таймер идёт, прогресс растёт --- */
+    .qz-cursor { animation-name: qzCursor; animation-timing-function: ease-in-out; }
+    @keyframes qzCursor {
+        0%, 12%  { transform: translate(250px, 180px); }
+        26%, 32% { transform: translate(40px, 104px); }
+        46%, 52% { transform: translate(40px, 128px); }
+        70%, 76% { transform: translate(248px, 176px); }
+        100%     { transform: translate(250px, 180px); }
+    }
+    .qz-tick { transform-box: fill-box; transform-origin: center; animation-name: qzTick; }
+    @keyframes qzTick { 0%, 29% { transform: scale(0); } 32% { transform: scale(1.2); } 35%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-tick--2 { animation-name: qzTick2; }
+    @keyframes qzTick2 { 0%, 49% { transform: scale(0); } 52% { transform: scale(1.2); } 55%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-sel { animation-name: qzSel; } @keyframes qzSel { 0%, 29% { fill: #f1f5f9; } 33%, 90% { fill: #dbeafe; } 97%, 100% { fill: #f1f5f9; } }
+    .qz-sel--2 { animation-name: qzSel2; } @keyframes qzSel2 { 0%, 49% { fill: #f1f5f9; } 53%, 90% { fill: #dbeafe; } 97%, 100% { fill: #f1f5f9; } }
+    .qz-next { animation-name: qzNext; } @keyframes qzNext { 0%, 72% { fill: #2563eb; } 75% { fill: #1e3a8a; } 80%, 100% { fill: #2563eb; } }
+    .qz-timer { stroke-dasharray: 100; animation-name: qzTimer; animation-timing-function: linear; }
+    @keyframes qzTimer { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 32; } }
+    .qz-progress { transform-box: fill-box; transform-origin: left; animation-name: qzProg; animation-timing-function: ease-in-out; }
+    @keyframes qzProg { 0%, 74% { transform: scaleX(.4); } 82%, 92% { transform: scaleX(.6); } 100% { transform: scaleX(.4); } }
+
+    /* --- 3. Результат: галочка, оценка, строки разбора --- */
+    .qz-circle { transform-box: fill-box; transform-origin: center; animation-name: qzCircle; }
+    @keyframes qzCircle { 0%, 4% { transform: scale(0); } 14% { transform: scale(1.1); } 18%, 90% { transform: scale(1); } 97%, 100% { transform: scale(0); } }
+    .qz-bigcheck { stroke-dasharray: 60; stroke-dashoffset: 60; animation-name: qzBig; }
+    @keyframes qzBig { 0%, 16% { stroke-dashoffset: 60; } 28%, 90% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 60; } }
+    .qz-grade { transform-box: fill-box; transform-origin: center; animation-name: qzGrade; }
+    @keyframes qzGrade { 0%, 28% { transform: scale(0) rotate(-20deg); } 34% { transform: scale(1.2) rotate(6deg); } 38%, 90% { transform: scale(1) rotate(0); } 97%, 100% { transform: scale(0); } }
+    .qz-row { opacity: 0; }
+    .qz-row--1 { animation-name: qzRow1; } @keyframes qzRow1 { 0%, 40% { opacity: 0; transform: translateY(6px); } 45%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-row--2 { animation-name: qzRow2; } @keyframes qzRow2 { 0%, 48% { opacity: 0; transform: translateY(6px); } 53%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-row--3 { animation-name: qzRow3; } @keyframes qzRow3 { 0%, 56% { opacity: 0; transform: translateY(6px); } 61%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-row--4 { animation-name: qzRow4; } @keyframes qzRow4 { 0%, 64% { opacity: 0; transform: translateY(6px); } 69%, 90% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; } }
+    .qz-score { transform-box: fill-box; transform-origin: left; animation-name: qzScore; animation-timing-function: ease-in-out; }
+    @keyframes qzScore { 0%, 30% { transform: scaleX(0); } 55%, 90% { transform: scaleX(1); } 97%, 100% { transform: scaleX(0); } }
+
+    .how-live__screen:hover .qz-frame { filter: drop-shadow(0 14px 22px rgba(37, 99, 235, .25)); }
+    .qz-frame { transition: filter .3s ease; }
+
+    @media (max-width: 991.98px) {
+        .how-live__grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+        .how-live__arrow { display: none; }
+        .how-live__screen { max-width: 420px; margin: 0 auto; width: 100%; }
+    }
+    @media (max-width: 575.98px) { .how-live { padding: 1.35rem; } }
+    @media (prefers-reduced-motion: reduce) {
+        .how-live, .how-live * { animation: none !important; }
+        .qz-opt, .qz-row { opacity: 1; }
+        .qz-publish-check, .qz-bigcheck { stroke-dashoffset: 0; }
+        .qz-cursor { transform: translate(248px, 176px); }
+    }
 </style>
 {% endblock %}
 
